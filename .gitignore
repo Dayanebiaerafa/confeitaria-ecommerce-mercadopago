@@ -1,0 +1,15 @@
+# VS Code
+.vscode/
+*.code-workspace
+
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# Segurança (caso use variáveis de ambiente no futuro)
+.env
+.env.*

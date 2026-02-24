@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+
+  <title>Confeitaria Dayane Teodoro | Bolos Artesanais Personalizados</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta name="description" content="Monte seu bolo artesanal personalizado. Escolha massa, recheios, complementos e receba um bolo feito sob medida pela Confeitaria Dayane Teodoro.">
+
+  <!--CSS-->
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/componentes.css">
+  <link rel="stylesheet" href="css/drawer.css">
+  <link rel="stylesheet" href="css/paginas.css">  
+
+  <!--FAVICON-->
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
+
+  <script src="https://sdk.mercadopago.com/js/v2"></script>
+
+</head>
+
+
+<body data-pagina="doces">
+<div id="btnAbrirCarrinho" style="cursor: pointer; position: fixed; top: 20px; right: 20px; z-index: 999;">
+    <img src="assets/lixeira.png" alt="Sacola" style="width: 40px;">
+    <span class="cart-count" style="display: none; position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px; font-weight: bold;">
+        0
+    </span>
+</div>    
+
+<!-- HEADER FIXO -->
+<!-- HEADER -->
+<header class="header">
+  <div class="header-content">
+
+    <img src="assets/MARCA DAGUA.png" class="logo-topo" alt="Logo">
+
+    <nav class="menu">
+      <a href="sobre.html">Sobre</a>
+      <span class="divisor">|</span>
+
+      <div class="dropdown">
+        <a href="javascript:void(0)" class="dropbtn">Produtos</a>
+        <div class="dropdown-content">
+            <a href="bolopersonalizado.html">Bolos Personalizados</a>
+            <a href="bolodecorte.html">Bolos de Corte</a>
+            <a href="doces.html">Doces Tradicionais</a>
+            <a href="index.html">Monte seu bolo</a>
+        </div>
+      </div>
+      <span class="divisor">|</span>
+
+      <a href="https://maps.app.goo.gl/gTp6KAYNjbFVxqoR9" target="_blank" rel="noopener noreferrer">Endereço</a>
+      
+    </nav>
+
+    <div class="header-right">
+      <div class="icons">
+        <a href="https://wa.me/5534996360443?text=Olá%20Dayane%2C%20estou%20no%20site%20e%20gostaria%20de%20tirar%20uma%20dúvida%20sobre%20meu%20bolo!">
+          <img src="assets/whatsapp.svg" alt="WhatsApp">
+        </a> 
+        
+        <a href="https://www.instagram.com/dayane.teodoro.confeitaria?igsh=a3d2d2tzcDJ0cm9w&utm_source=qr" target="_blank" rel="noopener noreferrer">
+          <img src="assets/instagram.svg" alt="Instagram">
+        </a>  
+      </div>
+
+      <!-- CARRINHO (FUNCIONAL) -->
+      <div class="cart-icon" id="btnCarrinho">
+        <img src="assets/shopping-cart.png" alt="Carrinho">
+        <span id="cartCount" class="cart-count">0</span>
+
+      </div>
+    </div>  
+
+  </div>
+</header>
+
+
+<!-- BANNER PRINCIPAL -->
+<section class="hero">
+  <img src="assets/doces.jpeg" alt="doces Tradicionais" class="banner-doces">
+</section>
+
+<main>
+
+<section class="intro">
+  <h1> Doces Tradicionais </h1>
+  <p>
+    Encomende com <strong>3 dias de antecedência.</strong><br>
+    Doces artesanais com receitas clássicas, sempre fresquinhos e feitos com carinho.
+  </p>
+</section>
+    
+
+
+
+
+
+  <!-- MODELO DO BOLO -->
+<div class="card">
+  <h3>Selecione seu Doce </h3>
+
+  <div id="modeloCarousel">
+    <div class="bolo-card">
+        <img src="assets/doces/brigadeiropreto.png" alt="Brigadeiro">
+      
+        <div class="info-doce">
+          <small>Mínimo 25 unidades</small>
+          <p><strong>R$ 1,50/unid.</strong></p> 
+        </div> 
+        
+
+        <div class="container-btn-doce">
+          <button
+              type="button"
+              class="btn-escolha btn-eu-quero"
+              data-tipo="doce"
+              data-nome="Brigadeiro"
+              data-preco="1.50"> Pedir 25 un.
+          </button>
+        </div>  
+    </div>
+
+    <div class="bolo-card">
+        <img src="assets/doces/brigadeirobranco.png" alt="Brigadeiro Branco">
+   
+        <div class="info-doce">
+          <small>Mínimo 25 unidades</small>
+          <p><strong>R$ 1,50/unid.</strong></p> 
+        </div>
+        
+        <div class="container-btn-doce">
+          <button
+              type="button"
+              class="btn-escolha btn-eu-quero"
+              data-tipo="doce"
+              data-nome="Brigadeiro Branco"
+              data-preco="1.50"> Pedir 25 un.
+          </button>
+        </div>  
+    </div>
+
+    <div class="bolo-card">
+        <img src="assets/doces/ninho.png" alt="Ninho">
+    
+       <div class="info-doce">
+          <small>Mínimo 25 unidades</small>
+          <p><strong>R$ 1,80/unid.</strong></p> 
+        </div>
+        
+        <div class="container-btn-doce">
+          <button
+              type="button"
+              class="btn-escolha btn-eu-quero"
+              data-tipo="doce"
+              data-nome="Ninho"
+              data-preco="1.80"> Pedir 25 un.
+          </button>
+        </div>  
+    </div>
+
+    <div class="bolo-card">
+        <img src="assets/doces/mulatinho.png" alt="Mulatinho">
+    
+        <div class="info-doce">
+          <small>Mínimo 25 unidades</small>
+          <p><strong>R$ 1,60/unid.</strong></p> 
+        </div>
+        
+        <div class="container-btn-doce">
+          <button
+              type="button"
+              class="btn-escolha btn-eu-quero"
+              data-tipo="doce"
+              data-nome="Mulatinho"
+              data-preco="1.60"> Pedir 25 un.
+          </button>
+        </div>  
+    </div>
+
+    <div class="bolo-card">
+        <img src="assets/doces/ninhocomnutella.png" alt="Ninho com Nutella">
+        
+        <div class="info-doce">
+          <small>Mínimo 25 unidades</small>
+          <p><strong>R$ 2,00/unid.</strong></p> 
+        </div>
+        
+        <div class="container-btn-doce">
+          <button
+              type="button"
+              class="btn-escolha btn-eu-quero"
+              data-tipo="doce"
+              data-nome="Ninho com Nutella"
+              data-preco="2.00"> Pedir 25 un.
+          </button>
+        </div>  
+    </div>
+
+    <div class="bolo-card">
+        <img src="assets/doces/churros.png" alt="Churros">
+       
+        <div class="info-doce">
+          <small>Mínimo 25 unidades</small>
+          <p><strong>R$ 1,60/unid.</strong></p> 
+        </div> 
+        
+        <div class="container-btn-doce">
+          <button
+              type="button"
+              class="btn-escolha btn-eu-quero"
+              data-tipo="doce"
+              data-nome="Churros"
+              data-preco="1.60"> Pedir 25 un.
+          </button>
+        </div>  
+    </div>
+
+    <div class="bolo-card">
+        <img src="assets/doces/olhodesogra.png" alt="Olho de Sogra">
+       
+        <div class="info-doce">
+          <small>Mínimo 25 unidades</small>
+          <p><strong>R$ 1,80/unid.</strong></p> 
+        </div> 
+        
+        <div class="container-btn-doce">
+          <button
+              type="button"
+              class="btn-escolha btn-eu-quero"
+              data-tipo="doce"
+              data-nome="Olho de Sogra"
+              data-preco="1.80"> Pedir 25 un.
+          </button>
+        </div>
+    </div>
+
+    <div class="bolo-card">
+        <img src="assets/doces/cajuzinho.png" alt="Cajuzinho">
+        
+        <div class="info-doce">
+          <small>Mínimo 25 unidades</small>
+          <p><strong>R$ 1,50/unid.</strong></p> 
+        </div> 
+        
+        <div class="container-btn-doce">
+          <button
+              type="button"
+              class="btn-escolha btn-eu-quero"
+              data-tipo="doce"
+              data-nome="Cajuzinho"
+              data-preco="1.50"> Pedir 25 un.
+          </button>
+        </div>  
+    </div>
+
+    <div class="bolo-card">
+        <img src="assets/doces/beijinho.png" alt="Bejinho">
+     
+        <div class="info-doce">
+          <small>Mínimo 25 unidades</small>
+          <p><strong>R$ 1,50/unid.</strong></p> 
+        </div>
+
+        <div class="container-btn-doce">
+          <button
+              type="button"
+              class="btn-escolha btn-eu-quero"
+              data-tipo="doce"
+              data-nome="Bejinho"
+              data-preco="1.50"> Pedir 25 un.
+          </button>
+        </div>
+    </div>
+  </div>
+
+  <div id="contador-fixo-doces" class="contador-lateral" style="display:none;">
+    <span>Total selecionado:</span>
+    <strong id="total-unidades-doces">00</strong>
+    <small>unidades</small>
+  </div>
+
+
+</main>
+
+<!-- TOTAL -->
+<section class="fundo-final">
+
+    <div class="secao-total">
+        
+            <div class="secao-total">
+                <div class="total-info">
+                    <img src="assets/coins.png" alt="Moedas">
+                    <span>Total <strong id="valorTotalDoces">R$ 0,00</strong></span>
+                </div>
+
+                <button class="btn-fechar" id="btnConfirmarPedido">
+                    Fechar pedido
+                </button>
+            </div>
+    </div>
+
+    <footer class="rodape">
+        <div class="rodape-card">
+            <div class="rodape-topo">
+                <img src="assets/MARCA DAGUA.png" class="logo-rodape" alt="Logo">
+
+                <nav class="rodape-menu">
+                    <a href="sobre.html">Sobre</a>                                    
+                    <span class="divisor">|</span> 
+
+                    <div class="dropdown">
+                        <a href="javascript:void(0)" class="dropbtn">Produtos</a>
+                        <div class="dropdown-content">
+                            <a href="bolopersonalizado.html">Bolos Personalizados</a>
+                            <a href="bolodecorte.html">Bolos de Corte</a>
+                            <a href="doces.html">Doces Tradicionais</a>
+                            <a href="index.html">Monte seu bolo</a>
+                        </div>
+                    </div>
+                    <span class="divisor">|</span>
+
+                    <a href="https://maps.app.goo.gl/gTp6KAYNjbFVxqoR9" target="_blank" rel="noopener noreferrer">Endereço</a>
+                    <span class="divisor">|</span>
+                    <a href="privacidade.html">Política de Privacidade</a>
+                </nav>
+
+                <div class="rodape-icones">
+                  <a href="https://www.instagram.com/dayane.teodoro.confeitaria?igsh=a3d2d2tzcDJ0cm9w&utm_source=qr" target="_blank" rel="noopener noreferrer">
+                    <img src="assets/instagram.svg" alt="Instagram">
+                  </a>
+                  
+                  <a href="https://wa.me/5534996360443?text=Olá%20Dayane%2C%20estou%20no%20site%20e%20gostaria%20de%20tirar%20uma%20dúvida%20sobre%20meu%20bolo!" target="_blank" rel="noopener noreferrer">
+                    <img src="assets/whatsapp.svg" alt="WhatsApp">
+                  </a>  
+
+                    <img src="assets/6.png" alt="Ícone">
+                </div>
+            </div>
+
+            <div id="caixa-cookies" class="cookies-flutuante">
+                <div class="cookies-texto">
+                    Usamos cookies para que sua experiência de compra seja perfeita. 
+                    <a href="privacidade.html" style="color: #783606; text-decoration: underline;">Saiba mais</a>.
+                </div>
+                <button id="btn-aceitar-cookies" class="btn-cookies">Aceitar</button>
+            </div>
+        </div>
+    </footer>
+
+</section>
+
+
+
+
+<div class="overlay" id="overlay"></div>
+
+<aside class="drawer" id="drawerCarrinho">
+
+  <div class="drawer-topo">
+    <div class="stepper" id="stepperPrincipal">
+      <div class="step completed">
+        <span class="dot"></span>
+        <span class="label">Carrinho</span>
+      </div>
+      <span class="line"></span>
+      <div class="step">
+        <span class="dot"></span>
+        <span class="label">Identificação</span>
+      </div>
+      <span class="line"></span>
+      <div class="step">
+        <span class="dot"></span>
+        <span class="label">Pagamento</span>
+      </div>
+      <span class="line"></span>
+      <div class="step">
+        <span class="dot"></span>
+        <span class="label">Finalizar</span>
+      </div>
+    </div>
+
+    <img src="assets/marca-x.png" alt="Fechar carrinho" id="btnFecharCarrinho" class="btn-fechar-carrinho" />
+  </div>
+
+  <div class="drawer-content">
+
+    <div id="etapaContainer">
+
+      <div id="etapaCarrinho" class="etapa">
+        <div class="bloco-produto" id="bloco-bolo-carrinho">
+           
+          <span class="pill">Doces Tradicionais</span>
+        
+          <div class="card-produto">
+            <img id="cartImagem" class="img-bolo" src="assets/LOGO.jpg"/>
+            <div class="descricao">
+              <p id="cartDescricao">Slecione um bolo...</p>
+              <div class="badges">
+                <span>
+                  <img src="assets/peso.png" class="icon" />
+                  <span id="cartPeso"></span> kg
+                </span>
+              </div>
+            </div>
+            <img src="assets/lixeira.png" class="lixeira" data-item="bolo" />
+          </div>
+        </div>
+
+        <div class="bloco-produto" id="bloco-doces-carrinho" style="display: none; margin-top: 15px;">
+            <span class="pill">Lista dos Doces</span>
+            <div id="lista-doces-itens">
+              </div>
+        </div>
+
+        <div class="confirmacoes-container">
+            <div id="checkEmbalagem" class="box-opcao">
+                <span>✔ Sim, quero embalagem</span>
+                <img src="assets/lixeira.png" class="lixeira" data-item="embalagem" />
+            </div>
+
+            <div id="checkTopo" class="box-opcao">
+                <span>✔ Sim, quero topo</span>
+                <img src="assets/lixeira.png" class="lixeira" data-item="topo" />
+            </div>
+        </div>
+
+        <div class="customizacao-doces" id="bloco-custom-doces" style="display: none; margin-bottom: 20px;">
+            <span class="pill">Qual a cor das forminhas?</span>
+            <div class="campo-grupo" style="margin-top: 10px;">
+                
+                <input type="text" id="corForminhas" class="observacao-textarea" 
+                    placeholder="Ex: Todas brancas / Rosa e Dourado" 
+                    style="height: 40px; min-height: 40px; padding: 10px;">
+            </div>
+        </div>
+
+        <div class="observacao">
+          <span class="pill">Observação do pedido</span>
+          <textarea id="observacaoPedido" class="observacao-textarea" placeholder="Digite aqui a sua observação do seu pedido..."></textarea>
+        </div>
+
+        <div class="rodape">
+          <div class="rodape-linha">
+            <div id="container-preferencia-peso" class="peso-box">
+              <span class="titulo">Preferência de peso</span>
+              <label class="radio">
+                <input type="radio" name="pesoPreferencia" value="Peso exato" /> Peso exato
+              </label>
+              <label class="radio">
+                <input type="radio" name="pesoPreferencia" value="Pode variar" /> Pode variar
+              </label>
+            </div>
+            <div class="total-coluna" style="display: flex; justify-content: center; align-items: center; width: 100%;">
+                <div class="total-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+                    <span class="total-label" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
+                        <img src="assets/coins.png" class="icon-small" style="margin: 0;" /> 
+                        Valor total
+                    </span>
+                    <strong id="valorTotalRodape" style="display: block; font-size: 1.2rem; width: 100%; margin-top: 5px;">
+                        R$ 0,00
+                    </strong>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="etapaIdentificacao" class="etapa hidden">
+        <div class="form-bloco floating">
+          <input type="text" id="nomeCliente" placeholder=" " required>
+          <label for="nomeCliente">Nome completo *</label>
+        </div>
+        <div class="form-bloco floating">
+          <input type="tel" id="telefoneCliente" placeholder=" " maxlength="15" required>
+          <label for="telefoneCliente">Telefone / Celular *</label>
+        </div>
+        <div class="form-linha">
+          <div class="form-bloco">
+            <label>Data de retirada</label>
+            <input type="date" id="dataPedido" />
+          </div>
+          <div class="form-bloco">
+            <label>Horário</label>
+            <select id="horarioPedido">
+              <option value="">Selecione a data primeiro</option>
+            </select>
+          </div>
+        </div>
+        <div class="retirada-local">
+          <strong>Retirar no local</strong>
+          <div class="endereco-box">
+            O pedido deverá ser retirado em:<br />
+            Rua: Dos Cristais, 365 – Jardim Holanda, Uberlândia-MG.
+          </div>
+        </div>
+      </div>
+
+      <div id="etapaPagamento" class="etapa hidden">
+
+        <div class="titulo-pagamento-container">
+          <span class="btn-falso-titulo">Quanto deseja pagar agora?</span>
+        </div>
+
+        <div class="opcoes-valor" style="display: flex; gap: 10px; margin-bottom: 20px;">
+          <div id="btnPagar50" class="btn-valor" onclick="selecionarPorcentagem(0.5)">
+            <strong>50%</strong>
+            <span>Pagar entrada</span>
+        </div>
+        <div id="btnPagar100" class="btn-valor active" onclick="selecionarPorcentagem(1.0)">
+          <strong>100%</strong>
+          <span>Pagar total</span>
+        </div>
+      </div>
+
+        <div class="titulo-pagamento-container">
+          <span class="btn-falso-titulo">Forma de Pagamento</span>
+        </div>
+
+        <div class="opcoes-pagamento">
+          <div id="btnMetodoPix" class="btn-pagamento" onclick="escolherMetodo('pix')">
+            <img src="assets/pix.png" alt="Pix">
+            <span>Pix</span>
+          </div>
+          <div id="btnMetodoCartao" class="btn-pagamento" onclick="escolherMetodo('credit_card')">
+            <img src="assets/cartao.png" alt="Cartão">
+            <span>Cartão</span>
+          </div>
+        </div>
+
+        <div id="avisoPagamento" style="margin-top: 20px; text-align: center; color: #666; font-size: 14px;">
+          <p></p>
+        </div>
+      </div>  
+            
+
+      <div id="etapaFinalizar" class="etapa hidden">
+        <h3 class="titulo-etapa"></h3>
+
+        <div class="resumo-container">
+
+          <div class="bloco-resumo">
+            <span class="label-resumo">Informações do Cliente</span>
+            <div id="resumoNome" class="conteudo-resumo">---</div>
+          </div>
+
+          <div class="bloco-resumo">
+            <span class="label-resumo">Forma de Pagamento</span>
+            <div id="resumoPagamento" class="conteudo-resumo">---</div>
+          </div>
+          <div class="bloco-resumo">
+            <span class="label-resumo">Tipo</span>
+            <div class="conteudo-resumo">Retirar no local</div>
+          </div>
+          <div class="bloco-resumo">
+            <span class="label-resumo">Endereço para retirada</span>
+            <div class="conteudo-resumo">Rua: Dos Cristais, 365 – Jardim Holanda, Uberlândia-MG</div>
+          </div>
+
+          <div class="form-linha" style="gap: 10px;">
+            <div class="bloco-resumo" style="flex: 1;">
+              <span class="label-resumo"><i class="fas fa-calendar-alt"></i> Data da retirada</span>
+              <div id="resumoData" class="conteudo-resumo" style="font-size: 20px; font-weight: bold; margin-top: 5px;">---</div>
+            </div>
+            <div class="bloco-resumo" style="flex: 1;">
+              <span class="label-resumo"><i class="fas fa-clock"></i> Horário da retirada</span>
+              <div id="resumoHorario" class="conteudo-resumo" style="font-size: 20px; font-weight: bold; margin-top: 5px;">---</div>
+            </div>
+          </div>
+          <div class="bloco-resumo">
+            <span class="label-resumo"> Informações da Encomenda</span>
+            <div style="border-top: 1px dashed #C5DADB; margin: 10px 0;"></div>
+            <div id="resumoDescricao" class="conteudo-resumo">
+            </div>
+            <div style="border-top: 1px solid #eee; margin: 15px 0;"></div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+            <span style="color: #666;">Subtotal</span>
+            <span id="resumoSubtotal" style="color: #666;">R$ 0,00</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 18px;">
+            <span>Total</span>
+            <span id="resumoTotal" style="color: var(--marrom);">R$ 0,00</span>
+          </div>
+
+          <div id="blocoFaltaPagar" style="display: none; justify-content: space-between; color: #e91e63; font-size: 14px; margin-top: 5px;">
+              <span>Falta pagar (na retirada):</span>
+              <span id="resumoRestante">R$ 0,00</span>
+          </div>
+          </div>
+
+          
+        </div>
+          
+      </div>
+    </div>
+
+    </div> <div class="rodape-acoes">
+      <button id="btnVoltar" class="btn-secundario">Voltar</button>
+      <button id="btnAvancar" class="btn-principal">Avançar</button>
+    </div>
+
+  </div>
+</aside>
+
+
+
+<!-- SCRIPTS -->
+<script type="module" src="./js/main.js"></script>
+<div id="mensagem-sucesso" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#783606; color:#eee; padding:15px; border-radius:10px; z-index:9999;"></div>
+
+</body>
+</html>
+

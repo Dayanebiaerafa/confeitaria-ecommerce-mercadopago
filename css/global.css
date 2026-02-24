@@ -1,0 +1,541 @@
+/* ============================================================
+   1. VARIÁVEIS (Extraídas do seu esquema de cores original)
+   ============================================================ */
+:root {
+  --marrom: #783606;
+  --rosa: #FAD5DC;
+  --verde: #C5DADB;
+  --lilas: #CEC6DB;
+  --rosa-ativo: #e91e63;
+  --preto: #000000;
+  --branco: #ffffff;
+  --fonte-principal: 'Poppins', sans-serif;
+
+    /* ===== ESPAÇAMENTOS ===== */
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 20px;
+  --space-lg: 30px;
+  --space-xl: 40px;
+}
+
+
+
+/* ============================================================
+   2. RESET E SETUP BASE
+   ============================================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: var(--fonte-principal);
+}
+
+html, body {
+    width: 100%;
+    overflow-x: hidden;
+    background-color: var(--rosa-fundo);
+    scroll-behavior: smooth;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+/* ============================================================
+   3. CABEÇALHO (HEADER) E NAVEGAÇÃO
+   ============================================================ */
+.header {
+    background-color: #FAD5DC;    /* O Rosa que você está usando nas seções */
+    border-bottom: 2px solid #783606; /* Borda Marrom apenas na parte de baixo */
+    padding: 15px 20px;           /* Espaçamento interno para não grudar no logo */
+    width: 100%;
+    box-sizing: border-box;
+    color: #783606;
+    
+    /* ADICIONE ESTAS 4 LINHAS ABAIXO */
+    position: fixed;   /* Fixa no topo */
+    top: 0;            /* Cola no limite superior */
+    left: 0;           /* Cola no limite esquerdo */
+    z-index: 1000;     /* Garante que fique na frente das fotos */
+}
+
+.header-content {
+    max-width: 1100px;
+    margin: auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Controle rígido do tamanho da Logo */
+.logo-topo {
+    height: 40px; 
+  
+}
+
+.menu a {
+    margin: 0 4px;
+    text-decoration: none;
+    color: var(--marrom-chocolate);
+    font-weight: 500;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+
+.icons {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.icons a {
+    display: flex;
+    text-decoration: none;
+}
+
+/* Controle rígido do tamanho dos Ícones */
+.icons img, 
+.cart-icon img {
+    height: 25px; /* Tamanho que você usava */
+    width: auto;
+    display: block;
+}
+
+.cart-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+/* O contador da sacola (bolinha) */
+.cart-count {
+    position: absolute;
+    top: -5px;
+    right: -8px;
+    background: var(--rosa-ativo);
+    color: var(--rosa);
+    font-size: 10px;
+    font-weight: bold;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+/* Espaçador para o conteúdo não ficar atrás do header fixo */
+body {
+    padding-top: 70px; 
+}
+
+/* Dropdown de Produtos */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropbtn {
+    cursor: pointer;
+    display: inline-block;
+    padding: 10px 0;
+}
+
+.dropdown-content {
+    display: none; 
+    position: absolute;
+    top: 100%; 
+    left: 0;
+    background-color: #FAD5DC; 
+    min-width: 200px;
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.1);
+    z-index: 9999; 
+    border-radius: 8px;
+    padding: 10px 0;
+    margin: 0;
+    pointer-events: auto !important;;
+}
+
+.dropdown-content a {
+    color: #783606 !important;
+    padding: 12px 20px;
+    text-decoration: none;
+    display: block !important; /* Garante que ocupe a linha toda */
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 14px;
+    transition: 0.2s;
+    cursor: pointer !important;
+}
+
+.dropdown-content a:hover {
+    background-color: #e8f5e9;
+    color: #783606;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+
+
+/* Caixa de Cookies (Global) */
+.cookies-flutuante {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 500px;
+    background-color: var(--branco);
+    padding: 15px 20px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 9999;
+}
+
+.cookies-texto {
+    font-size: 12px;
+    color: var(--marrom-texto);
+    padding-right: 10px;
+}
+
+.btn-cookies {
+    background-color: var(--rosa-destaque);
+    color: var(--branco);
+    border: none;
+    padding: 8px 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+/* ============================================================
+   5. BOTÃO DO CARRINHO (CONTADOR)
+   ============================================================ */
+/* ===== ÍCONE DE CARRINHO (ESTILO ANTIGO) ===== */
+.cart-icon {
+    position: relative;
+    cursor: pointer;
+}
+
+.cart-icon img {
+    width: 22px;
+}
+
+.cart-count {
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 12px;
+    position: absolute;
+    top: -5px;
+    right: -5px;
+}
+
+/* ===== LABEL E SELECT (ESTILO ANTIGO) ===== */
+.label {
+    display: block;
+    font-size: 20px;
+    color: #783606;
+    margin-bottom: 0px;
+}
+
+.select {
+    width: 100%;
+    padding: 14px 45px 14px 15px;
+    border-radius: 20px;
+    border: none;
+    background-color: #CEC6DB;
+    color: #783606;
+    font-size: 15px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("../assets/seta-para-baixo-50.png");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 14px;
+}
+
+/* ================= RODAPÉ ROSA (FIM DA LINHA) ================= */
+.rodape-final {
+    width: 100%;
+    background-color: #FAD5DC; /* Garante a cor no fundo total */
+    margin: 0; /* Remove qualquer margem externa */
+    padding: 0;
+}
+
+.rodape-card {
+    background: #FAD5DC;
+    padding: 30px 60px;
+    width: 100%;
+    margin: 0; /* REMOVE MARGENS QUE CRIAM ESPAÇO BRANCO */
+}
+
+/* REMOVE ESPAÇOS DE QUALQUER CONTAINER PAI QUE SOBROU */
+section.fundo-final {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: none !important;
+}
+
+.rodape-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+}
+
+.logo-rodape {
+    height: 75px;
+}
+
+.rodape-menu {
+    display: flex;
+    gap: 15px;
+    font-size: 16px;
+}
+
+.rodape-menu a {
+    text-decoration: none;
+    color: #783606;
+    font-weight: 500;
+}
+
+/* --- BLOCO DE ÍCONES (O que estava faltando) --- */
+.rodape-icones {
+    display: flex;       /* FORÇA os ícones a ficarem lado a lado */
+    align-items: center;
+    gap: 12px;           /* Espaço exato entre cada ícone */
+}
+
+
+.rodape-icones a {
+    text-decoration: none;
+    display: inline-block; /* Mantém um ao lado do outro */
+    line-height: 0;      /* Remove espaços fantasmas abaixo da imagem */
+}
+
+.rodape-icones img {
+    width: 35px;
+    margin-left: 0px;
+    transition: transform 0.3s ease; /* Efeito suave ao passar o mouse */
+}
+
+.rodape-icones img:hover {
+    transform: scale(1.1); /* Ícone aumenta levemente quando o cliente passa o mouse */
+}
+
+/* ================= COOKIES (GLOBAL) ================= */
+.cookies-flutuante {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    max-width: 400px;
+    background-color: #ffffff;
+    border: 2px solid #FAD5DC;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0px 10px 25px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    z-index: 9999;
+    font-family: 'Poppins', sans-serif;
+}
+
+.cookies-texto {
+    font-size: 14px;
+    color: #444;
+    line-height: 1.4;
+}
+
+.btn-cookies {
+    background-color: #783606;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    align-self: flex-end;
+}
+
+.btn-cookies:hover {
+    background-color: #5a2905;
+    transform: scale(1.05);
+}
+
+/* ================= MENU E DIVISORES ================= */
+.menu, .rodape-menu {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Remove barras automáticas e limpa dropdown */
+.menu a::after, .rodape-menu a::after, .dropbtn::after {
+    content: none !important;
+    margin: 0 !important;
+}
+
+.divisor {
+    color: #783606;
+    font-weight: 500;
+    pointer-events: none;
+}
+
+/* Remove qualquer barra que tenha sobrado no botão do dropdown */
+.dropbtn::after {
+    content: "" !important;
+    margin: 0 !important;
+}
+
+/* ================= CLASSES UTILITÁRIAS ================= */
+.mt-xs { margin-top: var(--space-xs); }
+.mt-sm { margin-top: var(--space-sm); }
+.mt-md { margin-top: var(--space-md); }
+.mt-lg { margin-top: var(--space-lg); }
+.mb-xs { margin-bottom: var(--space-xs); }
+.mb-sm { margin-bottom: var(--space-sm); }
+.mb-md { margin-bottom: var(--space-md); }
+.mb-lg { margin-bottom: var(--space-lg); }
+.pt-sm { padding-top: var(--space-sm); }
+.pb-sm { padding-bottom: var(--space-sm); }
+
+.center { display: flex; justify-content: center; align-items: center; }
+.text-center { text-align: center; }
+.w-100 { width: 100%; }
+
+/* ================= MOBILE GERAL ================= */
+@media (max-width: 768px) {
+    .total-card {
+        flex-direction: row;
+        gap: 15px;
+        padding: 0 10px;
+    }
+
+    .rodape-topo {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+    }
+
+    .total-info {
+        font-size: 18px;
+    }
+
+    .rodape-menu {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .faixa-pattern {
+        height: 50px;
+    }
+}
+
+@media (max-width: 480px) {
+    .cookies-flutuante {
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+    }
+}
+
+
+/* Alinhamento */
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* Largura */
+.w-100 {
+  width: 100%;
+}
+/* SEGURANÇA FINAL */
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ===== MOBILE ===== */
+@media (max-width: 600px) {
+  .card {
+    max-width: 100%;
+  }
+}
+
+/* RESET PARA ELIMINAR ESPAÇO BRANCO NO FIM DA PÁGINA */
+html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+main {
+    flex: 1; /* Empurra o rodapé para baixo se a página tiver pouco conteúdo */
+}
+
+/* Ajuste para o rodapé ficar bonito no celular */
+@media (max-width: 600px) {
+    
+    .rodape-icones img {
+        margin: 0 10px; /* Centraliza os ícones */
+    }
+}

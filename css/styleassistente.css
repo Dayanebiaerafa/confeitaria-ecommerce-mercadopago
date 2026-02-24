@@ -1,0 +1,51 @@
+ESTILO DO ASSISTENTE #assistant-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #783606;
+  color: white;
+  font-size: 24px;
+  padding: 12px 16px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 999;
+}
+
+#assistant-box {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 280px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  z-index: 999;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.hidden {
+  display: none;
+}
+
+#assistant-header {
+  background: #783606;
+  color: white;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  border-radius: 10px 10px 0 0;
+}
+
+#assistant-content {
+  padding: 10px;
+}
+
+#assistant-content button {
+  width: 100%;
+  margin-top: 5px;
+  padding: 8px;
+  border: none;
+  background: #fad5dc;
+  cursor: pointer;
+  border-radius: 5px;
+}

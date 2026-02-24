@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+
+  <title>Confeitaria Dayane Teodoro | Bolos Artesanais Personalizados</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta name="description" content="Monte seu bolo artesanal personalizado. Escolha massa, recheios, complementos e receba um bolo feito sob medida pela Confeitaria Dayane Teodoro.">
+
+  <!--CSS-->
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/componentes.css">
+  <link rel="stylesheet" href="css/drawer.css">
+  <link rel="stylesheet" href="css/paginas.css">  
+
+  <!--FAVICON-->
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
+
+  <script src="https://sdk.mercadopago.com/js/v2"></script>
+
+</head>
+
+
+<body data-pagina="corte">
+
+<!-- HEADER FIXO -->
+<!-- HEADER -->
+<header class="header">
+  <div class="header-content">
+
+    <img src="assets/MARCA DAGUA.png" class="logo-topo" alt="Logo">
+
+    <nav class="menu">
+      <a href="sobre.html">Sobre</a>
+      <span class="divisor">|</span>
+
+      <div class="dropdown">
+        <a href="javascript:void(0)" class="dropbtn">Produtos</a>
+        <div class="dropdown-content">
+            <a href="bolopersonalizado.html">Bolos Personalizados</a>
+            <a href="bolodecorte.html">Bolo de Corte</a>
+            <a href="doces.html">Doces Tradicionais</a>
+            <a href="index.html">Monte seu bolo</a>
+        </div>
+      </div>
+      <span class="divisor">|</span>
+
+      <a href="https://maps.app.goo.gl/gTp6KAYNjbFVxqoR9" target="_blank" rel="noopener noreferrer">Endereço</a>
+      
+    </nav>
+
+    <div class="header-right">
+      <div class="icons">
+        <a href="https://wa.me/5534996360443?text=Olá%20Dayane%2C%20estou%20no%20site%20e%20gostaria%20de%20tirar%20uma%20dúvida%20sobre%20meu%20bolo!">
+          <img src="assets/whatsapp.svg" alt="WhatsApp">
+        </a> 
+        
+        <a href="https://www.instagram.com/dayane.teodoro.confeitaria?igsh=a3d2d2tzcDJ0cm9w&utm_source=qr" target="_blank" rel="noopener noreferrer">
+          <img src="assets/instagram.svg" alt="Instagram">
+        </a>  
+      </div>
+
+      <!-- CARRINHO (FUNCIONAL) -->
+      <div class="cart-icon" id="btnCarrinho">
+        <img src="assets/shopping-cart.png" alt="Carrinho">
+        <span id="cartCount" class="cart-count">0</span>
+
+      </div>
+    </div>  
+
+  </div>
+</header>
+
+
+<!-- BANNER PRINCIPAL -->
+<section class="hero-corte">
+  <img src="assets/bannerbolodecorte.png" alt="Bolo de corte">
+</section>
+
+<main>
+
+<section class="intro">
+  <h1> Bolo de Corte Artesanal</h1>
+  <p>
+    Peça hoje até <strong>23:59h</strong> e retire amanhã a partir das <strong>16h.</strong><br>
+    Produção fresca, feita no dia e sob medida para sua comemoraçao.<br>
+    💗 Ideal para <strong>aniversários, reuniões e eventos especiais</strong>
+  </p>
+
+  <div class="intropreco">
+    <h2>A partir de R$ 90,00/kg</h2>
+  </div>
+</section>   
+
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <div class="bolo-quadrado">
+      <div id="btncorteq" class="btn-corte" onclick="selecionarFormato('Quadrado', event)">
+          
+          <span>Bolo Quadrado</span>
+      </div>
+      <div id="btncorter" class="btn-corte active" onclick="selecionarFormato('Redondo', event)">
+          
+          <span>Bolo Redondo</span>
+      </div>
+      
+  </div>
+
+  
+  <!-- PESO -->
+  <div class="card">
+  <h3>Selecione a quantidade</h3>
+
+  <label class="label" for="pesoSelect">Peso (kg)</label>
+
+  <select class="select" id="pesoSelect" onchange="atualizarTudo()">
+    <option value="">Selecione um peso</option>
+    <option value="1.5">1,5kg - Serve até 15 pessoas</option>
+    <option value="2">2kg - Serve até 20 pessoas ⭐ Mais pedido</option>
+    <option value="2.5">2,5kg - Serve até 25 pessoas</option>
+    <option value="3">3kg - Serve até 30 pessoas</option>
+    <option value="3.5">3,5kg - Serve até 35 pessoas</option>
+    <option value="4">4kg - Serve até 40 pessoas</option>
+    <option value="5">5kg - Serve até 50 pessoas</option>
+  </select>
+
+  <p class="aviso">Pode haver variação de peso.</p>
+  
+    <div class="container-aceite">
+      <input type="checkbox" id="checkTermos">
+      <label for="checkTermos">
+          Li e aceito a <span id="abrirModal" style="color: #4B2C20; text-decoration: underline; cursor: pointer;">variação de peso e preço</span>.
+      </label>
+  </div>
+</div>
+
+
+  <!-- MASSA -->
+  <div class="card">
+    <h3>Selecione a massa do bolo</h3>
+
+    <label class="label" for="massaSelect">Massa</label>
+    <select class="select" id="massaSelect">
+
+      <option value="">Selecione uma massa</option>
+      <option>Baunilha</option>
+      <option>Chocolate</option>
+      <option>Mesclada</option>
+    </select>
+  </div>
+
+</section>
+
+
+  <!-- RECHEIOS -->
+<div class="card mt-lg">
+  <h3 class="mb-md">Selecione 2 recheios</h3>
+
+  <div class="recheios-container">
+
+    <!-- COLUNA 1 -->
+    <div class="recheios-box">
+      <label><input type="checkbox" name="recheio" value="Brigadeiro preto"> Brigadeiro preto</label>
+      <label><input type="checkbox" name="recheio" value="Brigadeiro branco"> Brigadeiro branco</label>
+      <label><input type="checkbox" name="recheio" value="Brigadeiro de Ninho"> Brigadeiro de Ninho</label>
+      <label><input type="checkbox" name="recheio" value="Mousse de chocolate preto"> Mousse de chocolate preto</label>
+      <label><input type="checkbox" name="recheio" value="Mousse de chocolate branco"> Mousse de chocolate branco</label>
+      <label><input type="checkbox" name="recheio" value="Mousse de doce de leite"> Mousse de doce de leite</label>
+      
+
+    </div>
+
+    <!-- COLUNA 2 -->
+    <div class="recheios-box">
+      <label><input type="checkbox" name="recheio" value="Alpino"> Alpino</label>
+      <label><input type="checkbox" name="recheio" value="Prestígio"> Prestígio</label>
+      <label><input type="checkbox" name="recheio" value="Creme de leite condensado"> Creme de leite condensado</label>
+      <label><input type="checkbox" name="recheio" value="Ninho"> Ninho</label>
+      <label><input type="checkbox" name="recheio" value="Ganache"> Ganache</label>
+      <label class="extra">
+        <input type="checkbox" name="recheio" value="Nutella" onchange="atualizarPrecoCorte()">
+        Nutella (+ R$ 20,00 por kg)
+      </label>
+    </div>
+
+  </div>
+</div>
+
+
+  <!-- COMPLEMENTO -->
+<div class="card">
+  <h3>Selecione 1 complemento</h3>
+
+  <div class="complemento-container">
+
+    <!-- COLUNA 1 -->
+    <div class="complemento-box">
+      <label><input type="checkbox" name="complemento" value="Morango"> Morango</label>
+      <label><input type="checkbox" name="complemento" value="Abacaxi"> Abacaxi</label>
+      <label><input type="checkbox" name="complemento" value="Ameixa"> Ameixa</label>
+      <label class="extra">
+        <input type="checkbox" name="complemento" value="Geleia de morango" onchange="atualizarPrecoCorte()">
+        Geleia de morango (+ R$ 20,00 por kg)
+      </label>
+      <label class="extra">
+        <input type="checkbox" name="complemento" value="Geleia de frutas vermelhas" onchange="atualizarPrecoCorte()">
+        Geleia de frutas vermelhas (+ R$ 20,00 por kg)
+      </label>
+      <label><input type="checkbox" name="complemento" value="Chocolate em pedaços (Preto)"> Chocolate em pedaços (Preto)</label>
+    </div>
+
+    <!-- COLUNA 2 -->
+    <div class="complemento-box">
+      <label><input type="checkbox" name="complemento" value="Castanha de caju"> Castanha de caju</label>
+      <label><input type="checkbox" name="complemento" value="Nozes"> Nozes</label>
+      <label><input type="checkbox" name="complemento" value="Crocante de nozes"> Crocante de nozes</label>
+      <label><input type="checkbox" name="complemento" value="Sonho de valsa"> Sonho de valsa</label>
+      <label><input type="checkbox" name="complemento" value="Ouro branco"> Ouro branco</label>
+      <label><input type="checkbox" name="complemento" value="Chocolate em pedaços (Branco)"> Chocolate em pedaços (Branco)</label>
+    </div>
+
+  </div>
+</div>
+
+<div id="modalTermos" class="modal">
+      <div class="modal-conteudo">
+          <span class="fechar">&times;</span>
+          <h2>Termos de Variação de Peso</h2>
+          <hr>
+          <p>Por se tratar de um produto ARTESANAL, informamos que:</p>
+          <ul>
+              <li>O peso final do bolo pode variar em até 20% (para mais ou para menos).</li>
+              <li>A decoração e cores podem ter pequenas variações em relação às fotos.</li>
+              <li>O valor total é baseado na estimativa do pedido selecionado.</li>
+          </ul>
+          <button id="entendiBtn">Entendi e concordo</button>
+      </div>
+</div>
+
+
+<div id="modalErroAceite" class="modal">
+    <div class="modal-conteudo" style="text-align: center;">
+        <span class="fechar" id="fecharModalErro">&times;</span>
+        <h2 style="color: #d9534f;">Atenção!</h2>
+        <hr>
+        <p>Por favor, aceite os termos de variação de peso para continuar.</p>
+        <button id="entendiErroBtn" style="background-color: #d9534f; color: white; padding: 10px 20px; border: none; border-radius: 18px; cursor: pointer; margin-top: 15px;">
+            Entendi
+        </button>
+    </div>
+</div>
+
+ <!-- MODELO DO BOLO -->
+<section class="sessao-modelos card">
+    <div class="bloco-principal-rosa">
+        <h3>Modelos Disponíveis</h3>
+        
+        <div class="foto-container">
+            <div class="bolo-card">
+                <img src="assets/modelo/boloredondo.jpeg" alt="Bolo Redondo">
+            </div>
+
+            <div class="bolo-card">
+                <img src="assets/modelo/boloquadrado.jpeg" alt="Bolo Quadrado">
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<!-- PASSO 6 - TOPO E EMBALAGEM -->
+<section class="secao-branca">
+  <div class="card card-topo">
+
+    <div class="topo-grid">
+
+      <!-- COLUNA TOPO -->
+      <div class="coluna-topo">
+        <h3>Selecione um topo</h3>
+
+        <div class="topo-cards">
+          <div class="topo-item">
+            <img src="assets/modelo/topo1.jpeg" alt="Topo de bolo">
+            <button
+              type="button"
+              class="btn-escolha btn-eu-quero"
+              data-tipo="topo">
+              Eu quero
+            </button>
+          </div>
+
+          <div class="topo-item">
+            <img src="assets/modelo/topo2.jpeg" alt="Topo de bolo">
+            <button
+              type="button"
+              class="btn-escolha btn-eu-quero"
+              data-tipo="topo">
+              Eu quero
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUNA EMBALAGEM -->
+      <div class="coluna-embalagem">
+        <h3>Embalagem</h3>
+
+        <div class="topo-item embalagem">
+          <p class="valor">R$ 10,00</p>
+          <button
+              type="button"
+              class="btn-escolha btn-eu-quero"
+              data-tipo="embalagem">
+              Eu quero
+            </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- TOTAL -->
+<section class="fundo-final">
+
+    <div class="secao-total">
+        
+            <div class="total-info">
+                <img src="assets/coins.png" alt="Moedas">
+                <span>Total <strong id="valorTotalCorte">R$ 0,00</strong></span>
+                
+            </div>
+
+            <p id="avisoBloqueio" style="color: #d9534f; font-size: 13px; margin-bottom: 10px; font-weight: bold; display: none;">
+                ⚠️ Por favor, aceite os termos de variação de peso para continuar.
+            </p>
+
+            <button class="btn-fechar" id="btnConfirmarPedido">
+                Fechar pedido
+            </button>
+        </div>
+    </div>
+
+    <footer class="rodape">
+        <div class="rodape-card">
+            <div class="rodape-topo">
+                <img src="assets/MARCA DAGUA.png" class="logo-rodape" alt="Logo">
+
+                <nav class="rodape-menu">
+                    <a href="sobre.html">Sobre</a>                                    
+                    <span class="divisor">|</span> 
+
+                    <div class="dropdown">
+                        <a href="javascript:void(0)" class="dropbtn">Produtos</a>
+                        <div class="dropdown-content">
+                            <a href="bolopersonalizado.html">Bolos Personalizados</a>
+                            <a href="bolodecorte.html">Bolos de Corte</a>
+                            <a href="doces.html">Doces Tradicionais</a>
+                            <a href="index.html">Monte seu bolo</a>
+                        </div>
+                    </div>
+                    <span class="divisor">|</span>
+
+                    <a href="https://maps.app.goo.gl/gTp6KAYNjbFVxqoR9" target="_blank" rel="noopener noreferrer">Endereço</a>
+                    <span class="divisor">|</span>
+                    <a href="privacidade.html">Política de Privacidade</a>
+                </nav>
+
+                <div class="rodape-icones">
+                  <a href="https://www.instagram.com/dayane.teodoro.confeitaria?igsh=a3d2d2tzcDJ0cm9w&utm_source=qr" target="_blank" rel="noopener noreferrer">
+                    <img src="assets/instagram.svg" alt="Instagram">
+                  </a>
+                  
+                  <a href="https://wa.me/5534996360443?text=Olá%20Dayane%2C%20estou%20no%20site%20e%20gostaria%20de%20tirar%20uma%20dúvida%20sobre%20meu%20bolo!" target="_blank" rel="noopener noreferrer">
+                    <img src="assets/whatsapp.svg" alt="WhatsApp">
+                  </a>  
+
+                    <img src="assets/6.png" alt="Ícone">
+                </div>
+            </div>
+
+            <div id="caixa-cookies" class="cookies-flutuante">
+                <div class="cookies-texto">
+                    Usamos cookies para que sua experiência de compra seja perfeita. 
+                    <a href="privacidade.html" style="color: #783606; text-decoration: underline;">Saiba mais</a>.
+                </div>
+                <button id="btn-aceitar-cookies" class="btn-cookies">Aceitar</button>
+            </div>
+        </div>
+    </footer>
+
+</section>
+
+
+
+
+<div class="overlay" id="overlay"></div>
+
+<aside class="drawer" id="drawerCarrinho">
+
+  <div class="drawer-topo">
+    <div class="stepper" id="stepperPrincipal">
+      <div class="step completed">
+        <span class="dot"></span>
+        <span class="label">Carrinho</span>
+      </div>
+      <span class="line"></span>
+      <div class="step">
+        <span class="dot"></span>
+        <span class="label">Identificação</span>
+      </div>
+      <span class="line"></span>
+      <div class="step">
+        <span class="dot"></span>
+        <span class="label">Pagamento</span>
+      </div>
+      <span class="line"></span>
+      <div class="step">
+        <span class="dot"></span>
+        <span class="label">Finalizar</span>
+      </div>
+    </div>
+
+    <img src="assets/marca-x.png" alt="Fechar carrinho" id="btnFecharCarrinho" class="btn-fechar-carrinho" />
+  </div>
+
+  <div class="drawer-content">
+
+    <div id="etapaContainer">
+
+      <div id="etapaCarrinho" class="etapa">
+        <div class="bloco-produto">
+          <span class="pill">Encomenda</span>
+          <div class="card-produto">
+            <img id="cartImagemCorte" class="img-bolo" style="display: none;" />
+            <div class="descricao">
+              <p id="cartDescricao"></p>
+              <div class="badges">
+                <span>
+                  <img src="assets/peso.png" class="icon" />
+                  <span id="cartPeso"></span> kg
+                </span>
+                <span id="cartFormatoTextoCorte"></span>
+              </div>
+            </div>
+            <img src="assets/lixeira.png" class="lixeira" data-item="bolo" />
+          </div>
+        </div>
+
+        <div class="confirmacoes-container">
+            <div id="checkEmbalagem" class="box-opcao">
+                <span>✔ Sim, quero embalagem</span>
+                <img src="assets/lixeira.png" class="lixeira" data-item="embalagem" />
+            </div>
+
+            <div id="checkTopo" class="box-opcao">
+                <span>✔ Sim, quero topo</span>
+                <img src="assets/lixeira.png" class="lixeira" data-item="topo" />
+            </div>
+        </div>
+
+        <div class="observacao">
+          <span class="pill">Observação do pedido</span>
+          <textarea id="observacaoPedido" class="observacao-textarea" placeholder="Digite aqui a sua observação do seu pedido..."></textarea>
+        </div>
+
+        <div class="rodape">
+          <div class="rodape-linha">
+            <div class="peso-box">
+              <span class="titulo">Preferência de peso</span>
+              
+              <label class="radio" for="pesoExato">
+                <input type="radio" name="pesoPreferencia" id="pesoExato" value="Peso exato" /> 
+                Peso exato
+              </label>
+              
+              <label class="radio" for="pesoVariar">
+                <input type="radio" name="pesoPreferencia" id="pesoVariar" value="Pode variar" /> 
+                Pode variar
+              </label>
+            </div>
+            <div class="total-coluna">
+              <div class="total-card">
+                <span class="total-label">
+                  <img src="assets/coins.png" class="icon-small" /> Valor total
+                </span>
+                <strong id="valorTotalRodape">R$ 0,00</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="etapaIdentificacao" class="etapa hidden">
+        <div class="form-bloco floating">
+          <input type="text" id="nomeCliente" name="nomeCliente" placeholder=" " autocomplete="name" required>
+          <label for="nomeCliente">Nome completo *</label>
+        </div>
+
+        <div class="form-bloco floating">
+          <input type="tel" id="telefoneCliente" name="telefoneCliente" placeholder=" " maxlength="15" autocomplete="tel" required>
+          <label for="telefoneCliente">Telefone / Celular *</label>
+        </div>
+
+        <div class="form-bloco floating">
+            <input type="email" id="emailCliente" name="emailCliente" placeholder=" " autocomplete="email" required>
+            <label for="emailCliente">E-mail * (Para receber o comprovante)</label>
+        </div>
+        <div class="form-linha">
+          <div class="form-bloco">
+            <label for="dataPedido">Data de retirada</label> 
+            <input type="date" id="dataPedido" name="dataPedido" required />
+          </div>
+          <div class="form-bloco">
+            <label for="horarioPedido">Horário</label>
+            <select id="horarioPedido" name="horarioPedido" required>
+              <option value="">Selecione a data primeiro</option>
+            </select>
+          </div>
+        </div>
+        <div class="retirada-local">
+          <strong>Retirar no local</strong>
+          <div class="endereco-box">
+            O pedido deverá ser retirado em:<br />
+            Rua: Dos Cristais, 365 – Jardim Holanda, Uberlândia-MG.
+          </div>
+        </div>
+      </div>
+
+      <div id="etapaPagamento" class="etapa hidden">
+
+        <div class="titulo-pagamento-container">
+          <span class="btn-falso-titulo">Quanto deseja pagar agora?</span>
+        </div>
+
+        <div class="opcoes-valor" style="display: flex; gap: 10px; margin-bottom: 20px;">
+          <div id="btnPagar50" class="btn-valor" onclick="selecionarPorcentagem(0.5)">
+            <strong>50%</strong>
+            <span>Pagar entrada</span>
+        </div>
+        <div id="btnPagar100" class="btn-valor active" onclick="selecionarPorcentagem(1.0)">
+          <strong>100%</strong>
+          <span>Pagar total</span>
+        </div>
+      </div>
+
+        <div class="titulo-pagamento-container">
+          <span class="btn-falso-titulo">Forma de Pagamento</span>
+        </div>
+
+        <div class="opcoes-pagamento">
+          <div id="btnMetodoPix" class="btn-pagamento" onclick="escolherMetodo('pix')">
+            <img src="assets/pix.png" alt="Pix">
+            <span>Pix</span>
+          </div>
+          <div id="btnMetodoCartao" class="btn-pagamento" onclick="escolherMetodo('credit_card')">
+            <img src="assets/cartao.png" alt="Cartão">
+            <span>Cartão</span>
+          </div>
+        </div>
+
+        <div id="avisoPagamento" style="margin-top: 20px; text-align: center; color: #666; font-size: 14px;">
+          <p></p>
+        </div>
+      </div>  
+            
+
+      <div id="etapaFinalizar" class="etapa hidden">
+        <h3 class="titulo-etapa"></h3>
+
+        <div class="resumo-container">
+
+          <div class="bloco-resumo">
+            <span class="label-resumo">Informações do Cliente</span>
+            <div id="resumoNome" class="conteudo-resumo">---</div>
+          </div>
+
+          <div class="bloco-resumo">
+            <span class="label-resumo">Forma de Pagamento</span>
+            <div id="resumoPagamento" class="conteudo-resumo">---</div>
+          </div>
+          <div class="bloco-resumo">
+            <span class="label-resumo">Tipo</span>
+            <div class="conteudo-resumo">Retirar no local</div>
+          </div>
+          <div class="bloco-resumo">
+            <span class="label-resumo">Endereço para retirada</span>
+            <div class="conteudo-resumo">Rua: Dos Cristais, 365 – Jardim Holanda, Uberlândia-MG</div>
+          </div>
+
+          <div class="form-linha" style="gap: 10px;">
+            <div class="bloco-resumo" style="flex: 1;">
+              <span class="label-resumo"><i class="fas fa-calendar-alt"></i> Data da retirada</span>
+              <div id="resumoData" class="conteudo-resumo" style="font-size: 20px; font-weight: bold; margin-top: 5px;">---</div>
+            </div>
+            <div class="bloco-resumo" style="flex: 1;">
+              <span class="label-resumo"><i class="fas fa-clock"></i> Horário da retirada</span>
+              <div id="resumoHorario" class="conteudo-resumo" style="font-size: 20px; font-weight: bold; margin-top: 5px;">---</div>
+            </div>
+          </div>
+          <div class="bloco-resumo">
+            <span class="label-resumo"> Informações da Encomenda</span>
+            <div style="border-top: 1px dashed #C5DADB; margin: 10px 0;"></div>
+            <div id="resumoDescricao" class="conteudo-resumo">
+            </div>
+            <div style="border-top: 1px solid #eee; margin: 15px 0;"></div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+            <span style="color: #666;">Subtotal</span>
+            <span id="resumoSubtotal" style="color: #666;">R$ 0,00</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 18px;">
+            <span>Total</span>
+            <span id="resumoTotal" style="color: var(--marrom);">R$ 0,00</span>
+          </div>
+
+          <div id="blocoFaltaPagar" style="display: none; justify-content: space-between; color: #e91e63; font-size: 14px; margin-top: 5px;">
+              <span>Falta pagar (na retirada):</span>
+              <span id="resumoRestante">R$ 0,00</span>
+          </div>
+                   
+        </div>
+          
+      </div>
+
+      <div id="container-pagamento-mp" style="margin-top: 20px;">
+          <h3 style="text-align: center;">Finalize o pagamento abaixo:</h3>
+          <div id="paymentBrick_container"></div> 
+      </div>
+
+      <div id="pix-container" style="display: none; text-align: center; margin-top: 20px; padding: 20px; border: 2px dashed #783606; border-radius: 10px; background: #fdf5e6;">
+          <h4 style="color: #783606;">Escaneie o QR Code:</h4>
+          <img id="pix-qr-img" src="" alt="QR Code Pix" style="width: 220px; height: 220px; margin: 10px 0;" />
+          <p style="font-size: 12px; color: #666;">Ou copie o código abaixo:</p>
+          <textarea id="pix-copia-e-cola" readonly style="width: 100%; height: 70px; padding: 5px; font-size: 12px; border: 1px solid #ccc; border-radius: 5px;"></textarea>
+          <button onclick="copiarPix()" style="background: #783606; color: white; padding: 10px; border: none; border-radius: 5px; margin-top: 10px; cursor: pointer; width: 100%;">
+              Copiar Código Pix
+          </button>
+      </div>
+
+
+    </div> <div class="rodape-acoes">
+      <button id="btnVoltar" class="btn-secundario">Voltar</button>
+      <button id="btnAvancar" class="btn-principal">Avançar</button>
+    </div>
+
+  </div>
+</aside>
+
+
+
+<!-- SCRIPTS -->
+<script type="module" src="./js/main.js"></script>
+<script>
+function copiarPix() {
+    const textarea = document.getElementById("pix-copia-e-cola");
+    textarea.select();
+    document.execCommand("copy");
+    alert("Código Pix copiado!");
+}
+</script>
+<div id="mensagem-sucesso" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#783606; color:#eee; padding:15px; border-radius:10px; z-index:9999;"></div>
+
+</body>
+</html>
+
+
