@@ -112,8 +112,8 @@
 [data-pagina="doces"] #modeloCarousel {
     display: grid !important;
     grid-template-columns: repeat(3, 1fr) !important;
-    gap: 20px;
-    padding: 20px;
+    gap: 15px;
+    padding: 10px;
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
@@ -281,19 +281,30 @@
 
 /* Container de Botões de Formato (Quadrado/Redondo) */
 [data-pagina="corte"] .bolo-quadrado {
+ 
     display: flex;
+    flex-wrap: wrap; /* Permite quebrar linha se a tela for muito pequena */
+    gap: 10px;
     justify-content: center;
-    gap: 12px; 
     width: 100%;
-    max-width: 600px;
-    margin: 30px auto !important;
-    padding: 0 15px;
-    box-sizing: border-box;
-    margin-top: -40px; /* Espaço entre o texto lá de cima e os botões */
-    
-    
+    max-width: 800px;
+    margin: 0 auto;
+}
+[data-pagina="corte"] .bolo-quadrado {
+    display: flex;
+    gap: 25px; /* Espaço entre o botão Redondo, Quadrado e Coração */
+    justify-content: center;
+    flex-wrap: wrap; /* Para não quebrar em telas pequenas */
 }
 
+@media (max-width: 480px) {
+    [data-pagina="corte"] .bolo-quadrado {
+        margin-top: 30px !important;
+    }
+    [data-pagina="corte"] .bolo-quadrado {
+        gap: 10px; /* Diminui o espaço entre os botões para caberem melhor */
+    }
+}
 [data-pagina="corte"] .btn-corte {
     flex: 1;
     max-width: 280px;
@@ -369,15 +380,16 @@
 /* Card Individual de Bolo (O bloco lilás) */
 [data-pagina="corte"] .bolo-card {
    background-color: #CEC6DB !important;
-    padding: 12px;
-    border-radius: 18px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+   padding: 12px;
+   border-radius: 18px;
+   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     
     /* Mágica da centralização interna */
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Centraliza a imagem horizontalmente no lilás */
-    justify-content: center; /* Centraliza verticalmente se houver altura sobrando */
+   flex: 1;          /* Faz os dois cards dividirem o espaço igualmente */
+   max-width: 20%;   /* Garante que um não empurre o outro para fora */
+   display: flex;
+   flex-direction: column;
+   align-items: center;
 }
 
 /* 3. A Imagem */
@@ -401,10 +413,6 @@
         gap: 8px;
     }
     
-    [data-pagina="corte"] .bolo-card img {
-        width: 120px; /* Tamanho seguro para celulares pequenos */
-        height: 160px;
-    }
 }
 
 /* Ajuste para telas maiores (Desktop) */
@@ -463,14 +471,15 @@
   padding: 80px;
   line-height: 1.5;
   margin-top: -20px;
-  
+  padding-top: 20px !important;
+  padding-bottom: 5px !important;
   margin: 0 auto;  
 }
 
 .intro h1 {
   color: #783606;
   padding: 20px;
- 
+  margin-bottom: 10px !important;
   font-size: clamp(32px, 5vw, 60px);
   text-align: center;
 }
@@ -479,7 +488,8 @@
   color: #783606;
   font-size: 25px;
   position: relative;
- 
+  margin-bottom: 10px !important;
+  line-height: 1.4; /* Melhora a leitura sem espalhar muito */
   
 }
 

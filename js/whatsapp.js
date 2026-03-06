@@ -1,34 +1,45 @@
-function gerarMensagemWhatsCompleta(cliente, pedido, total, sinal) {
-  return `
-Olá, Dayane! 😊
 
-Gostaria de confirmar meu pedido:
+function gerarMensagemWhatsCompleta(pedido) {
+    const p = pedido;
+    const c = p.cliente;
+    const restante = p.valorTotal - p.pagamento.valorPago;
 
-👤 Cliente:
-Nome: ${cliente.nome}
-WhatsApp: ${cliente.whatsapp}
+    let msg = `Olá, Dayane! 😊 
+    Gostaria de confirmar meu pedido: *Pagamento Confirmado!*\n\n`;
+    msg += `👤 *CLIENTE:* ${c.nome}\n`;
+    msg += `📞 *WHATSAPP:* ${c.telefone}\n\n`;
+    
+    msg += `🎂 *DETALHES DO BOLO:*\n`;
+    msg += `• Modelo/Tema: ${p.modelo || 'Padrão da página'}\n`; // ADICIONADO
+    msg += `• Formato: ${p.formato}\n`;
+    msg += `• Peso: ${p.pesoKg}kg (${p.preferenciaPeso || 'Preferência não informada'})\n`; // ADICIONADO
+    msg += `• Massa: ${p.massa}\n`;
+    msg += `• Recheios: ${p.recheios.join(' e ')}\n`;
+    msg += `• Complemento: ${p.complemento || 'Nenhum'}\n\n`;
 
-🎂 Pedido:
-Tamanho: ${pedido.tamanho}
-Massa: ${pedido.massa}
-Recheios: ${pedido.recheios.join(', ')}
-Complementos: ${pedido.complementos.join(', ') || 'Nenhum'}
-Escrita no topo: ${pedido.escritaTopo ? 'Sim' : 'Não'}
-Retirada: ${document.getElementById("dataEntrega").value} após 17h
+    if (p.doces.length > 0) {
+        msg += `🍬 *DOCES:* ${p.doces.map(d => d.quantidade + 'x ' + d.nome).join(', ')}\n`;
+        msg += `🎨 *COR FORMINHAS:* ${p.corForminhas}\n\n`;
+    }
 
-💰 Valores:
-Valor total: R$ ${total}
-Sinal (50%): R$ ${sinal}
+    if (p.topo) {
+        msg += `🚩 *TOPO PERSONALIZADO:*\n`;
+        msg += `• Nome: ${p.nomeTopo} | Idade: ${p.idadeTopo}\n`;
+        msg += `• Obs Topo: ${p.obsTopo}\n\n`;
+    }
 
-Forma de pagamento:
-PIX (50% obrigatório para confirmar o pedido)
+    msg += `📅 *ENTREGA/RETIRADA:* ${c.data} às ${c.horario}\n`;
+    msg += `📍 *TIPO:* ${c.entrega}\n`;
+    msg += `💬 *OBS GERAL:* ${p.observacao || 'Nenhuma'}\n\n`;
 
-Estou ciente de que:
-✔️ Pedido é feito sob encomenda
-✔️ Não há cancelamento ou reembolso
+    msg += `💰 *FINANCEIRO:*\n`;
+    msg += `• Valor Total: R$ ${p.valorTotal.toFixed(2)}\n`;
+    msg += `• Sinal Pago: R$ ${p.pagamento.valorPago.toFixed(2)}\n`;
+    msg += `• *RESTANTE NA RETIRADA: R$ ${restante.toFixed(2)}*\n\n`; // DESTAQUE
+    
+    msg += `*Pedido confirmado e enviado para produção!* 💗`;
 
-Aguardo confirmação. Obrigada! 💕
-`;
+    return encodeURIComponent(msg);
 }
 
 

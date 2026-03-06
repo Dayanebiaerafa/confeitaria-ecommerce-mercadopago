@@ -1,6 +1,6 @@
-import { pedido, etapaAtual, setEtapaAtual, porcentagemPagamento, setMetodoSelecionado, metodoSelecionado, setPorcentagemPagamento } from './state.js';
+import { pedido, etapaAtual, setEtapaAtual, porcentagemPagamento, setMetodoSelecionado, metodoSelecionado, setPorcentagemPagamento, removerDoceDoPedido, salvarNoLocalStorage, excluirItemSacola } from './state.js';
 import { formatarDataBR, removerLoteDoce } from './utils.js';
-import { calcularTotal, atualizarTudo } from './calculate.js';
+import { calcularTotal, atualizarTudo, calcularValorApenasDesteBolo } from './calculate.js';
 
 
 // --- ELEMENTOS PRINCIPAIS ---
@@ -30,31 +30,24 @@ export const checkTermos = document.getElementById("checkTermos");
 =============================== */
 
 export function atualizarContadorSacola() {
-    // 1. Buscamos TODOS os badges de contador (caso tenha mais de um na página)
     const badges = document.querySelectorAll(".cart-count");
     if (badges.length === 0) return;
 
-    // 2. Calculamos o total (Doces unidades + Bolo como 1 item)
+    // 1. Soma os doces
     const totalDoces = (pedido.doces || []).reduce((acc, d) => acc + (d.qtd || 0), 0);
-    const temBolo = (pedido.pesoKg > 0) ? 1 : 0;
     
-    // IMPORTANTE: Para a página de doces, o cliente espera ver a quantidade de doces.
-    // Para a página de bolos, ele vê 1. A soma garante os dois.
-    const somaTotal = totalDoces + temBolo;
+    // 2. Soma os bolos que já foram "Adicionados à Sacola"
+    const totalBolosNaSacola = (pedido.itens || []).length;
+    
+    // 3. Verifica se tem um bolo sendo montado agora (antes de clicar em adicionar)
+    const temBoloSendoMontado = (pedido.pesoKg > 0 && pedido.massa) ? 1 : 0;
 
-    // 3. Atualizamos todos os badges encontrados
+    const somaTotal = totalDoces + totalBolosNaSacola + temBoloSendoMontado;
+
     badges.forEach(badge => {
         badge.innerText = somaTotal;
-        
-        if (somaTotal > 0) {
-            badge.style.setProperty('display', 'flex', 'important');
-            badge.style.background = "red";
-        } else {
-            badge.style.display = "none";
-        }
+        badge.style.display = somaTotal > 0 ? 'flex' : 'none';
     });
-
-    console.log("Sênior Log: Sacola atualizada para " + somaTotal);
 }
 
 export function abrirDrawer() {
@@ -88,90 +81,100 @@ export function fecharDrawer() {
 export function mostrarEtapa(index) {
     window.scrollTo(0, 0); 
 
-    // 1. Alterna as etapas (Isso define quem fica visível)
-    etapas.forEach((etapa, i) => {
-        if (etapa) etapa.classList.toggle("hidden", i !== index);
+    // 2. RESET DO SCROLL INTERNO (A solução para o seu problema)
+    // Procuramos a div que tem o scroll (geralmente .drawer-content)
+    const drawerContent = document.querySelector(".drawer-content");
+    if (drawerContent) {
+        drawerContent.scrollTop = 0; // Isso joga o scroll para o topo do formulário
+    }
+
+    // --- RESET DE SEGURANÇA (ETAPA 2) ---
+    if (index === 2) {
+        if (typeof intervaloPix !== 'undefined') clearInterval(intervaloPix);
+        
+        window.mpInstanciado = false; 
+        const brickContainer = document.getElementById("paymentBrick_container");
+        if (brickContainer) brickContainer.innerHTML = ""; 
+
+        
+        const containerMP = document.getElementById("container-pagamento-mp");
+        const pixContainer = document.getElementById("pix-container");
+        if (containerMP) containerMP.style.display = "block";
+        if (pixContainer) pixContainer.style.display = "none";
+    }
+
+    // 1. Alterna as etapas (Melhorado para garantir que o navegador veja a largura)
+    // Usamos um array fixo para garantir que nenhuma etapa fique esquecida
+    const listaEtapas = [
+        document.getElementById("etapaCarrinho"),
+        document.getElementById("etapaIdentificacao"),
+        document.getElementById("etapaPagamento"),
+        document.getElementById("etapaFinalizar")
+    ];
+
+    listaEtapas.forEach((etapa, i) => {
+        if (etapa) {
+            if (i === index) {
+                etapa.classList.remove("hidden");
+                etapa.style.display = "block"; // FORÇA o block para o Mercado Pago ler a largura
+            } else {
+                etapa.classList.add("hidden");
+                etapa.style.display = "none";
+            }
+        }
     });
 
-    // 2. Lógica específica para a Etapa de Pagamento (Index 3)
-    if (index === 3) { 
-        const etapaFinalizar = document.getElementById("etapaFinalizar");
-        if (etapaFinalizar) {
-            etapaFinalizar.classList.remove("hidden");
+    // 2. Lógica para a Etapa de Pagamento (Index 3)
+    if (index === 3) {
+        window.mpInstanciado = false; 
+
+        const pixContainer = document.getElementById("pix-container");
+        const containerMP = document.getElementById("container-pagamento-mp");
+        const brickC = document.getElementById("paymentBrick_container");
+
+        if (pixContainer) pixContainer.style.display = "none";
+        
+        if (containerMP) {
+            containerMP.style.display = "block";
+            if (brickC) brickC.innerHTML = ""; 
         }
-    // FUNÇÃO DE VERIFICAÇÃO SÊNIOR
-        const aguardarRenderizacao = () => {
-                const brickContainer = document.getElementById("paymentBrick_container");
-                
-                // 1. Verifica se o container existe e está visível
-                if (brickContainer && brickContainer.offsetWidth > 0) {
-                    
-                    // 2. TRAVA DE SEGURANÇA: Só inicializa se o container estiver vazio
-                    // Se já tiver "iframe" ou "mp-bricks", significa que já carregou.
-                    if (brickContainer.innerHTML.includes("iframe") || window.mpInstanciado) {
-                        console.log("Sênior Log: Mercado Pago já carregado, pulando...");
-                        return;
-                    }
 
-                    console.log("✅ Container pronto. Iniciando Mercado Pago...");
-                    
-                    // Marca que estamos instanciando para evitar duplicidade
-                    window.mpInstanciado = true; 
+        // Delay essencial para o container "existir" visualmente antes do script rodar
+        setTimeout(() => {
+            console.log("🛠️ Tentando carregar Checkout...");
+            if (typeof inicializarCheckoutTransparente === 'function') {
+                inicializarCheckoutTransparente();
+            }
+        }, 500); 
+    }
 
-                    if (typeof inicializarCheckoutTransparente === 'function') {
-                        inicializarCheckoutTransparente();
-                    } else {
-                        // Caso a função venha de um import
-                        import('./payment.js').then(m => m.inicializarCheckoutTransparente());
-                    }
-                } else {
-                    console.warn("⏳ Aguardando container...");
-                    setTimeout(aguardarRenderizacao, 200);
-                }
-            };
-    };
-    
-
+    // --- CONTROLE DOS BOTÕES (Sua lógica original mantida e protegida) ---
     const btnVoltar = document.getElementById("btnVoltar");
     const btnAvancar = document.getElementById("btnAvancar");
     const rodape = document.querySelector(".drawer-footer"); 
 
-    // 1. Lógica do Botão Voltar (Lado Esquerdo)
     if (btnVoltar) {
-        if (index === 0) {
-            btnVoltar.style.display = "none";
-        } else {
-            btnVoltar.style.display = "block";
-            btnVoltar.style.marginRight = "auto"; // Garante que ele fique na esquerda
-        }
+        btnVoltar.style.display = (index === 0) ? "none" : "block";
+        btnVoltar.style.marginRight = "auto";
     }
 
-    // 2. Lógica do Botão Avançar (Lado Direito)
     if (btnAvancar) {
-        // Na etapa 0, como não tem o botão Voltar, forçamos o Avançar para a direita
-        if (index === 0) {
-            btnAvancar.style.marginLeft = "auto"; 
-            btnAvancar.style.marginRight = "0";
-        } else {
-            // Nas outras etapas, o space-between do rodapé já resolve, 
-            // mas mantemos o margin-left auto por segurança.
-            btnAvancar.style.marginLeft = "auto";
-        }
+        // O botão avançar some na etapa 3 e 4 pois o Mercado Pago assume o controle
+        btnAvancar.style.display = (index >= 3) ? "none" : "block";
+        btnAvancar.style.marginLeft = "auto";
     }
 
-    // 3. Ajuste do Rodapé (Para garantir o alinhamento Flex)
+    // AQUI ESTÁ O QUE ESTAVA FALTANDO: Reativando seu rodapé
     if (rodape) {
         rodape.style.display = "flex";
         rodape.style.justifyContent = "space-between";
-        rodape.style.alignItems = "center";
     }
 
-    // Mantendo suas funções de estado e visual
+    // Atualiza estados visuais (Suas funções originais)
     setEtapaAtual(index); 
     atualizarStepper(index);
-
     if (typeof atualizarRodape === "function") {
-        atualizarRodape(index);
+        atualizarRodape(index); // Mantém a sincronização do rodapé
     }
 }
          
@@ -281,28 +284,27 @@ export function selecionarFormato(formato, event) {
     if (txtFormatoCorte) txtFormatoCorte.innerText = ` | ${formato}`;
 
 
-    // --- ATUALIZAÇÃO DA IMAGEM ---
-    const imgProduto = document.getElementById('cartImagemCorte');
-    if (imgProduto) {
-        // Define o caminho com base no formato selecionado
-        if (formato === 'Quadrado') {
-            imgProduto.src = 'assets/modelo/boloquadrado.jpeg';
-            imgProduto.alt = 'Bolo de Corte Quadrado';
-        } else if (formato === 'Redondo') {
-            imgProduto.src = 'assets/modelo/boloredondo.jpeg';
-            imgProduto.alt = 'Bolo de Corte Redondo';
-        } else if (formato === 'Coração') {
-            // Se tiver imagem de coração, coloque o caminho aqui
-            imgProduto.src = 'assets/modelo/bolocoracao.jpeg'; 
-        }
-        
-        // Garante que a imagem apareça (caso esteja com display: none)
-        imgProduto.style.display = 'block';
-    }
+   // FORMA CORRETA (Sênior):
+    let urlImagem = ""; 
 
+   if (formato === 'Quadrado') urlImagem = 'assets/modelo/boloquadrado.jpeg';
+   else if (formato === 'Redondo') urlImagem = 'assets/modelo/boloredondo.jpeg';
+   else if (formato === 'Coração') urlImagem = 'assets/modelo/bolocoracao.jpeg';
 
-    atualizarTudo();
-    
+   // 2º: Grava no objeto GLOBAL (Isso garante que o carrinho veja a foto)
+   pedido.formato = formato;
+   pedido.modeloImagem = urlImagem;
+   pedido.tipo = document.body.getAttribute('data-pagina') || 'corte';
+
+   // 3º: Atualiza a imagem da página (se o ID existir)
+   const imgProduto = document.getElementById('cartImagem');
+   if (imgProduto) {
+       imgProduto.src = urlImagem;
+       imgProduto.style.display = 'block';
+   }
+
+   // 4º: Força o carrinho a ler o novo 'pedido.modeloImagem'
+   atualizarDadosCarrinho();
 }
 
 
@@ -356,10 +358,14 @@ export function toggleTopo(selecionado, event) {
     const btn = event?.currentTarget || event?.target?.closest('.btn-eu-quero, .btn-opcao');
     if (!btn) return;
 
+
+    // PEGA A PÁGINA ATUAL PARA DEFINIR O TIPO DE TOPO
+    const paginaAtual = document.body.getAttribute('data-pagina');
+
     // 1. LÓGICA PARA DESMARCAR (Se clicar no que já está rosa)
     if (btn.classList.contains('ativo') || btn.classList.contains('active')) {
         pedido.topo = false;
-        btn.classList.remove('ativo', 'active');
+        pedido.topoTipo = "padrao";
         
         if (btn.classList.contains('btn-eu-quero')) {
             btn.innerText = "Eu quero";
@@ -394,6 +400,12 @@ export function toggleTopo(selecionado, event) {
             btn.classList.add('active');
         }
 
+        if (paginaAtual === "personalizado") {
+            pedido.topoTipo = "personalizado";
+        } else {
+            pedido.topoTipo = "padrao";
+        }
+
         const campos = document.getElementById('campos-topo');
         if (campos) campos.style.display = 'block';
     }
@@ -405,94 +417,183 @@ export function toggleTopo(selecionado, event) {
    RESUMO E ATUALIZAÇÃO DO CARRINHO
 =============================== */
 
-// No arquivo ui-updates.js - SUBSTITUA a função existente por esta:
-
 export function atualizarDadosCarrinho() {
+    // --- 1. MAPEAMENTO DE ELEMENTOS ---
     const imgBolo = document.getElementById('cartImagem');
     const descBolo = document.getElementById('cartDescricao');
-    const pesoBolo = document.getElementById('cartPeso');
-    const blocoBolo = document.querySelector('.bloco-produto'); 
+    const pesoSelect = document.getElementById('cartPeso');
+    const blocoBolo = document.getElementById('bloco-bolo-carrinho');
     const listaDocesContainer = document.getElementById('lista-doces-itens');
     const blocoDoces = document.getElementById('bloco-doces-carrinho');
     const blocoForminhas = document.getElementById('bloco-custom-doces');
-    const blocoPeso = document.getElementById('container-preferencia-peso');
+    const inputCorForminhas = document.getElementById('corForminhas');
+    const displayTotalRodape = document.getElementById('valorTotalRodape');
+    const containerItens = document.getElementById('itens-carrinho');
+    const checkEmbalagem = document.getElementById('checkEmbalagem');
+    const checkTopo = document.getElementById('checkTopo');
+    
 
-    // 2. Lógica de Visibilidade (Só mostra se houver dado)
-    const temBolo = (pedido.valorBolo > 0 || pedido.pesoKg > 0);
-    const temDoces = (pedido.doces && pedido.doces.length > 0);
+    const containerPreferencia = document.getElementById('container-preferencia-peso');
+    const sacolaVaziaMsg = document.getElementById('mensagem-sacola-vazia');
+    // --- 2. LÓGICA DE ESTADO ---
+    const temBoloAgora = pedido.pesoKg > 0; 
+   // --- 2. LÓGICA DE ESTADO AJUSTADA ---
+    const itensDocesDefinitivos = (pedido.itens || []).filter(item => item.tipo === 'doces');
+    const itensDocesRascunho = (pedido.doces || []);
 
-    // --- LÓGICA DO BOLO (Mantida original) ---
-    // 1. Ajuste do Bloco de Preferência de Peso
-    // 1. O Container Pai (que envolve os dois blocos) precisa ser Flex
-    // --- AJUSTE SÊNIOR: VISIBILIDADE SEM QUEBRAR O LAYOUT ---
-    // Removemos as manipulações de estilo manuais, pois o CSS já cuida disso.
-   // --- AJUSTE SÊNIOR: VISIBILIDADE E CENTRALIZAÇÃO TOTAL ---
-    if (blocoPeso) {
-        // Garantimos que o bloco de peso seja um container flex centralizado
-        blocoPeso.style.display = "flex";
-        blocoPeso.style.flexDirection = "column";
-        blocoPeso.style.justifyContent = "center"; // Centraliza vertical
-        blocoPeso.style.alignItems = "center";     // Centraliza horizontal
-        blocoPeso.style.textAlign = "center";
+    // Unimos os dois para garantir que o que foi clicado agora E o que já estava salvo apareçam
+    const itensDoces = [...itensDocesDefinitivos, ...itensDocesRascunho];
 
-        if (temBolo) {
-            blocoPeso.style.visibility = "visible";
-            blocoPeso.style.opacity = "1";
-            blocoPeso.style.pointerEvents = "auto";
-        } else {
-            blocoPeso.style.visibility = "hidden";
-            blocoPeso.style.opacity = "0";
-            blocoPeso.style.pointerEvents = "none";
+    const temDocesNaSacola = itensDoces.length > 0;
+    const temItensNaSacola = (pedido.itens && pedido.itens.length > 0);
+    const temRascunho = pedido.pesoKg > 0 && pedido.massa !== "";
+    // --- 3. ATUALIZAÇÃO DO BOLO ATUAL (O que está sendo montado) ---
+    // --- 3. RENDERIZAÇÃO DO RASCUNHO SÊNIOR ---
+    
+
+    // Controle do Bloco de Forminhas
+    if (blocoForminhas) {
+        blocoForminhas.style.display = temDocesNaSacola ? 'block' : 'none';
+        if (temDocesNaSacola && pedido.corForminhas) {
+            document.getElementById('corForminhas').value = pedido.corForminhas;
         }
     }
 
-    // Agora forçamos a centralização no Bloco de Valor Total (Card Azul)
-    const cardTotal = document.getElementById("totalFinalPedido")?.parentElement;
-    if (cardTotal) {
-        cardTotal.style.display = "flex";
-        cardTotal.style.flexDirection = "column";
-        cardTotal.style.justifyContent = "center"; // Centraliza vertical
-        cardTotal.style.alignItems = "center";     // Centraliza horizontal
-        cardTotal.style.textAlign = "center";
-    }
+    if (temRascunho) {
+        if (blocoBolo) {
+            blocoBolo.style.display = 'block'; 
 
-    // O cardTotal não precisa mais de ajustes via JS, 
-    // pois o CSS com flex: 40% já mantém ele no lugar.
-    if (blocoBolo) {
-        blocoBolo.style.display = temBolo ? 'flex' : 'none';
-        blocoBolo.style.flexShrink = "0"; // Também travamos o card do bolo
-    }
+            blocoBolo.innerHTML = `
+                <span class="pill" id="labelTipoBolo">Encomenda</span>
+                <div class="card-produto" style="background: #f0f7f7; padding: 10px; border-radius: 8px; display: flex; gap: 10px; position: relative; margin-top: 10px;">
+                    
+                    <img src="assets/lixeira.png" 
+                        onclick="excluirBoloRascunho()" 
+                        style="position: absolute; top: 10px; right: 10px; width: 18px; cursor: pointer; opacity: 0.6;">
 
+                    <img src="${pedido.modeloImagem && pedido.pesoKg > 0 ? pedido.modeloImagem : 'assets/LOGO.jpg'}" 
+                        style="width: 100px; height: 100px; object-fit: cover; border-radius: 5px;">
+                    
+                    <div style="flex: 1;">
+                        <div style="font-size: 13px; color: #333; padding-right: 20px;">
+                            • <b>Formato:</b> ${pedido.formato || '---'}<br>
+                            • <b>Massa:</b> ${pedido.massa || 'Selecione...'}<br>
+                            • <b>Recheios:</b> ${pedido.recheios?.length > 0 ? pedido.recheios.join(', ') : 'Selecione...'}
+                            ${pedido.complemento ? `<br>• <b>Comp.:</b> ${pedido.complemento}` : ''}
+                            
+                            ${pedido.nomeTopo || pedido.idadeTopo || pedido.obsTopo ? `
+                                <div style="margin-top: 5px; color: #783606;">
+                                    ✔ <b>Com Topo:</b><br>
+                                    <span style="margin-left: 10px;">• Nome: ${pedido.nomeTopo || '---'}</span><br>
+                                    <span style="margin-left: 10px;">• Idade: ${pedido.idadeTopo || '---'}</span><br>
+                                    <span style="margin-left: 10px;">• Obs: ${pedido.obsTopo || '---'}</span>
+                                </div>
+                            ` : ''}
 
+                            ${pedido.embalagem ? `<div style="color: #783606; margin-top: 3px;">✔ <b>Com Embalagem</b></div>` : ''}
+                        </div>
 
-    if (temBolo) {
-        if (imgBolo) {
-            imgBolo.src = pedido.modelo || 'assets/LOGO.jpg';
-            imgBolo.style.display = pedido.modelo ? "block" : "none";
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; border-top: 1px solid #ddd; padding-top: 5px;">
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <img src="assets/peso.png" style="width: 16px; height: 16px;">
+                                <span style="font-weight: bold; font-size: 13px;">${pedido.pesoKg} kg</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <img src="assets/coins.png" style="width: 16px; height: 16px;">
+                                <span style="font-weight: bold; color: #e91e63; font-size: 13px;">
+                                    R$ ${calcularValorApenasDesteBolo().toFixed(2).replace('.', ',')}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
-        if (descBolo) {
-            descBolo.innerHTML = `
-                <p style="font-size: 13px; color: #333; line-height: 1.6; margin: 0;">
-                    • <b>Formato:</b> ${pedido.formato || 'Redondo'}<br>
-                    • <b>Massa:</b> ${pedido.massa || 'Padrão'}<br>
-                    • <b>Recheio:</b> ${pedido.recheios.join(', ') || 'A definir'}
-                    ${pedido.complemento ? `<br>• <b>Comp.:</b> ${pedido.complemento}` : ''}
-                </p>`;
-        }
-        if (pesoBolo) pesoBolo.innerText = `${pedido.pesoKg} kg`;
+    } else {
+        if (blocoBolo) blocoBolo.style.display = 'none';
     }
 
-    // 3. Gerenciar Bloco de Doces (Cartões Azuis)
-    if (blocoDoces) blocoDoces.style.display = temDoces ? 'block' : 'none';
-    if (blocoForminhas) blocoForminhas.style.display = temDoces ? 'block' : 'none';
-
-    // 4. RENDERIZAÇÃO DOS CARDS AZUIS (DOCES)
-    if (listaDocesContainer) {
-        listaDocesContainer.innerHTML = ''; // Limpa para não duplicar
+    // --- 4. SACOLA (Múltiplos Bolos) ---
+    if (containerItens) {
+        containerItens.style.display = temItensNaSacola ? 'block' : 'none';
+        if (temItensNaSacola) {
+            let htmlSacola = `<span class="pill" style="margin-bottom: 10px; display: inline-block;">Encomendas na Sacola</span>`;
         
-        if (temDoces) {
-            pedido.doces.forEach((doce, index) => {
-                listaDocesContainer.innerHTML += `
+            htmlSacola += pedido.itens.map((item, idx) => `
+                
+                <div class="card-produto-sacola" style="background: #f9f9f9; border-radius: 12px; padding: 15px; margin-bottom: 15px; position: relative; border: 1px solid #eee;">
+                    
+
+                    <div style="display: flex; gap: 12px;">
+                        <img src="${item.modeloImagem}" style="width: 150px; height: 150px; object-fit: cover; border-radius: 8px;">
+
+                        <div style="flex: 1;">
+                            <div style="font-size: 13px; color: #333; line-height: 1.4;">
+                            <div style="font-weight: bold; color: #e91e63; margin-bottom: 8px; font-size: 14px; text-transform: uppercase;">
+                                ${item.titulo || 'Bolo'} 
+                            </div>
+                                
+                                • <b>Formato:</b> ${item.formato}<br>
+                                • <b>Massa:</b> ${item.massa}<br>
+                                • <b>Recheio:</b> ${item.recheios.join(', ')}<br>
+                                ${item.complemento ? `• <b>Complemento:</b> ${item.complemento}<br>` : ''}
+                                ${item.topo ? `
+                                    <div style="margin-top: 5px;">
+                                        <b style="color: #e91e63;">✔ Com Topo</b>
+                                        
+                                        ${(item.nomeTopo || item.idadeTopo || item.obsTopo) ? `
+                                            <div style="margin-top: 2px;">
+                                                <span style="margin-left: 10px; color: #333;">• <b>Nome:</b> ${item.nomeTopo || '---'}</span><br>
+                                                <span style="margin-left: 10px; color: #333;">• <b>Idade:</b> ${item.idadeTopo || '---'}</span><br>
+                                                <span style="margin-left: 10px; color: #333;">• <b>Obs:</b> ${item.obsTopo || '---'}</span>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                ` : ''}
+                                ${item.embalagem ? `<span style="color: #e91e63; "> <b>✔ Com Embalagem</b></span>` : ''}
+                            </div>
+
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; border-top: 1px dashed #ccc; padding-top: 10px;">
+                                <div style="display: flex; align-items: center; gap: 4px;">
+                                    <img src="assets/peso.png" style="width: 14px; height: 14px;"> 
+                                    <span style="font-weight: bold; font-size: 14px; color: #333;">${item.pesoKg} kg</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 4px;">
+                                    <img src="assets/coins.png" style="width: 14px; height: 14px;"> 
+                                    <span style="font-weight: bold; font-size: 16px; color: #e91e63;">R$ ${item.valorIndividual.toFixed(2).replace('.', ',')}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <img src="assets/lixeira.png" onclick="removerItemSacola(${idx})" 
+                        style="position: absolute; top: 10px; right: 10px; width: 20px; cursor: pointer; opacity: 0.6;">
+                </div>
+            `).join('');
+            containerItens.innerHTML = htmlSacola;
+        }
+    }
+    
+    // --- 5. LÓGICA DA PREFERÊNCIA DE PESO ---
+    // Importante: Mostrar se houver QUALQUER bolo (montando ou já salvo)
+    if (containerPreferencia) {
+        containerPreferencia.style.display = (temBoloAgora || temItensNaSacola) ? 'block' : 'none';
+    }
+
+    // --- 4. DOCES ---
+    // Renderização visual dos doces no Carrinho
+    if (blocoDoces && listaDocesContainer) {
+    // Usando a sua constante itensDoces que você já definiu no topo
+    if (itensDoces.length > 0) {
+        blocoDoces.style.display = 'block';
+        
+        listaDocesContainer.innerHTML = itensDoces.map((doce, index) => {
+            // Usando suas variáveis tratadas para evitar erro de undefined
+            const qtd = doce.qtd || 0;
+            const valorDoce = doce.valor || 0; // Use uma constante para o valor tratado
+            const nomeDoce = doce.nome || "Doce";
+
+            return `
                     <div class="doce-item-carrinho" style="
                         background-color: #C5DADB; 
                         color: #783606; 
@@ -520,133 +621,169 @@ export function atualizarDadosCarrinho() {
                                 alt="Remover">
                         </div>
                     </div>
+
                 `;
-                
-            });
+            }).join('');          
+        } else {
+            blocoDoces.style.display = 'none';
+            listaDocesContainer.innerHTML = '';
+        }
+    
+    }  
+
+    // Localize a parte que controla a visibilidade dos campos de texto do topo
+    // --- LÓGICA DO TOPO (DINÂMICA POR PÁGINA) ---
+    const paginaAtual = document.body.getAttribute('data-pagina');
+    const camposTopo = document.getElementById('campos-topo');
+    const detalhesContainer = document.getElementById('detalhes-topo-carrinho'); 
+    // ^ Removi a duplicata que causava o erro
+
+    if (camposTopo) {
+        // Regra: Somente aparece os inputs na página 'personalizado'
+        if (pedido.topo && paginaAtual === 'personalizado') {
+            camposTopo.style.display = 'block';
+        } else {
+            camposTopo.style.display = 'none';
         }
     }
-    
 
-
-
-    // 1. ATUALIZAÇÃO DO BOLO COM AJUSTES VISUAIS
-    if (pedido.pesoKg > 0) {
-        if (blocoBolo) {
-            blocoBolo.style.display = 'block';
+    if (detalhesContainer) {
+        // Lógica de exibição no resumo (Drawer/Sacola)
+        if (pedido.topo) {
+            detalhesContainer.style.display = 'block';
             
-            // GARANTIA DE ESPAÇAMENTO SÊNIOR:
-            // Forçamos o Flexbox no bloco pai para separar a Pill da Descrição
-            blocoBolo.style.display = 'flex';
-            blocoBolo.style.flexDirection = 'column';
-            blocoBolo.style.gap = '15px'; // Isso cria um espaço fixo entre a Pill e o Card
-        }
-        
-        // Localize onde você atualiza a imagem do carrinho
-        
-
-        if (imgBolo) {
-            if (pedido.modelo) {
-                imgBolo.src = pedido.modelo;
-                imgBolo.style.display = "block";
+            if (paginaAtual === 'bolo-corte' || paginaAtual === 'pedido') {
+                detalhesContainer.innerHTML = `<strong>Topo:</strong> Padrão Selecionado`;
+            } else if (pedido.nomeTopo || pedido.idadeTopo) {
+                detalhesContainer.innerHTML = `<strong>Para:</strong> ${pedido.nomeTopo} - ${pedido.idadeTopo} anos`;
             } else {
-                // Se não houver modelo, removemos o atributo src 
-                // e escondemos para evitar o ícone de "imagem quebrada"
-                imgBolo.removeAttribute('src');
-                imgBolo.style.display = "none";
+                detalhesContainer.innerHTML = `<strong>Topo:</strong> Selecionado`;
             }
-        }
-
-        // ATUALIZAÇÃO DA DESCRIÇÃO (Massa, Recheio, Complemento)
-        if (descBolo) {
-            descBolo.innerHTML = `
-                <p style="font-size: 13px; color: #333; line-height: 1.6; margin: 0;">
-                    • <b>Formato:</b> <span style="color: #000;">${pedido.formato || 'Redondo'}</span><br> • <b>Massa:</b> <span style="color: #000;">${pedido.massa || 'Padrão'}</span><br>
-                    • <b>Recheio:</b> <span style="color: #000;">${pedido.recheios.length > 0 ? pedido.recheios.join(', ') : 'A definir'}</span>
-                    ${pedido.complemento ? `<br>• <b>Complemento:</b> <span style="color: #000;">${pedido.complemento}</span>` : ''}
-                </p>`;
-        }
-        
-        // ATUALIZAÇÃO DO BADGE DE PESO (Onde estava o erro de sincronia)
-        if (pesoBolo) {
-            const containerBadge = pesoBolo.parentElement;
-            containerBadge.style.display = "flex";
-            containerBadge.style.alignItems = "center";
-            containerBadge.style.gap = "5px"; 
-            
-            // Aqui garantimos que o texto do peso venha do objeto 'pedido' atualizado
-            containerBadge.innerHTML = `
-                <img src="assets/peso.png" style="width: 16px; height: 16px; object-fit: contain;" />
-                <span id="cartPeso" style="color: #000; font-weight: bold;">${pedido.pesoKg} kg</span>
-            `;
-        
+        } else {
+            detalhesContainer.style.display = 'none';
         }
     }
 
+    // --- MENSAGEM VAZIA ---
+    if (sacolaVaziaMsg) {
+        const temDocesNoPedido = (pedido.doces && pedido.doces.length > 0) || (pedido.itens && pedido.itens.some(i => i.tipo === 'doces'));
+        const temItensNoPedido = (pedido.itens && pedido.itens.length > 0);
+        const temRascunhoNoPedido = (pedido.pesoKg > 0);
+
+        sacolaVaziaMsg.style.display = (!temDocesNoPedido && !temItensNoPedido && !temRascunhoNoPedido) ? 'block' : 'none';
+    }
+
+    // --- TOTAIS E RODAPÉ ---
+    const valorTotalFormatado = (pedido.valorTotal || 0).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
+
+    if (displayTotalRodape) { // Usei a variável que você mapeou no início da função
+        displayTotalRodape.innerText = valorTotalFormatado;
+    }
+
+    const idsDePagina = ["valorTotalCorte", "valorTotalPersonalizado", "valorTotalDoces", "valorTotalPedido"];
+    idsDePagina.forEach(id => {
+        const elemento = document.getElementById(id);
+        if (elemento) elemento.innerText = valorTotalFormatado;
+    });
     
+}
 
-    // 4. LÓGICA DO TOPO E EMBALAGEM (Com seus IDs originais)
-    const checkEmbalagem = document.getElementById('checkEmbalagem');
-    const checkTopo = document.getElementById('checkTopo');
-    const detalhesTopo = document.getElementById('detalhes-topo-carrinho');
-
-    // Mostra/Esconde Embalagem
-    if (checkEmbalagem) checkEmbalagem.style.display = pedido.embalagem ? 'flex' : 'none';
-
-    // Mostra/Esconde Topo e detalhes
-    if (pedido.topo && checkTopo) {
-        checkTopo.classList.add('visivel');
-        checkTopo.style.display = 'flex';
-        
-        // Pegamos os valores direto do objeto pedido (que já deve ter sido salvo pelos inputs)
-        const nome = pedido.nomeTopo || "---";
-        const idade = pedido.idadeTopo || "---";
-        const obs = pedido.obsTopo || "---";
-        
-        if (detalhesTopo) {
-            // Se houver qualquer informação, mostramos a div
-            detalhesTopo.style.display = 'block';
-            
-            // Montamos a lista com quebras de linha <br>
-            detalhesTopo.innerHTML = `
-                <hr style="border:0.5px solid #eee; margin:5px 0;">
-                - <b>Nome:</b> ${nome}<br>
-                - <b>Idade:</b> ${idade} anos<br>
-                - <b>Observação:</b> ${obs}`;
-        }
-    } else {
-        if (checkTopo) {
-            checkTopo.classList.remove('visivel');
-            checkTopo.style.display = 'none';
-        }
+export function confirmarBoloNoCarrinho() {
+    // 1. Validamos se o rascunho atual está completo
+    if (pedido.pesoKg <= 0 || !pedido.massa) {
+        alert("Selecione o peso e a massa antes de confirmar.");
+        return;
     }
+
+    // 2. Criamos um objeto independente para este bolo (Imutabilidade)
+    const boloFinalizado = {
+        id: Date.now(), // ID único para não dar erro na lixeira
+        formato: pedido.formato,
+        massa: pedido.massa,
+        recheios: [...pedido.recheios],
+        pesoKg: pedido.pesoKg,
+        modeloImagem: pedido.modeloImagem,
+        complemento: pedido.complemento,
+        valorIndividual: calcularValorApenasDesteBolo(),
+        tipo: pedido.tipo // Identifica se veio de 'corte' ou 'personalizado'
+    };
+
+    // 3. Adicionamos ao array de itens (Onde o map vai ler)
+    if (!pedido.itens) pedido.itens = [];
+    pedido.itens.push(boloFinalizado);
+
+    // 4. RESET SENIOR: Limpamos APENAS o rascunho, mantendo os adicionais globais (se desejar)
+    pedido.pesoKg = 0;
+    pedido.massa = "";
+    pedido.recheios = [];
+    pedido.modeloImagem = null;
+    pedido.complemento = "";
+    pedido.topo = false;
+    pedido.nomeTopo = ""; // Crucial: limpa o rascunho
+    pedido.idadeTopo = "";
+    pedido.obsTopo = "";
+    // Nota: pedido.itens continua intacto com os bolos anteriores!
+
+    // 5. Atualizamos a interface
+    // 5. Persistência
+    if (typeof salvarNoLocalStorage === "function") {
+        salvarNoLocalStorage();
+    }
+    atualizarTudo();
+    atualizarDadosCarrinho();
+}
+
+
+export function resetarBotoesVisualmente(tipo) {
+    const classesDestaque = ['ativo', 'active', 'selecionado'];
     
-    // Ajuste do Bloco de Valor Total
-    const campoTotal = document.getElementById("totalFinalPedido");
-    const containerTotal = campoTotal?.closest('.bloco-resumo-fixo') || campoTotal?.parentElement;
+    // Reset de Encomenda/Bolo (Seu código completo com seletores específicos)
+    if (tipo === 'encomenda' || tipo === 'bolo') {
+        const seletoresBolo = [
+            '.massa-item', '.recheio-item', '.btn-kg', 
+            '.complemento-box label', '.recheios-box label',
+            '.btn-corte', '.btn-opcao', '.card-modelo', '.btn-massa', '.btn-recheio'
+        ];
+        const itensBolo = document.querySelectorAll(seletoresBolo.join(', '));
+        limparElementos(itensBolo, classesDestaque, "Eu quero");
 
-    if (containerTotal) {
-        containerTotal.style.flexShrink = "0";   // IMPEDE de espremer o rodapé
-        containerTotal.style.minHeight = "100px"; // Altura fixa para o total
-        containerTotal.style.display = "flex";
-        containerTotal.style.flexDirection = "column";
-        containerTotal.style.justifyContent = "center";
+        const selects = ['pesoSelect', 'massaSelect', 'pesoSelect'];
+        selects.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = "";
+        });
     }
 
+    // Reset de Topo (Seus inputs e botões)
+    if (tipo === 'topo') {
+        const btnsTopo = document.querySelectorAll('#btn-topo-sim, #btn-topo-nao, .coluna-topo .btn-eu-quero');
+        limparElementos(btnsTopo, classesDestaque, "Eu quero");
+        ['topo-nome', 'topo-idade', 'topo-obs', 'nomeTopo', 'idadeTopo', 'obsTopo'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = "";
+        });
+    }
 }
 
 
 export function atualizarResumoFinal() {
     const tipoPg = document.body.getAttribute('data-pagina');
     
-    // 1. PRIMEIRO: Calculamos os valores base (Ingredientes)
+    // 1. PRIMEIRO: Calculamos os valores base
+    // Sênior Log: Somamos o rascunho atual + o que já está na sacola (pedido.itens)
     const valorBaseBolo = typeof calcularTotal === "function" ? calcularTotal(pedido, tipoPg) : 0;
     const valorApenasDoces = (pedido.doces || []).reduce((acc, d) => acc + (parseFloat(d.valor) || 0), 0);
-
     
-    // 2. SEGUNDO: Criamos o totalOriginal (A soma dos ingredientes)
-    const totalOriginal = valorBaseBolo + valorApenasDoces;
+    // NOVIDADE: Somar itens que já estão na sacola definitiva
+    const valorSacola = (pedido.itens || []).reduce((acc, item) => acc + (item.valorIndividual || 0), 0);
 
-    // 3. TERCEIRO: Agora que temos o total, calculamos o pagamento e o restante
+    // 2. SEGUNDO: Criamos o totalOriginal (Soma total de tudo)
+    const totalOriginal = valorBaseBolo + valorApenasDoces + valorSacola;
+
+    // 3. TERCEIRO: Calculamos o pagamento e o restante
     const valorPagarAgora = totalOriginal * (porcentagemPagamento || 1);
     const valorRestante = totalOriginal - valorPagarAgora;
     
@@ -672,13 +809,67 @@ export function atualizarResumoFinal() {
 
     // --- 2. BLOCO PRODUTOS (ENCOMENDA) ---
     let htmlProdutos = "";
-    if (pedido.pesoKg > 0) {
-        // AJUSTE: Adicionado Formato
-        if (pedido.formato) {
-            htmlProdutos += `• <b>Formato:</b> ${pedido.formato}<br>`;
-        }
+
+    if (pedido.itens && pedido.itens.length > 0) {
+        htmlProdutos += `<b>Itens na Sacola:</b><br><br>`;
         
-        htmlProdutos += `• <b>Peso:</b> ${pedido.pesoKg}kg<br>`;
+        pedido.itens.forEach((item) => {
+            // Agora usamos o item.titulo que salvamos na inclusão
+            htmlProdutos += `• <b>${item.titulo || 'Bolo'}</b><br>`;
+            htmlProdutos += `&nbsp;&nbsp;<b>Kg:</b> ${item.pesoKg}kg<br>`;
+            htmlProdutos += `&nbsp;&nbsp;<b>Formato:</b> ${item.formato || '---'}<br>`;
+            htmlProdutos += `&nbsp;&nbsp;<b>Massa:</b> ${item.massa || '---'}<br>`;
+            htmlProdutos += `&nbsp;&nbsp;<b>Recheio:</b> ${item.recheios?.join(', ') || '---'}<br>`;
+            htmlProdutos += `&nbsp;&nbsp;<b>Complemento:</b> ${item.complemento || '---'}<br>`;
+            
+            // Lógica de Topo
+            // ... dentro do loop de pedido.itens na função atualizarResumoFinal()
+
+            // BLOCO DO TOPO
+            if (item.topo) {
+                htmlProdutos += `&nbsp;&nbsp;<b>Topo:</b> Sim<br>`;
+                
+                // REGRA: Informações detalhadas APENAS para Bolo Personalizado
+                if (item.titulo === 'Bolo Personalizado') {
+                    const infoTopo = [];
+                    if (item.nomeTopo) infoTopo.push(item.nomeTopo);
+                    if (item.idadeTopo) infoTopo.push(`${item.idadeTopo} anos`);
+                    if (item.obsTopo) infoTopo.push(`Tema: ${item.obsTopo}`);
+                    
+                    if (infoTopo.length > 0) {
+                        htmlProdutos += `&nbsp;&nbsp;&nbsp;&nbsp;<i>${infoTopo.join(', ')}</i><br>`;
+                    }
+                }
+            }
+
+            // BLOCO DA OBSERVAÇÃO GERAL
+            if (item.observacao && item.observacao.trim() !== "") {
+                htmlProdutos += `&nbsp;&nbsp;<b>Obs:</b> ${item.observacao}<br>`;
+            }
+
+            htmlProdutos += `&nbsp;&nbsp;<b>Embalagem:</b> ${item.embalagem ? 'Sim' : 'Não'}<br>`;
+            htmlProdutos += `&nbsp;&nbsp;<b>Preferência:</b> ${item.preferenciaPeso || '---'}<br>`;
+            
+            
+            // Valor alinhado à direita
+            htmlProdutos += `<div style="text-align: right; font-weight: bold; margin-top: 5px;">${formatador.format(item.valorIndividual)}</div>`;
+            htmlProdutos += `<hr style="border: 0; border-top: 1px dashed #ccc; margin: 10px 0;">`;
+        });
+    }
+
+    if (pedido.pesoKg > 0) {
+        htmlProdutos += `<b>Bolo em montagem:</b><br>`;
+        // ... código existente (Formato, Peso, Preferência, Massa, etc)
+        
+        // AJUSTE: Topo (Lógica condicional preservada)
+        if (pedido.topo) {
+            htmlProdutos += `• <b>Topo:</b> Sim<br>`;
+            // Simplificamos a verificação para cobrir se houver dados de topo
+            if (tipoPg === 'personalizado' || pedido.nomeTopo) {
+                htmlProdutos += `&nbsp;&nbsp;&nbsp;&nbsp;- <b>Nome:</b> ${pedido.nomeTopo || '---'}<br>`;
+                htmlProdutos += `&nbsp;&nbsp;&nbsp;&nbsp;- <b>Idade:</b> ${pedido.idadeTopo || '---'} anos<br>`;
+            }
+        }
         
         // AJUSTE: Adicionada Preferência de Peso (Lógica do Select de preferência)
         // 1. Tenta pegar do objeto pedido
@@ -731,15 +922,22 @@ export function atualizarResumoFinal() {
     // Fazemos o agrupamento aqui para exibir um embaixo do outro no resumo
     if (pedido.doces && pedido.doces.length > 0) {
         const agrupados = pedido.doces.reduce((acc, d) => {
-            acc[d.nome] = (acc[d.nome] || 0) + d.qtd;
+            if (!acc[d.nome]) {
+                acc[d.nome] = { qtd: 0, valor: 0 };
+            }
+            acc[d.nome].qtd += d.qtd;
+            acc[d.nome].valor += (parseFloat(d.valor) || 0);
             return acc;
         }, {});
 
-        // Adicionamos ao htmlProdutos que vai para o resumoDescricao
-        htmlProdutos += `<br><b>Doces:</b><br>`;
-        Object.entries(agrupados).forEach(([nome, qtdTotal]) => {
-            htmlProdutos += `• ${qtdTotal} un. Docinho ${nome}<br>`;
+        htmlProdutos += `<b>Doces:</b><br>`;
+        Object.entries(agrupados).forEach(([nome, info]) => {
+            htmlProdutos += `<div style="display: flex; justify-content: space-between;">
+                <span>• ${info.qtd} un. Docinho ${nome}</span>
+                <span style="font-weight: bold;">${formatador.format(info.valor)}</span>
+            </div>`;
         });
+        htmlProdutos += `<hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0;">`;
     }
 
     const elDesc = document.getElementById("resumoDescricao");
@@ -772,7 +970,7 @@ export function atualizarResumoFinal() {
     const blocoFalta = document.getElementById("blocoFaltaPagar");
     const elRestante = document.getElementById("resumoRestante");
     
-    if (porcentagemPagamento === 0.5 && valorRestante > 0) {
+    if (porcentagemPagamento < 1 && valorRestante > 0) {
         if (blocoFalta) blocoFalta.style.display = "flex";
         if (elRestante) elRestante.innerText = formatador.format(valorRestante);
     } else {
@@ -780,10 +978,11 @@ export function atualizarResumoFinal() {
     }
 
 
-    const totalFinal = calcularTotalGeral();
+    
+    // Sincronização com o campo final do pedido
     const campoTotal = document.getElementById("totalFinalPedido"); 
     if (campoTotal) {
-        campoTotal.innerText = totalFinal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        campoTotal.innerText = formatador.format(totalOriginal);
     }
 
     // Data e Horário
@@ -798,9 +997,9 @@ export function atualizarResumoFinal() {
 
     // --- ACRESCENTE ESTE BLOCO AQUI (Final da função) ---
     // Usamos o valorPagarAgora que você já calculou no passo 3 da sua função
-    const elResumoTotal = document.getElementById("resumoTotal");
-    if (elResumoTotal) {
-        elResumoTotal.innerText = formatador.format(valorPagarAgora);
+    const elResumoTotalFinal = document.getElementById("resumoTotal");
+    if (elResumoTotalFinal) {
+        elResumoTotalFinal.innerText = formatador.format(valorPagarAgora);
     }
 
 }
@@ -823,6 +1022,14 @@ export function escolherMetodo(metodo) {
     const idAlvo = metodo === 'pix' ? 'btnMetodoPix' : 'btnMetodoCartao';
     const elemento = document.getElementById(idAlvo);
     if (elemento) elemento.classList.add('selected');
+
+    // Força a limpeza do container toda vez que o método é trocado
+    const container = document.getElementById("paymentBrick_container");
+    if (container) container.innerHTML = "";
+    window.mpInstanciado = false; 
+
+    // Destaca o botão selecionado (sua lógica visual)
+    atualizarVisualMetodo(metodo);
 }
 
 
@@ -887,66 +1094,6 @@ export function selecionarPorcentagem(valor) {
     
     // 3. Atualiza o valor total no resumo, se necessário
     if (typeof atualizarResumoFinal === "function") atualizarResumoFinal();
-}
-
-// Função para resetar visualmente todos os botões da página
-// Adicione ao final do seu arquivo ui-updates.js
-export function resetarBotoesVisualmente(tipo) {
-    const classesDestaque = ['ativo', 'active', 'selecionado'];
-    
-    // --- 1. CASO: EMBALAGEM (Global) ---
-    if (tipo === 'embalagem') {
-        const btns = document.querySelectorAll('.coluna-embalagem .btn-eu-quero, [data-tipo="embalagem"]');
-        limparElementos(btns, classesDestaque, "Eu quero");
-    }
-
-    // --- 2. CASO: TOPO (Diferencia Personalizado vs Pedido) ---
-    else if (tipo === 'topo') {
-        // Tenta limpar botões Sim/Não (Personalizado)
-        const btnsOpcao = document.querySelectorAll('#btn-topo-sim, #btn-topo-nao');
-        limparElementos(btnsOpcao, classesDestaque);
-
-        // Tenta limpar botões "Eu quero" (Pedido)
-        const btnsTopo = document.querySelectorAll('.coluna-topo .btn-eu-quero, [data-tipo="topo"]');
-        limparElementos(btnsTopo, classesDestaque, "Eu quero");
-
-        // Limpa inputs de texto do topo
-        ['topo-nome', 'topo-idade', 'topo-obs'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.value = "";
-        });
-    }
-
-    // --- 3. CASO: DOCES ---
-    else if (tipo === 'doce') {
-        const btnsDoces = document.querySelectorAll('.btn-eu-quero[data-tipo="doce"]');
-        limparElementos(btnsDoces, classesDestaque, "Pedir 25 un.");
-    }
-
-    // --- 4. CASO: ENCOMENDA (Bolo - Pedido, Corte, Personalizado) ---
-    else if (tipo === 'encomenda' || tipo === 'bolo') {
-        // Seletores comuns de todos os bolos
-        const seletoresBolo = [
-            '.massa-item', '.recheio-item', '.btn-kg', 
-            '.complemento-box label', '.recheios-box label',
-            '.btn-corte', // Para o bolo de corte (Redondo/Quadrado)
-            '[data-tipo="modelo"]' // Para a página de pedido
-        ];
-
-        const itensBolo = document.querySelectorAll(seletoresBolo.join(', '));
-        limparElementos(itensBolo, classesDestaque, "Eu quero");
-
-        // Reseta especificamente os selects
-        const selects = ['pesoSelect', 'massaSelect', 'pesoBolo'];
-        selects.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.value = "";
-        });
-
-        // Caso especial Bolo de Corte: Garante que o Redondo volte a ser o padrão ou limpe ambos
-        const btnCorte = document.querySelectorAll('.btn-corte');
-        btnCorte.forEach(b => b.classList.remove('active'));
-    }
 }
 
 // Função auxiliar para evitar repetição de código
@@ -1058,7 +1205,7 @@ export function excluirDoce(index) {
 // Dentro de ui-updates.js
 export function limparDescricoesCarrinho() {
     const descBolo = document.getElementById('cartDescricao');
-    const pesoBolo = document.getElementById('cartPeso');
+    const pesoSelect = document.getElementById('cartPeso');
     const imgBolo = document.getElementById('cartImagem');
     const campos = ['resumo-massa', 'resumo-recheio', 'resumo-peso', 'resumo-modelo'];
     campos.forEach(id => {
@@ -1067,7 +1214,7 @@ export function limparDescricoesCarrinho() {
     });
 
     if (descBolo) descBolo.innerHTML = ""; 
-    if (pesoBolo) pesoBolo.innerText = ""; 
+    if (pesoSelect) pesoSelect.innerText = ""; 
     
     if (imgBolo) {
         imgBolo.src = "";
@@ -1076,17 +1223,29 @@ export function limparDescricoesCarrinho() {
 }
 
 export function atualizarInterfaceDoces(botao, nomeDoce) {
-    if (!botao) {
+    // --- TRECHO NOVO: INVESTIGAÇÃO SÊNIOR ---
+    // Se a função for chamada sem nomeDoce, ela apenas tenta encontrar o container
+    if (!nomeDoce) {
+        console.log("🔍 Investigação: Função chamada no carregamento inicial.");
+        // Tente encontrar o container onde os cards ficam. 
+        // Se você souber o ID, substitua 'container-doces' pelo ID real abaixo:
+        const containerGeral = document.getElementById('container-doces'); 
+        console.log("🔍 O container de cards existe?", !!containerGeral);
+    }
+
+    // --- SUA REGRA ORIGINAL (MANTIDA) ---
+    if (!botao && nomeDoce) {
         botao = document.querySelector(`.btn-eu-quero[data-nome="${nomeDoce}"]`);
     }
     
+    // Proteção: Se não tem nome de doce e nem botão, para aqui para não dar erro de undefined
+    if (!nomeDoce) return;
+
     const doce = pedido.doces.find(d => d.nome === nomeDoce);
     const qtdTotal = doce ? doce.qtd : 0;
 
     if (botao) {
-        // Buscamos o container (o pai do botão) para inserir o botão de retirar depois dele
         const container = botao.parentElement;
-        // Tentamos encontrar um botão de retirar que já existe para não duplicar
         let btnRetirar = container.querySelector('.btn-remover-doce');
 
         if (qtdTotal > 0) {
@@ -1095,41 +1254,32 @@ export function atualizarInterfaceDoces(botao, nomeDoce) {
             botao.style.color = "#fff";
             botao.innerHTML = `
                 <div style="font-weight: bold;">${qtdTotal} unidades adicionadas</div>
-                <small style="display:block;  font-size: 11px; color: #fff; opacity: 1;">(${numLotes} lotes de 25)</small>
+                <small style="display:block; font-size: 11px; color: #fff; opacity: 1;">(${numLotes} lotes de 25)</small>
             `;
 
-            // Se o botão retirar não existe ainda, criamos ele EMBAIXO
             if (!btnRetirar) {
                 btnRetirar = document.createElement('button');
                 btnRetirar.type = 'button';
                 btnRetirar.className = 'btn-remover-doce';
                 btnRetirar.innerText = 'Retirar 25 un.';
-                
-                // CONFIGURAÇÃO DE CENTRALIZAÇÃO SÊNIOR
-                btnRetirar.style.display = 'block';   // Ocupa a linha toda como bloco
-                btnRetirar.style.width = '50%';       // Ajustei para 70% para caber melhor o texto
-                btnRetirar.style.marginLeft = 'auto';  // Empurra da esquerda para o centro
-                btnRetirar.style.marginRight = 'auto'; // Empurra da direita para o centro
-                btnRetirar.style.marginTop = '8px';    // Dá um respiro do botão de cima
+                btnRetirar.style.display = 'block';
+                btnRetirar.style.width = '50%';
+                btnRetirar.style.marginLeft = 'auto';
+                btnRetirar.style.marginRight = 'auto';
+                btnRetirar.style.marginTop = '8px';
 
-                // Configura o clique do retirar
                 btnRetirar.onclick = () => removerLote(nomeDoce, botao);
-                
                 container.appendChild(btnRetirar);
             }
-            
         } else {
-            // Se zerou, volta o botão principal ao normal
             botao.style.backgroundColor = "";
             botao.style.color = "";
             botao.innerHTML = "Pedir 25 un.";
-            
-            // E remove o botão retirar se ele existir
             if (btnRetirar) btnRetirar.remove();
         }
     }
 
-    // Atualizações de contadores e totais (MANTIDO)
+    // --- SEUS CONTADORES (MANTIDOS) ---
     const totalUnidadesGeral = (pedido.doces || []).reduce((acc, d) => acc + (d.qtd || 0), 0);
     const boxFixo = document.getElementById('contador-fixo-doces');
     const txtTotalFixo = document.getElementById('total-unidades-doces');
@@ -1143,7 +1293,6 @@ export function atualizarInterfaceDoces(botao, nomeDoce) {
     atualizarTudo(); 
 }
 
-
 // Função para o botão de "Retirar"
 // Adicione o 'export' na frente da função
 export function removerLote(nomeDoce, botaoOriginal) {
@@ -1152,6 +1301,11 @@ export function removerLote(nomeDoce, botaoOriginal) {
     if (index !== -1) {
         pedido.doces[index].qtd -= 25;
         
+        // --- ACRESCENTAR AQUI: Remove também da sacola visual ---
+        let idxSacola = pedido.itens.findIndex(i => i.tipo === 'doces' && i.nome === nomeDoce);
+        if (idxSacola !== -1) pedido.itens.splice(idxSacola, 1);
+        // -------------------------------------------------------
+
         if (pedido.doces[index].qtd <= 0) {
             pedido.doces.splice(index, 1);
         } else {
@@ -1159,27 +1313,40 @@ export function removerLote(nomeDoce, botaoOriginal) {
         }
     }
     
-    // IMPORTANTE: Se botaoOriginal for uma String (ID), precisamos converter para o elemento
     const btnElement = (typeof botaoOriginal === 'string') 
         ? document.querySelector(`[data-nome="${nomeDoce}"]`) 
         : botaoOriginal;
 
     atualizarInterfaceDoces(btnElement, nomeDoce);
+    atualizarDadosCarrinho(); // Força a sacola a atualizar
     atualizarTudo();
 }
 
 export function calcularTotalGeral() {
-    // 1. Valor do Bolo (se existir)
-    const valorBolo = pedido.valorBolo || 0;
+    // 1. Soma todos os BOLOS já salvos na sacola
+    const totalBolosConfirmados = pedido.itens.reduce((acc, item) => acc + (item.valorIndividual || 0), 0);
 
-    // 2. Valor dos Doces (Soma o campo .valor de cada item no array)
-    const valorDoces = (pedido.doces || []).reduce((acc, doce) => acc + (doce.valor || 0), 0);
+    // 2. Soma todos os DOCES salvos
+    const totalDoces = pedido.doces.reduce((acc, doce) => acc + (doce.valor || 0), 0);
 
-    // 3. Adicionais (Topo, Embalagem, etc - se você cobrar por eles)
-    const valorAdicionais = (pedido.topo ? (pedido.valorTopo || 0) : 0) + 
-                            (pedido.embalagem ? (pedido.valorEmbalagem || 0) : 0);
+    // 3. Soma o rascunho ATUAL (se ele tiver peso, significa que está sendo editado)
+    let temRascunho = 0;
+    if (pedido.pesoKg > 0) {
+        temRascunho = calcularValorApenasDesteBolo(); // sua função de cálculo unitário
+    }
 
-    return valorBolo + valorDoces + valorAdicionais;
+    // 4. Soma Adicionais Globais (Se você os cobrar fora do bolo)
+    const adicionais = (pedido.valorTopo || 0) + (pedido.valorEmbalagem || 0);
+
+    const totalFinal = totalBolosConfirmados + totalDoces + temRascunho + adicionais;
+
+    // Atualiza no HTML (procure o ID correto do seu campo de total)
+    const campoTotal = document.getElementById('valor-total-sacola');
+    if (campoTotal) {
+        campoTotal.innerText = `R$ ${totalFinal.toFixed(2).replace('.', ',')}`;
+    }
+
+    return totalFinal;
 }
 
 export function copiarPix() {
@@ -1188,3 +1355,166 @@ export function copiarPix() {
     navigator.clipboard.writeText(copyText.value);
     alert("Código PIX copiado!");
 }
+
+export function atualizarVisualMetodo(metodo) {
+    // Remove a classe 'selected' de todos os botões de pagamento
+    document.querySelectorAll('.btn-pagamento').forEach(btn => {
+        btn.classList.remove('selected');
+        btn.style.border = "1px solid #ddd"; // Cor padrão
+        btn.style.background = "white";
+    });
+
+    // Adiciona o destaque ao botão clicado
+    const idAlvo = metodo === 'pix' ? 'btnMetodoPix' : 'btnMetodoCartao';
+    const elemento = document.getElementById(idAlvo);
+    if (elemento) {
+        elemento.classList.add('selected');
+        elemento.style.border = "2px solid #783606"; // Cor da sua marca
+        elemento.style.background = "#fdf5e6"; // Fundo leve
+    }
+}
+
+export function adicionarBoloAoCarrinho() {
+    // 1. Validação de Segurança
+    if (pedido.pesoKg <= 0 || !pedido.massa) {
+        if (typeof mostrarNotificacao === "function") {
+            mostrarNotificacao("Selecione o peso e a massa antes de adicionar.");
+        }
+        return;
+    }
+    // --- NOVIDADE SÊNIOR: MAPEAMENTO DO TÍTULO ---
+    const paginaAtual = document.body.getAttribute('data-pagina');
+    const nomesCategorias = {
+        'personalizado': 'Bolo Personalizado',
+        'corte': 'Bolo de Corte',
+        'pedido': 'Bolos Clássicos',
+        'doces': 'Doces Tradicionais'
+    };
+    const tituloDefinido = nomesCategorias[paginaAtual] || 'Bolo';
+    
+    const obsGeral = document.getElementById("observacaoPedido")?.value.trim() || "";
+    const obsTopo = document.getElementById("topo-obs")?.value || "";
+    // 2. Sincroniza textos do topo (se houver a função)
+    if (typeof salvarDadosTopoNoPedido === "function") salvarDadosTopoNoPedido();
+
+    // 3. Criamos o Objeto IMUTÁVEL (Snapshot do momento)
+    const novoItem = {
+        id: Date.now(),
+        titulo: tituloDefinido, // <--- ADICIONADO AQUI
+        tipo: paginaAtual || 'bolo',
+        formato: pedido.formato || "Padrão",
+        massa: pedido.massa,
+        recheios: [...(pedido.recheios || [])],
+        pesoKg: pedido.pesoKg,
+        complemento: pedido.complemento || "",
+        modeloImagem: pedido.modeloImagem || 'assets/LOGO.jpg',
+        topo: pedido.topo || false,
+        topoTipo: pedido.topoTipo || "padrao",
+        nomeTopo: pedido.nomeTopo || "",
+        idadeTopo: pedido.idadeTopo || "",
+        obsTopo: obsTopo || "",
+        embalagem: pedido.embalagem || false,
+        preferenciaPeso: pedido.preferenciaPeso || "", // <--- IMPORTANTE SALVAR AQUI TAMBÉM
+        observacao: obsGeral, // Agora a observação entra no DNA do item salvo
+        valorIndividual: calcularValorApenasDesteBolo()
+    };
+
+    if (!pedido.itens) pedido.itens = [];
+    pedido.itens.push(novoItem);
+
+    if (document.getElementById("observacaoPedido")) document.getElementById("observacaoPedido").value = "";
+
+    // 5. O PULO DO GATO: Resetar o rascunho IMEDIATAMENTE
+    // Isso impede que a próxima página "herde" os dados do bolo anterior
+    pedido.massa = "";
+    pedido.recheios = [];
+    pedido.pesoKg = 0;
+    pedido.complemento = "";
+    pedido.modeloImagem = "";
+    pedido.modelo = null;
+    pedido.formato = "";
+    
+    // Reset de opcionais para o próximo bolo não vir com topo/embalagem do anterior
+    pedido.topo = false;
+    pedido.topoTipo = "padrao";
+    pedido.nomeTopo = "";
+    pedido.idadeTopo = "";
+    pedido.obsTopo = "";
+    pedido.embalagem = false;
+
+    // 6. RESET VISUAL (UI)
+    const camposTopo = document.getElementById('campos-topo');
+    if (camposTopo) camposTopo.style.display = 'none';
+
+    // Limpa inputs de texto
+    ['topo-nome', 'topo-idade', 'topo-obs'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = "";
+    });
+
+    // Reset de botões (Volta ao estado marrom/original)
+    document.querySelectorAll('.btn-eu-quero, .btn-opcao').forEach(btn => {
+        btn.classList.remove('ativo', 'selecionado', 'active');
+        if (btn.innerText.includes("✔")) btn.innerText = "Eu quero";
+        btn.style.backgroundColor = "";
+        btn.style.color = "";
+    });
+
+    // 7. Persistência e Atualização Global
+    if (typeof salvarNoLocalStorage === "function") salvarNoLocalStorage();
+    
+    atualizarTudo(); 
+    if (typeof abrirDrawer === "function") abrirDrawer();
+
+}
+
+export function inicializarEventosDoces() {
+    const botoesDoce = document.querySelectorAll('.btn-eu-quero[data-tipo="doce"]');
+    
+    botoesDoce.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const nome = btn.getAttribute('data-nome');
+            const precoUnid = parseFloat(btn.getAttribute('data-preco'));
+            const quantidade = 25; 
+            const subtotal = precoUnid * quantidade;
+
+            // --- NOVO: Alimenta o array de controle dos botões (pedido.doces) ---
+            if (!pedido.doces) pedido.doces = [];
+            let doceExistente = pedido.doces.find(d => d.nome === nome);
+            
+            if (doceExistente) {
+                doceExistente.qtd += quantidade;
+                doceExistente.valor = doceExistente.qtd * precoUnid;
+            } else {
+                pedido.doces.push({
+                    nome: nome,
+                    qtd: quantidade,
+                    precoUnit: precoUnid,
+                    valor: subtotal
+                });
+            }
+
+            // --- SEU CÓDIGO ORIGINAL (Mantido para a Sacola) ---
+            const novoDoce = {
+                tipo: 'doces',
+                nome: nome,
+                quantidade: quantidade,
+                valorIndividual: subtotal,
+                imagem: btn.closest('.bolo-card').querySelector('img').src
+            };
+
+            if (!pedido.itens) pedido.itens = [];
+            pedido.itens.push(novoDoce);
+
+            localStorage.setItem('carrinho_dayane', JSON.stringify(pedido));
+
+            // Atualiza o botão (para ficar rosa) e a sacola
+            atualizarInterfaceDoces(btn, nome); 
+            atualizarDadosCarrinho();
+            
+            if (typeof abrirDrawer === "function") abrirDrawer();
+            console.log(`✅ ${nome} adicionado!`);
+        });
+    });
+}
+

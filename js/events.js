@@ -1,8 +1,8 @@
 export let processandoClique = false;
 export let fluxoJaInicializado = false;
 // 1. UNIFICAÇÃO DE IMPORTS (Todos no topo, sem repetições)
-import { pedido, etapaAtual, metodoSelecionado } from './state.js';
-import { atualizarTudo } from './calculate.js';
+import { pedido, etapaAtual, adicionarDoceAoPedido, salvarNoLocalStorage } from './state.js';
+import { atualizarTudo } from './calculate.js'
 import { validarCarrinhoAntesDeAbrir } from './utils.js';
 import { 
     abrirDrawer, 
@@ -23,6 +23,7 @@ import {
     resetarBotoesVisualmente,
     limparDescricoesCarrinho,
     escolherMetodo,
+    adicionarBoloAoCarrinho,
     drawer,
     overlay
 } from './ui-updates.js';
@@ -37,12 +38,14 @@ export function inicializarEventosBase() {
         pedido.pesoKg = parseFloat(e.target.value) || null;
         atualizarTudo();
         atualizarDadosCarrinho();
+        salvarNoLocalStorage();
     });
 
     const massaSelect = document.getElementById("massaSelect");
     massaSelect?.addEventListener("change", () => {
         pedido.massa = massaSelect.value;
         atualizarTudo();
+        atualizarDadosCarrinho();
     });
 
     document.querySelectorAll('input[name="recheio"]').forEach(r => {
@@ -57,6 +60,7 @@ export function inicializarEventosBase() {
                 todos.forEach(el => el.disabled = false);
             }
             atualizarTudo();
+            atualizarDadosCarrinho();
         });
     });
 
@@ -72,6 +76,7 @@ export function inicializarEventosBase() {
                 todos.forEach(el => el.disabled = false);
             }
             atualizarTudo();
+            atualizarDadosCarrinho();
         });
     });
 }
@@ -81,7 +86,9 @@ export function inicializarEventosBotoes() {
     const botoes = document.querySelectorAll(".btn-eu-quero, .btn-opcao");
 
     botoes.forEach(btn => {
-        btn.addEventListener("click", function() {
+        btn.addEventListener("click", function(e) {
+            console.log("Clique detectado em:", e.target); 
+            e.stopPropagation();
             const tipo = this.getAttribute('data-tipo');
             const valorPersonalizado = this.innerText.trim().toLowerCase();
 
@@ -124,8 +131,11 @@ export function inicializarEventosBotoes() {
             }
 
             // --- 3. LÓGICA PARA SELECIONAR (Seleção Única para Bolos/Modelos) ---
+            // --- 3. LÓGICA PARA SELECIONAR (Seleção Única para Bolos/Modelos) ---
             if (tipo === "modelo" || tipo === "bolo" || tipo === "topo") {
-                const seletores = tipo === 'topo' ? '.btn-eu-quero[data-tipo="topo"]' : '[data-tipo="modelo"], [data-tipo="bolo"]';
+                // Busca todos os botões do mesmo tipo para resetar
+                const seletores = tipo === 'topo' ? '.btn-eu-quero[data-tipo="topo"]' : '.btn-eu-quero[data-tipo="modelo"], .btn-eu-quero[data-tipo="bolo"]';
+                
                 document.querySelectorAll(seletores).forEach(b => {
                     b.classList.remove("ativo", "selecionado");
                     b.innerText = "Eu quero";
@@ -133,23 +143,38 @@ export function inicializarEventosBotoes() {
                     b.style.color = "";
                 });
 
-                // Aplica o visual Selecionado (Rosa)
-                this.classList.add("ativo", "selecionado");
-                this.innerText = "✔ Selecionado";
-                this.style.backgroundColor = "#e91e63"; 
-                this.style.color = "#fff";
+                // Aplica o visual no botão clicado (e.currentTarget garante que pegamos o botão certo)
+                const botaoClicado = e.currentTarget;
+                botaoClicado.classList.add("ativo", "selecionado");
+                botaoClicado.innerText = "✔ Selecionado";
+                botaoClicado.style.backgroundColor = "#e91e63"; 
+                botaoClicado.style.color = "#fff";
+                
+                console.log("Visual atualizado: botão ficou rosa e texto mudou.");
             }
 
             // --- 4. CAPTURA DE DADOS ESPECÍFICOS ---
             if (tipo === "modelo" || tipo === "bolo") {
-                const img = this.closest(".bolo-card")?.querySelector("img") || this.closest(".topo-item")?.querySelector("img");
-                if(img) pedido.modelo = img.src;
+                // Buscamos a imagem do card onde o botão foi clicado
+                const card = this.closest(".bolo-card") || this.closest(".topo-item");
+                const img = card?.querySelector("img");
+                
+                if(img) {
+                    pedido.modelo = img.src;        // Mantém sua variável
+                    pedido.modeloImagem = img.src;  // ACRÉSCIMO SÊNIOR: Para renderizar na sacola
+                }
+
                 const pesoSel = document.getElementById("pesoSelect")?.value;
                 if (pesoSel) pedido.pesoKg = parseFloat(pesoSel);
-            } 
+
+                // Salvar imediatamente para não perder se mudar de página antes de "Avançar"
+                salvarNoLocalStorage(); 
+                atualizarDadosCarrinho();
+            }
             
             // --- LÓGICA DE DOCES (SOMA EM LOTES DE 25) ---
             else if (tipo === 'doce') {
+                e.stopImmediatePropagation();
                 const nomeDoce = this.getAttribute('data-nome');
                 const precoUnid = parseFloat(this.getAttribute('data-preco'));
                 
@@ -179,11 +204,12 @@ export function inicializarEventosBotoes() {
             }
 
             atualizarTudo();
+            salvarNoLocalStorage();
         });
     });
 
     // 1. Escuta o campo de peso manual
-    const campoPeso = document.getElementById("pesoBolo");
+    const campoPeso = document.getElementById("pesoSelect");
     if (campoPeso) {
         campoPeso.addEventListener("input", (e) => {
             pedido.pesoKg = parseFloat(e.target.value) || 0; 
@@ -203,9 +229,14 @@ export function inicializarEventosBotoes() {
     const btnFechar = document.getElementById('btn-fechar-pedido'); 
     if (btnFechar) {
         btnFechar.addEventListener('click', () => {
-            atualizarDadosCarrinho(); 
-            if (typeof atualizarContadorSacola === "function") atualizarContadorSacola();
-            mostrarNotificacao("Pedido adicionado à sacola!");
+            // Apenas executa a função que já criamos e validamos
+            adicionarBoloAoCarrinho();
+
+            // Atualiza a interface
+            if (typeof atualizarDadosCarrinho === "function") atualizarDadosCarrinho();
+            if (typeof abrirDrawer === "function") abrirDrawer();
+            
+            mostrarNotificacao("Bolo adicionado à sacola! 🎂");
         });
     }
 
@@ -218,6 +249,28 @@ export function inicializarEventosBotoes() {
                 atualizarResumoFinal();
             }
         });
+    });
+
+    // --- ACRÉSCIMO SÊNIOR: Escuta em tempo real dos campos de texto do topo ---
+    const camposTextoTopo = ['topo-nome', 'topo-idade', 'topo-obs'];
+    camposTextoTopo.forEach(id => {
+        const elemento = document.getElementById(id);
+        if (elemento) {
+            elemento.addEventListener('input', () => {
+                // Enquanto o usuário digita, já vamos salvando no rascunho
+                salvarDadosTopoNoPedido(); 
+                
+                // Se existir o campo de resumo na página de personalização, atualiza o texto lá
+                const resumo = document.getElementById('detalhes-topo-personalizado');
+                if (resumo) {
+                   resumo.innerHTML = `
+                        <strong>Topo para:</strong> ${pedido.nomeTopo || '...'} (${pedido.idadeTopo || '0'} anos)<br>
+                        ${pedido.obsTopo ? `<small><strong>Obs:</strong> ${pedido.obsTopo}</small>` : ''}
+                    `;
+                    resumo.style.display = (pedido.nomeTopo || pedido.idadeTopo || pedido.obsTopo) ? 'block' : 'none';
+                }
+            });
+        }
     });
 }
 
@@ -240,10 +293,28 @@ export function inicializarFluxoCarrinho() {
     if (btnConfirmar) {
         btnConfirmar.onclick = function() {
             if (!validarCarrinhoAntesDeAbrir()) return false;
-            atualizarDadosCarrinho();
-            mostrarNotificacao("Pedido adicionado com sucesso! 🎂");
-            atualizarContadorSacola();
+            
+            // Se for um bolo, adiciona ao carrinho antes de abrir
+            if (pedido.pesoKg > 0 && pedido.massa) {
+                adicionarBoloAoCarrinho({
+                    tipo: 'bolo',
+                    modelo: pedido.modelo,
+                    pesoKg: pedido.pesoKg,
+                    massa: pedido.massa,
+                    recheios: [...pedido.recheios],
+                    complemento: pedido.complemento,
+                    topo: pedido.topo,
+                    embalagem: pedido.embalagem,
+                    valorCalculado: pedido.valorTotal
+                });
+                resetarBotoesVisualmente('bolo');
+            }
+
             atualizarTudo();
+            atualizarDadosCarrinho();
+            mostrarNotificacao("Adicionado com sucesso! 🎂");
+            atualizarContadorSacola();
+            abrirDrawer();
         };
     }
 
@@ -271,17 +342,25 @@ export function inicializarFluxoCarrinho() {
 
     // --- 3. NAVEGAÇÃO AVANÇAR (VERSÃO AJUSTADA PARA NÃO DUPLICAR) ---
     if (btnAvancar) {
-        // Limpeza de eventos acumulados (Técnica do Clone)
         const novoBtnAvancar = btnAvancar.cloneNode(true);
         btnAvancar.parentNode.replaceChild(novoBtnAvancar, btnAvancar);
 
-        novoBtnAvancar.addEventListener("click", async () => {
+        novoBtnAvancar.addEventListener("click", (e) => {
+            // --- MANTER REGRA EXISTENTE: Proteção de Clique ---
             if (processandoClique) return; 
             processandoClique = true;
+            novoBtnAvancar.style.pointerEvents = 'none'; 
 
             console.log("DEBUG: Clique ÚNICO real. Etapa:", etapaAtual);
 
-            // ETAPA 1: Validação de Dados do Cliente
+            // --- ACRÉSCIMO SÊNIOR: Automação da Etapa 0 (Carrinho) ---
+            // Se o usuário está na tela inicial e existe um bolo configurado mas não adicionado
+            if (etapaAtual === 0 && pedido.pesoKg > 0) {
+                console.log("Sênior Log: Rascunho detectado. Salvando automaticamente...");
+                adicionarBoloAoCarrinho(); // Esta função deve limpar o rascunho e dar push no itens
+            }
+
+            // --- MANTER REGRA EXISTENTE: ETAPA 1 (Identificação) ---
             if (etapaAtual === 1) {
                 const nome = document.getElementById("nomeCliente")?.value.trim();
                 const tel = document.getElementById("telefoneCliente")?.value.trim();
@@ -290,28 +369,27 @@ export function inicializarFluxoCarrinho() {
                 const horario = document.getElementById("horarioPedido")?.value;
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-                // AJUSTE SÊNIOR: Liberar o clique em todos os alertas de erro
-                if (!nome || nome.length < 3) { processandoClique = false; return alert("⚠️ Digite seu nome."); }
-                if (!tel || tel.length < 10) { processandoClique = false; return alert("⚠️ Por favor, digite um telefone válido."); }
-                if (!email || !emailRegex.test(email)) { processandoClique = false; return alert("⚠️ Por favor, digite um e-mail válido."); }
-                if (!data) { processandoClique = false; return alert("⚠️ Por favor, selecione a data."); }
-                if (!horario) { processandoClique = false; return alert("⚠️ Por favor, selecione o horário."); }
+                if (!nome || nome.length < 3) { processandoClique = false; novoBtnAvancar.style.pointerEvents = 'auto'; return alert("⚠️ Digite seu nome."); }
+                if (!tel || tel.length < 10) { processandoClique = false; novoBtnAvancar.style.pointerEvents = 'auto'; return alert("⚠️ Por favor, digite um telefone válido."); }
+                if (!email || !emailRegex.test(email)) { processandoClique = false; novoBtnAvancar.style.pointerEvents = 'auto'; return alert("⚠️ Por favor, digite um e-mail válido."); }
+                if (!data) { processandoClique = false; novoBtnAvancar.style.pointerEvents = 'auto'; return alert("⚠️ Por favor, selecione a data."); }
+                if (!horario) { processandoClique = false; novoBtnAvancar.style.pointerEvents = 'auto'; return alert("⚠️ Por favor, selecione o horário."); }
 
-                // Salva no Estado
                 pedido.cliente = { nome, telefone: tel, email, data, horario };
                 console.log("Sênior Log: Dados salvos:", pedido.cliente);
             }
 
-            // ETAPA 2: Validação de Pagamento
+            // --- MANTER REGRA EXISTENTE: ETAPA 2 (Pagamento) ---
             if (etapaAtual === 2) {
                 const metodoReal = window.metodoSelecionado || metodoSelecionado;
                 if (!metodoReal) {
                     processandoClique = false; 
+                    novoBtnAvancar.style.pointerEvents = 'auto';
                     return alert("⚠️ Por favor, selecione uma forma de pagamento (Pix ou Cartão).");
                 }
             }
 
-            // MUDANÇA DE TELA
+            // --- MANTER REGRA EXISTENTE: MUDANÇA DE TELA ---
             if (etapaAtual < etapas.length - 1) {
                 const proxima = etapaAtual + 1;
                 
@@ -323,11 +401,11 @@ export function inicializarFluxoCarrinho() {
 
                 mostrarEtapa(proxima);
                 
-                // Libera o botão após a animação de transição
-                setTimeout(() => { processandoClique = false; }, 800);
-            } else {
-                processandoClique = false; // Garante liberação se chegar na última etapa
-            }
+                setTimeout(() => {
+                    processandoClique = false; // IMPORTANTE: Resetar a flag para o próximo clique
+                    novoBtnAvancar.style.pointerEvents = 'auto'; 
+                }, 500);
+            }    
         });
     }
 
@@ -369,34 +447,51 @@ export function inicializarEventosModais() {
     });
 }
 
+// ui-updates.js
+
+// Função para exibir o aviso de cookies ao entrar
 export function inicializarCookies() {
-    const caixaCookies = document.getElementById('caixa-cookies');
+    const caixa = document.getElementById('caixa-cookies');
     const btnAceitar = document.getElementById('btn-aceitar-cookies');
-    if (!caixaCookies || !btnAceitar) return;
-    if (localStorage.getItem('cookies_dayane_aceitos') === 'true') caixaCookies.style.display = 'none';
+    const btnFechar = document.getElementById('fechar-cookies');
 
-    btnAceitar.addEventListener('click', () => {
-        caixaCookies.style.opacity = '0';
-        setTimeout(() => { caixaCookies.style.display = 'none'; }, 500);
-        localStorage.setItem('cookies_dayane_aceitos', 'true');
-    });
+    // Verifica se o usuário já aceitou antes (para não incomodar sempre)
+    if (!localStorage.getItem('cookies_aceitos')) {
+        if (caixa) caixa.style.display = 'block';
+    }
+
+    if (btnAceitar) {
+        btnAceitar.onclick = () => {
+            localStorage.setItem('cookies_aceitos', 'true');
+            if (caixa) caixa.style.display = 'none';
+        };
+    }
+
+    if (btnFechar) {
+        btnFechar.onclick = () => {
+            if (caixa) caixa.style.display = 'none';
+        };
+    }
 }
-
 // Esta função lê os campos da tela e salva no objeto global
 export function salvarDadosTopoNoPedido() {
-    // Note que usei os IDs 'topo-nome', etc., que você definiu no forEach
     pedido.nomeTopo = document.getElementById('topo-nome')?.value || "";
     pedido.idadeTopo = document.getElementById('topo-idade')?.value || "";
     pedido.obsTopo = document.getElementById('topo-obs')?.value || "";
 }
 
+
+// Acrescente este bloco no final do seu events.js
 export function inicializarEventosInputTopo() {
-    ['topo-nome', 'topo-idade', 'topo-obs'].forEach(id => {
+    const campos = ['nomeTopo', 'idadeTopo', 'obsTopo'];
+    
+    campos.forEach(id => {
         const elemento = document.getElementById(id);
         if (elemento) {
-            elemento.addEventListener('input', () => {
-                salvarDadosTopoNoPedido(); // Primeiro salva o dado
-                atualizarDadosCarrinho();  // Depois atualiza a sacola/resumo
+            elemento.addEventListener('input', (e) => {
+                pedido[id] = e.target.value; // Salva direto no objeto pedido
+                salvarNoLocalStorage(); // Garante que não suma ao mudar de página
+                atualizarDadosCarrinho(); // Atualiza a descrição no carrinho em tempo real
             });
         }
     });
@@ -535,3 +630,27 @@ function gerarIntervalos(inicio, fim) {
     lista.push(`${horaFim}h às 19:00h`); 
     return lista;
 }
+
+
+
+// Expomos para o HTML (caso seu botão use onclick="clicarBotaoAdicionarDoce(...)")
+window.clicarBotaoAdicionarDoce = function(nome, quantidade, precoUnitario) {
+    const qtd = parseInt(quantidade);
+    
+    // Validação de segurança: Doces geralmente têm mínimo de 25
+    if (isNaN(qtd) || qtd < 25) {
+        alert("A quantidade mínima é de 25 unidades por sabor.");
+        return;
+    }
+
+    const novoDoce = {
+        nome: nome,
+        quantidade: qtd,
+        valor: parseFloat(qtd * precoUnitario)
+    };
+    
+    adicionarDoceAoPedido(novoDoce);
+    
+    // Opcional: Feedback visual de que foi adicionado
+    console.log(`Sucesso: ${qtd}x ${nome} adicionados ao pedido.`);
+};

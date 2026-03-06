@@ -80,15 +80,6 @@
 }
 
 
-
-/* Garante que o container alinhe os itens lado a lado */
-.confirmacoes {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 10px;
-}
-
 @media (max-width: 600px) {
   .btn-fechar-carrinho {
     width: 24px;
@@ -251,12 +242,18 @@
 /* =====================================================
    CONFIRMAÇÕES (Lado a Lado)
 ===================================================== */
-.confirmacoes {
-  display: flex;       /* Ativa o alinhamento em linha */
-  flex-direction: row; /* Garante que fiquem um ao lado do outro */
-  gap: 10px;           /* Espaço entre os dois blocos */
-  margin: 10px 0;      /* Distância dos blocos de cima e baixo */
-  width: 100%;         /* Ocupa a largura total do carrinho */
+/* VERSÃO UNIFICADA E CORRIGIDA */
+.confirmacoes-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;          /* Permite quebrar linha se o celular for pequeno */
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;                 /* Espaço entre os blocos rosa */
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 100%;
+    box-sizing: border-box;   /* Garante que o padding não estoure a largura */
 }
 
 .check-box {
@@ -928,14 +925,7 @@ textarea, #observacaoPedido, .textarea-box {
    RESUMO DE PERSONALIZADOS (NO CARRINHO)
 ===================================================== */
 
-.confirmacoes-container {
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-    width: 100%;
-    justify-content: space-between;
-    box-sizing: border-box;
-}
+
 
 .box-opcao {
     flex: 1;
@@ -1077,7 +1067,46 @@ textarea, #observacaoPedido, .textarea-box {
     width: 100%;
 }
 
+/* No seu arquivo CSS */
+#pix-container {
+    display: none; /* O JS vai mudar para flex */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%; /* Ocupa toda a largura disponível no drawer */
+    box-sizing: border-box; /* Garante que o padding não "estoure" a largura */
+    padding: 20px;
+    margin: 20px 0;
+    border: 2px dashed #783606;
+    border-radius: 12px;
+    background-color: #fdf5e6;
+}
 
+#pix-qr-img {
+    width: 200px; /* Tamanho fixo ideal para leitura */
+    height: 200px;
+    background-color: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
+    
+}
+
+#pix-copia-e-cola {
+    width: 100%; /* Ocupa toda a largura do container */
+    max-width: 100%; 
+    height: 80px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 11px;
+    background-color: #fff;
+    color: #333;
+    resize: none;
+    word-break: break-all; /* Quebra o código longo para não sair da caixa */
+    margin: 10px 0;
+}
 
 
 

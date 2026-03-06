@@ -337,6 +337,13 @@
     border: 3px solid #783606;
 }
 
+/* Ajuste do Preço (Cor Marrom e Espaço) */
+.info-bolo p {
+    color: #783606 !important; /* Sua cor marrom oficial */
+    margin: 5px 0; /* Espaço extra se o gap não for suficiente */
+    font-size: 16px;
+}
+
 .topo-item.embalagem {
     width: 100%;
     max-width: 200px; /* Limita a largura do card interno para não ficar largo demais */
@@ -437,10 +444,10 @@
 .intropreco h2 {
     font-size: 38px;
     color: #783606;
-    margin-bottom: 15px;
     text-align: left;
     font-weight: 700;
-    margin-bottom: 15;
+    margin-top: 5px !important;
+    margin-bottom: 15px !important;
 }
 
 .intropreco ul {

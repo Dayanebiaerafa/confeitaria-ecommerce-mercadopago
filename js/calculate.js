@@ -1,163 +1,204 @@
-import { pedido } from './state.js';
-import { atualizarDadosCarrinho } from './ui-updates.js';
+import { pedido, salvarNoLocalStorage } from "./state.js";
+import { atualizarContadorSacola } from "./ui-updates.js";
+import * as config from "./config.js"; // Importa tudo do config
 
-// ====== 1. CONSTANTES DE PREÇO ======
-// Usar constantes evita que você tenha que mudar o número em vários lugares depois
-const PRECO_POR_KG = 95;             
-const PRECO_CORTE = 90;              
-const PRECO_PERSONALIZADO = 105;     
-const VALOR_TOPO_PERSONALIZADO = 30;
-const VALOR_TOPO_PADRAO = 20;
-const PRECO_EMBALAGEM = 10;
-const ADICIONAL_NUTELLA_GELEIA = 20;
+// ====== 2. FUNÇÃO DE CÁLCULO TOTAL (Ajustada para não ignorar o bolo) ======
+export function calcularTotal(item, tipoPagina) {
+  let precoBaseKg = 0;
+  let totalGeral = 0; // Criada corretamente aqui (resolve o erro de undefined)
 
-// ====== 2. FUNÇÃO DE CÁLCULO TOTAL ======
-export function calcularTotal(p, tipoPagina) {
-    let total = 0;
-    
-    // Lógica para DOCES
-    // Se for página de doces, não calculamos peso de bolo
-    if (tipoPagina === 'doces') {
-        // Retornamos apenas adicionais fixos se houver (topo/embalagem)
-        // A soma dos doces em si será feita na atualizarTudo para evitar erro
-        if (p.topo) total += VALOR_TOPO_PADRAO;
-        if (p.embalagem) total += PRECO_EMBALAGEM;
-        return total;
+  // 1. DEFINIÇÃO DO PREÇO BASE (Bolo sendo montado)
+  if (tipoPagina === "corte") {
+    precoBaseKg = config.PRECO_CORTE;
+  } else if (tipoPagina === "personalizado") {
+    precoBaseKg = config.PRECO_PERSONALIZADO;
+  } else if (tipoPagina === "pedido") {
+    precoBaseKg = config.PRECO_POR_KG;
+  } else {
+    precoBaseKg = item.modelo ? config.PRECO_PERSONALIZADO : config.PRECO_CORTE;
+  }
+
+  // 2. CÁLCULO DO VALOR DESTE ITEM ESPECÍFICO
+  const peso = parseFloat(item.pesoKg) || 0;
+  let valorIndividualDesteItem = peso * precoBaseKg;
+
+  // Regra: Adicional Nutella/Geleia por KG
+  const temAdicional =
+    item.recheios?.some((r) => r.includes("Nutella")) ||
+    (item.complemento && item.complemento.includes("Geleia"));
+
+  if (temAdicional) {
+    valorIndividualDesteItem += config.ADICIONAL_NUTELLA_GELEIA * peso;
+  }
+
+  // Regra: Topos (NA FUNÇÃO calcularTotal)
+  if (item.topo) {
+    // Se o item JÁ TEM um topoTipo salvo (ex: "personalizado"), usamos ele.
+    // Se não tiver, verificamos a página.
+    const tipoDoTopo =
+      item.topoTipo ||
+      (tipoPagina === "personalizado" ? "personalizado" : "padrao");
+
+    valorIndividualDesteItem +=
+      tipoDoTopo === "personalizado"
+        ? config.VALOR_TOPO_PERSONALIZADO
+        : config.VALOR_TOPO_PADRAO;
+  }
+
+  // Regra: Embalagem
+  if (item.embalagem) valorIndividualDesteItem += config.PRECO_EMBALAGEM;
+
+  // --- AQUI VEM O PULO DO GATO DO SÊNIOR ---
+
+  // 3. SOMA DE TODOS OS ITENS DA SACOLA (Para o Rodapé)
+  // Somamos o que já está na sacola
+  pedido.itens.forEach((it) => {
+    totalGeral += it.valorIndividual || 0;
+  });
+
+  // Somamos o rascunho do bolo atual que ainda não "entrou" na sacola oficialmente
+  // apenas se ele tiver peso definido
+  if (peso > 0) {
+    totalGeral += valorIndividualDesteItem;
+  }
+
+  // Somamos os doces (caso ainda use o array separado)
+  if (pedido.doces) {
+    pedido.doces.forEach((doce) => {
+      totalGeral += doce.valor || 0;
+    });
+  }
+
+  // 4. ATUALIZAÇÃO DA INTERFACE
+  pedido.valorTotal = totalGeral;
+
+  const displayTotal = document.getElementById("valorTotalRodape");
+  if (displayTotal) {
+    displayTotal.innerText = `R$ ${totalGeral.toFixed(2).replace(".", ",")}`;
+  }
+
+  // Retornamos o valor do BOLO atual (para funções que precisam apenas do preço dele)
+  return valorIndividualDesteItem;
+}
+// ====== 3. ATUALIZAÇÃO DA INTERFACE ======
+// SUBSTITUA seu atualizarTudo por esta versão mais "Blindada"
+export function atualizarTudo() {
+  const paginaAtual = document.body.getAttribute("data-pagina");
+  const camposTopoHTML = document.getElementById("campos-topo");
+
+  if (camposTopoHTML) {
+    // Regra: Os inputs de NOME/IDADE só devem aparecer se:
+    // 1. O usuário clicou em "SIM" (pedido.topo === true)
+    // 2. A página atual é "personalizado"
+    if (pedido.topo && paginaAtual === "personalizado") {
+      camposTopoHTML.style.display = "block";
+    } else {
+      // Em qualquer outra página (como 'corte'), mesmo que pedido.topo seja true,
+      // escondemos os inputs de texto, pois o topo é padrão/simples.
+      camposTopoHTML.style.display = "none";
     }
+  }
+  // 2. REGRA SÊNIOR: Se não houver topo selecionado, limpamos os textos para não lixar o pedido
+  if (!pedido.topo) {
+    pedido.nomeTopo = "";
+    pedido.idadeTopo = "";
+    pedido.obsTopo = "";
+  }
 
-    // Lógica para BOLOS
-    let precoBaseKg = PRECO_POR_KG; 
-    if (tipoPagina === 'corte') {
-        precoBaseKg = PRECO_CORTE;
-    } else if (tipoPagina === 'personalizado') {
-        precoBaseKg = PRECO_PERSONALIZADO;
-    }
+  // 3. REGRA DE EXIBIÇÃO: Se estivermos em uma página que NÃO é a 'personalizado'
+  // mas o elemento de inputs do topo existir, escondemos ele se o seu sistema
+  // exigir que nome/idade seja só no personalizado.
+  const containerInputsTopo = document.getElementById("campos-topo");
+  if (containerInputsTopo && paginaAtual !== "personalizado") {
+  }
+  // 1. Calcula o valor do que o usuário está mexendo AGORA (Rascunho)
+  const valorRascunhoAtual =
+    pedido.pesoKg > 0 ? calcularValorApenasDesteBolo() : 0;
 
-    const peso = parseFloat(p.pesoKg) || 0;
+  // 2. Valor de quem JÁ ESTÁ na sacola
+  const totalSacola = (pedido.itens || []).reduce((acc, item) => {
+    return acc + (item.valorIndividual || 0);
+  }, 0);
 
-    // Cálculo do peso do Bolo
-    if (peso > 0) {
-        total += (peso * precoBaseKg);
-        
-        // Adicionais de Recheio (Nutella) - Multiplicado pelo peso
-        if (p.recheios && p.recheios.includes("Nutella")) {
-            total += (ADICIONAL_NUTELLA_GELEIA * peso);
-        }
-        
-        // Adicionais de Complemento (Geleias) - Multiplicado pelo peso
-        if (p.complemento && p.complemento.includes("Geleia")) {
-            total += (ADICIONAL_NUTELLA_GELEIA * peso);
-        }
-    }
+  // 3. Valor dos DOCES
+  const totalDoces = (pedido.doces || []).reduce(
+    (acc, d) => acc + (d.valor || 0),
+    0,
+  );
 
-    // Itens Fixos (Não multiplicam pelo peso)
-    if (p.topo) {
-        total += (tipoPagina === 'personalizado') ? VALOR_TOPO_PERSONALIZADO : VALOR_TOPO_PADRAO;
-    }
-    
-    if (p.embalagem) {
-        total += PRECO_EMBALAGEM;
-    }
+  // 4. SOMA FINAL: Rascunho + Sacola + Doces
+  pedido.valorTotal = valorRascunhoAtual + totalSacola + totalDoces;
 
-    return total;
+  // 5. Formatação
+  const totalFormatado = pedido.valorTotal.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+
+  // 6. Atualiza todos os IDs de preço na tela
+  const idsParaAtualizar = [
+    "valorTotalDoces",
+    "valorTotalPersonalizado",
+    "valorTotalCorte",
+    "valorTotalPedido",
+    "valorTotalRodape",
+    "valorTotalResumo",
+  ];
+
+  idsParaAtualizar.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.innerText = totalFormatado;
+  });
+
+  // 7. Sincronização e UI
+  salvarNoLocalStorage();
+  if (typeof atualizarContadorSacola === "function") atualizarContadorSacola();
+
+  // Chama a atualização visual do carrinho
+  import("./ui-updates.js").then((m) => {
+    if (m.atualizarDadosCarrinho) m.atualizarDadosCarrinho();
+  });
 }
 
-// ====== 3. ATUALIZAÇÃO DA INTERFACE ======
-export function atualizarTudo() {
-    const tipoPagina = document.body.getAttribute('data-pagina') || 'doces';
-    
-    const campoPeso = document.getElementById('pesoSelect') || document.getElementById('pesoBolo');
-    if (campoPeso) {
-        pedido.pesoKg = parseFloat(campoPeso.value) || 0;
+// Importe as constantes do seu arquivo de config
+// import { PRECO_POR_KG, PRECO_CORTE, PRECO_PERSONALIZADO, VALOR_TOPO_PERSONALIZADO, VALOR_TOPO_PADRAO, PRECO_EMBALAGEM, ADICIONAL_NUTELLA_GELEIA } from './config.js';
+
+export function calcularValorApenasDesteBolo() {
+  const peso = parseFloat(pedido.pesoKg) || 0;
+  const tipoPagina = document.body.getAttribute("data-pagina") || "pedido";
+
+  if (peso <= 0) return 0;
+
+  // 1. Preço Base
+  let precoKg = config.PRECO_POR_KG;
+  if (tipoPagina === "corte") precoKg = config.PRECO_CORTE;
+  if (tipoPagina === "personalizado") precoKg = config.PRECO_PERSONALIZADO;
+
+  // 2. Adicionais por KG (Sincronizado com a outra função)
+  const temEspecial = pedido.recheios?.some(
+    (r) =>
+      r.toLowerCase().includes("nutella") || r.toLowerCase().includes("geleia"),
+  );
+  if (temEspecial) precoKg += config.ADICIONAL_NUTELLA_GELEIA;
+
+  let totalBolo = peso * precoKg;
+
+  // 3. REGRA DO TOPO (Ajustada para nunca dar erro)
+  // 3. REGRA DO TOPO (Ajuste Exato)
+  if (pedido.topo) {
+    // Se a página for 'personalizado', cobra 30.
+    // Para QUALQUER outra (corte, pedido, etc), cobra 20.
+    if (tipoPagina === "personalizado") {
+      totalBolo += config.VALOR_TOPO_PERSONALIZADO; // 30
+      pedido.topoTipo = "personalizado"; // Sincroniza o estado
+    } else {
+      totalBolo += config.VALOR_TOPO_PADRAO; // 20
+      pedido.topoTipo = "padrao"; // Sincroniza o estado
     }
+  }
 
-    // 1. Pega o valor base (Bolo ou Adicionais)
-    const valorBase = calcularTotal(pedido, tipoPagina); 
+  // 4. Embalagem
+  if (pedido.embalagem) totalBolo += config.PRECO_EMBALAGEM;
 
-    // 2. Soma os doces
-    const valorApenasDoces = (pedido.doces || []).reduce((acc, d) => acc + (parseFloat(d.valor) || 0), 0);
-    
-    // 3. Valor Final Real
-    const valorFinal = valorBase + valorApenasDoces;
-    pedido.valorTotal = valorFinal;
-
-    const totalFormatado = valorFinal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-    // 4. Mapeamento correto para evitar o erro "is not defined"
-    const mapaIdsPagina = {
-        'doces': 'valorTotalDoces',
-        'personalizado': 'valorTotalPersonalizado',
-        'corte': 'valorTotalCorte',
-        'pedido': 'valorTotalPedido'
-    };
-
-    // 5. Atualização em massa de todos os campos de total conhecidos
-    const idsParaAtualizar = [
-        'valorTotalDoces', 
-        'valorTotalPersonalizado', 
-        'valorTotalCorte', 
-        'valorTotalPedido', 
-        'valorTotalRodape', 
-        'valorTotalResumo'
-    ];
-
-    idsParaAtualizar.forEach(id => {
-        const elemento = document.getElementById(id);
-        if (elemento) {
-            elemento.innerText = totalFormatado;
-        }
-    });
-
-
-    // 6. Atualiza o display específico da página atual (usando o nome correto da variável)
-    const idEspecifico = mapaIdsPagina[tipoPagina]; // Corrigido de mapaIds para mapaIdsPagina
-    if (idEspecifico) {
-        const displayPagina = document.getElementById(idEspecifico);
-        if (displayPagina) {
-            displayPagina.innerText = totalFormatado;
-        }
-    }
-
-
-    // No calculate.js, dentro de atualizarTudo:
-    const displayDrawer = document.getElementById('valorTotalRodape');
-    if (displayDrawer) {
-        displayDrawer.innerText = totalFormatado;
-        
-        // ACRESCENTAR: Isso garante que o valor vá para a direita independente do bloco de peso
-        const containerPai = displayDrawer.closest('.total-card');
-        if (containerPai) {
-            containerPai.parentElement.style.display = "flex";
-            containerPai.parentElement.style.justifyContent = "flex-end";
-            containerPai.parentElement.style.width = "100%";
-        }
-    }
-
-    // --- AJUSTE DO FALTA PAGAR ---
-    const displayFaltaPagar = document.getElementById('valorFaltaPagar'); // Verifique se este é o seu ID
-
-    if (displayFaltaPagar) {
-        // 1. Pegamos o valor total que já calculamos antes na função
-        const total = pedido.valorTotal || 0;
-
-        // 2. Pegamos o valor que o cliente já digitou no campo de "Valor Pago"
-        // Mantendo o ID que costuma estar no seu HTML
-        const inputJaPago = document.getElementById('valorPagoInput'); 
-        const jaPago = inputJaPago ? parseFloat(inputJaPago.value) || 0 : 0;
-
-        // 3. Cálculo sênior: total menos o que já foi pago
-        const faltaPagar = total - jaPago;
-
-        // 4. Exibição (Garante que não mostre números negativos)
-        const valorDisplay = faltaPagar > 0 ? faltaPagar : 0;
-        
-        displayFaltaPagar.innerText = valorDisplay.toLocaleString('pt-BR', { 
-            style: 'currency', 
-            currency: 'BRL' 
-        });
-    }
-    // 7. Sincroniza a Sacola e o Carrinho (Sem duplicar chamadas)
-    if (typeof atualizarContadorSacola === "function") {
-        atualizarContadorSacola();
-    }
+  return totalBolo;
 }

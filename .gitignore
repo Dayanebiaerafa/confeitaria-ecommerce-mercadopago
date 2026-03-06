@@ -13,3 +13,5 @@ desktop.ini
 # Segurança (caso use variáveis de ambiente no futuro)
 .env
 .env.*
+
+config.js

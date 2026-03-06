@@ -90,6 +90,7 @@ export function previewImagem(event) {
     const reader = new FileReader();
 
     reader.onload = function() {
+        // --- MANTER SUAS REGRAS VISUAIS ---
         const output = document.getElementById('preview-img');
         if(output) {
             output.src = reader.result;
@@ -103,6 +104,12 @@ export function previewImagem(event) {
             imgCart.src = reader.result;
             imgCart.style.display = 'block';
         }
+
+        // --- ACRÉSCIMO SÊNIOR: PERSISTÊNCIA ---
+        // Aqui conectamos o upload ao objeto que vai para a sacola
+        pedido.modeloImagem = reader.result; 
+        salvarNoLocalStorage();
+        atualizarDadosCarrinho(); 
     };
     
     if (file) reader.readAsDataURL(file);
