@@ -284,6 +284,7 @@ export function inicializarEventosBotoes() {
                 e.preventDefault(); // Impede que o link recarregue a página
                 e.stopPropagation(); // Impede que o clique "vaze" para o fundo
                 menuProdutos.classList.toggle('show');
+                console.log("Menu mobile alternado");
             }
         });
 
