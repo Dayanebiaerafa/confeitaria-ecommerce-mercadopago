@@ -42,6 +42,7 @@ import {
     inicializarEventosInputTopo,
     inicializarEventosRemocaoCarrinho,
     inicializarEventosSetas,
+    configurarDropdown,
     
 } from './events.js';
 
@@ -126,6 +127,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Inicializações Básicas
     configurarCalendario();
     aplicarMascaraTelefone();
+    configurarDropdown('btnProdutos', 'menuProdutos');
+    configurarDropdown('btnProdutosRodape', 'menuProdutosRodape');
     
     if (tipoPagina === 'personalizado') carregarPesosPersonalizados();
     if (tipoPagina === 'corte') selecionarFormato('Redondo');
@@ -197,6 +200,15 @@ document.addEventListener("DOMContentLoaded", () => {
             localStorage.setItem('carrinho_dayane', JSON.stringify(pedido));
         });
     }
+
+    // 2. Fecha se clicar fora (lógica centralizada aqui)
+    window.addEventListener('click', (event) => {
+        if (!event.target.matches('.dropbtn')) {
+            document.querySelectorAll('.dropdown-content').forEach(menu => {
+                menu.classList.remove('show');
+            });
+        }
+    });
     // SINCRONIZAÇÃO INICIAL (O pulo do gato)
     // Primeiro rodamos o atualizarTudo para processar o que veio do localStorage
     atualizarTudo(); 

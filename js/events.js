@@ -446,6 +446,22 @@ export function inicializarFluxoCarrinho() {
         };
     }
 }
+
+export function configurarDropdown(botaoId, menuId) {
+    const btn = document.getElementById(botaoId);
+    const menu = document.getElementById(menuId);
+
+    if (btn && menu) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation(); // Importante para não fechar sozinho no mobile
+            menu.classList.toggle('show');
+        });
+    }
+}
+
+    
+
 // --- MODAIS E COOKIES ---
 export function inicializarEventosModais() {
     document.getElementById("abrirModal")?.addEventListener("click", (e) => {
