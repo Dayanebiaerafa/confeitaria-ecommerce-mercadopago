@@ -272,6 +272,26 @@ export function inicializarEventosBotoes() {
             });
         }
     });
+
+    // Localize o botão de produtos pelo ID ou pela classe
+    const btnProdutos = document.querySelector('.dropbtn');
+    const menuProdutos = document.querySelector('.dropdown-content');
+
+    if (btnProdutos && menuProdutos) {
+        btnProdutos.addEventListener('click', function(e) {
+            // Apenas no mobile/tablet
+            if (window.innerWidth <= 768) {
+                e.preventDefault(); // Impede que o link recarregue a página
+                e.stopPropagation(); // Impede que o clique "vaze" para o fundo
+                menuProdutos.classList.toggle('show');
+            }
+        });
+
+        // Fecha o menu se o usuário clicar em qualquer outro lugar da tela
+        document.addEventListener('click', () => {
+            menuProdutos.classList.remove('show');
+        });
+    }
 }
 
 // --- FLUXO DO CARRINHO (Avançar, Voltar, Abrir/Fechar) ---

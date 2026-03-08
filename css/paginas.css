@@ -129,6 +129,8 @@
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     text-align: center;
+    justify-content: space-between; /* Empurra o botão sempre para o fim do card */
+    height: 100%; /* Garante que todos os cards da linha tenham o mesmo tamanho */
 }
 
 [data-pagina="doces"] .bolo-card img {
@@ -136,7 +138,7 @@
     height: 350px;
     object-fit: cover;
     border-radius: 18px;
-    margin-bottom: 20;
+    margin-bottom: 20px;
 }
 
 /* 1. Mantém as escritas juntas (espaçamento menor entre elas) */
@@ -151,7 +153,7 @@
 
 
 [data-pagina="doces"] .info-doce {
-    margin-top: 15px;    /* Garante espaço acima do bloco de texto */
+    margin-top: 10px;    /* Garante espaço acima do bloco de texto */
     margin-bottom: 5px; /* Aumentado para empurrar o botão bem para baixo */
     display: flex;
     flex-direction: column;
@@ -161,8 +163,14 @@
 /* Garante que os textos internos não tenham margens sozinhas que bagunçem o layout */
 [data-pagina="doces"] .info-doce small, 
 [data-pagina="doces"] .info-doce p {
-    margin: 5; 
-    padding: 5;
+    margin: 0px; 
+    padding: 0px;
+    line-height: 1.1;
+}
+
+/* Se quiser que o preço tenha um leve destaque mas continue grudado */
+[data-pagina="doces"] .info-doce p {
+    font-size: 1.1em;
 }
 
 /* 3. Ajuste no card para não deixar tudo colado na borda */
@@ -188,6 +196,10 @@
     display: block;
 }
 
+[data-pagina="doces"] .container-btn-doce {
+    margin-top: 5px; /* Controla a distância do bloco de texto para o botão */
+}
+
 [data-pagina="doces"] .btn-eu-quero:hover {
     transform: scale(1.05);
 }
@@ -196,12 +208,35 @@
 @media (max-width: 768px) {
     [data-pagina="doces"] #modeloCarousel {
         grid-template-columns: repeat(2, 1fr) !important;
-        gap: 10px;
-        padding: 10px;
+        gap: 8px; /* Reduzi levemente o espaço para ganhar área útil */
+        padding: 5px;
     }
     
+    [data-pagina="doces"] .bolo-card {
+        padding: 10px; /* Reduzi o padding interno para o card não ficar "gordo" */
+        padding-bottom: 15px; 
+    }
+
     [data-pagina="doces"] .bolo-card img {
-        height: 150px;
+        width: 100%;    /* Ocupa toda a largura do card */
+        height: 120px;  /* Altura ideal para 2 colunas no mobile */
+        border-radius: 10px; /* Bordas um pouco menos arredondadas para combinar com o card */
+    }
+
+    [data-pagina="doces"] .btn-eu-quero {
+        min-width: 100%; /* Botão ocupa toda a largura disponível no card */
+        font-size: 12px;  /* Fonte menor para não quebrar linha */
+        padding: 8px 5px;
+    }
+}
+
+@media (max-width: 768px) {
+    [data-pagina="doces"] .contador-lateral {
+        left: 50%; /* Centraliza exatamente no meio */
+        transform: translateX(-50%);
+        width: 80%; /* No mobile ele deve ser mais largo para ser lido */
+        bottom: 10px;
+        padding: 10px;
     }
 }
 

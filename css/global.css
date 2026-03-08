@@ -187,10 +187,35 @@ body {
     color: #783606;
 }
 
-.dropdown:hover .dropdown-content {
-    display: block;
+/* 1. Mantém o comportamento de passar o mouse apenas no Computador (Opcional) */
+@media (min-width: 769px) {
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
 }
 
+/* 2. Classe que o JavaScript vai ativar no Mobile */
+.dropdown-content.show {
+    display: block !important;
+    /* No rodapé, o menu deve abrir PARA CIMA */
+    top: auto !important; 
+    bottom: 100% !important; 
+    margin-bottom: 10px; /* Pequeno respiro do botão */
+    box-shadow: 0px -8px 16px rgba(0,0,0,0.1) !important;
+}
+
+/* 3. Ajuste de segurança para o Mobile */
+@media (max-width: 768px) {
+    .dropdown-content {
+        position: fixed !important; /* Fixa em relação à tela se necessário */
+        left: 50% !important;
+        transform: translateX(-50%); /* Centraliza o menu na tela do celular */
+        bottom: 70px !important; /* Ajuste conforme a altura do seu rodapé */
+        top: auto !important;
+        width: 90%; /* Ocupa quase a tela toda no celular, facilitando o toque */
+        max-width: 250px;
+    }
+}
 
 
 
