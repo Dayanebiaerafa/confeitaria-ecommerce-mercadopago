@@ -454,7 +454,13 @@ export function configurarDropdown(botaoId, menuId) {
     if (btn && menu) {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
-            e.stopPropagation(); // Importante para não fechar sozinho no mobile
+            e.stopPropagation(); 
+            
+            // Sênior: Fecha outros menus antes de abrir o atual
+            document.querySelectorAll('.dropdown-content').forEach(m => {
+                if (m !== menu) m.classList.remove('show');
+            });
+
             menu.classList.toggle('show');
         });
     }

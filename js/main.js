@@ -203,7 +203,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 2. Fecha se clicar fora (lógica centralizada aqui)
     window.addEventListener('click', (event) => {
+        console.log("Clique no body detectado em:", event.target);
         if (!event.target.matches('.dropbtn')) {
+            console.log("Fechando menus porque o clique não foi no botão");
+           
+        }
+    });
+
+    window.addEventListener('click', (event) => {
+        const éBotão = event.target.closest('.dropbtn');
+        if (!éBotão) {
             document.querySelectorAll('.dropdown-content').forEach(menu => {
                 menu.classList.remove('show');
             });
