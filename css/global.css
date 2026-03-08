@@ -197,32 +197,51 @@ body {
 /* 2. Classe que o JavaScript vai ativar no Mobile */
 .dropdown-content.show {
     display: block !important;
-    opacity: 1;
-    visibility: visible;
-     
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 999999 !important; /* Valor extremo para ficar por cima de tudo */
+    background-color: #FAD5DC !important; /* Cor sólida para não ficar transparente */
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.2) !important;
+}
+
+/* 1. Garante que o cabeçalho não corte o conteúdo que sai dele */
+.header, .header-content, .nav.menu {
+    overflow: visible !important;
 }
 
 /* 3. Ajuste de segurança para o Mobile */
 @media (max-width: 768px) {
-    /* Menu do TOPO (Cabeçalho) */
-    .header .dropdown-content {
-        position: absolute !important;
-        top: 100% !important; /* Abre para baixo */
-        bottom: auto !important;
-        left: 0 !important;
-        transform: none !important;
-        width: 200px;
+    /* Ajuste para o menu do Cabeçalho (abre para baixo) */
+    .header .dropdown-content.show {
+        display: block !important;
+        position: fixed !important; /* Mudar para FIXED faz ele flutuar sobre a tela toda, ignorando cortes do pai */
+        top: 80px !important; /* Ajuste essa altura para alinhar logo abaixo do seu cabeçalho rosa */
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 90% !important;
+        max-width: 280px !important;
+        z-index: 999999 !important;
+        background-color: #FAD5DC !important;
+        border-radius: 8px;
+        box-shadow: 0px 10px 25px rgba(0,0,0,0.2) !important;
+        padding: 10px 0 !important;
+    }
+    
+    /* Garante que os links dentro sejam visíveis */
+    .header .dropdown-content.show a {
+        display: block !important;
+        padding: 15px 20px !important;
+        color: #783606 !important;
+        border-bottom: 1px solid #f0f0f0;
     }
 
-    /* Menu do RODAPÉ */
-    .rodape .dropdown-content {
+    /* Ajuste para o menu do Rodapé (abre para cima) */
+    .rodape .dropdown-content.show {
         position: absolute !important;
-        bottom: 100% !important; /* Abre para cima */
+        bottom: 100% !important;
         top: auto !important;
         left: 50% !important;
         transform: translateX(-50%) !important;
-        width: 90%;
-        max-width: 250px;
         margin-bottom: 10px;
     }
 }

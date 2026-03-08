@@ -42,7 +42,7 @@ import {
     inicializarEventosInputTopo,
     inicializarEventosRemocaoCarrinho,
     inicializarEventosSetas,
-    configurarDropdown,
+    
     
 } from './events.js';
 
@@ -127,8 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Inicializações Básicas
     configurarCalendario();
     aplicarMascaraTelefone();
-    configurarDropdown('btnProdutos', 'menuProdutos');
-    configurarDropdown('btnProdutosRodape', 'menuProdutosRodape');
+   
     
     if (tipoPagina === 'personalizado') carregarPesosPersonalizados();
     if (tipoPagina === 'corte') selecionarFormato('Redondo');
@@ -201,23 +200,15 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // 2. Fecha se clicar fora (lógica centralizada aqui)
     window.addEventListener('click', (event) => {
-        console.log("Clique no body detectado em:", event.target);
-        if (!event.target.matches('.dropbtn')) {
-            console.log("Fechando menus porque o clique não foi no botão");
-           
-        }
-    });
-
-    window.addEventListener('click', (event) => {
-        const éBotão = event.target.closest('.dropbtn');
-        if (!éBotão) {
+    // Só fecha se o clique NÃO for no botão e NÃO for dentro do menu
+        if (!event.target.closest('.dropbtn') && !event.target.closest('.dropdown-content')) {
             document.querySelectorAll('.dropdown-content').forEach(menu => {
                 menu.classList.remove('show');
             });
         }
     });
+
     // SINCRONIZAÇÃO INICIAL (O pulo do gato)
     // Primeiro rodamos o atualizarTudo para processar o que veio do localStorage
     atualizarTudo(); 

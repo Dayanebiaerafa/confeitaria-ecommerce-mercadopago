@@ -274,25 +274,29 @@ export function inicializarEventosBotoes() {
     });
 
     // Localize o botão de produtos pelo ID ou pela classe
-    const btnProdutos = document.querySelector('.dropbtn');
-    const menuProdutos = document.querySelector('.dropdown-content');
+    const botoesDropdown = document.querySelectorAll('.dropbtn');
 
-    if (btnProdutos && menuProdutos) {
-        btnProdutos.addEventListener('click', function(e) {
-            // Apenas no mobile/tablet
+    botoesDropdown.forEach(btn => {
+        btn.onclick = function(e) {
             if (window.innerWidth <= 768) {
-                e.preventDefault(); // Impede que o link recarregue a página
-                e.stopPropagation(); // Impede que o clique "vaze" para o fundo
-                menuProdutos.classList.toggle('show');
-                console.log("Menu mobile alternado");
-            }
-        });
+                e.preventDefault();
+                e.stopPropagation(); // Impede o fechamento imediato pelo clique na window
 
-        // Fecha o menu se o usuário clicar em qualquer outro lugar da tela
-        document.addEventListener('click', () => {
-            menuProdutos.classList.remove('show');
-        });
-    }
+                const pai = this.closest('.dropdown');
+                const menu = pai.querySelector('.dropdown-content');
+
+                if (menu) {
+                    // Fecha outros menus abertos antes de abrir este
+                    document.querySelectorAll('.dropdown-content').forEach(m => {
+                        if (m !== menu) m.classList.remove('show');
+                    });
+
+                    menu.classList.toggle('show');
+                    console.log("Menu alternado com sucesso!");
+                }
+            }
+        };
+    });
 }
 
 // --- FLUXO DO CARRINHO (Avançar, Voltar, Abrir/Fechar) ---
@@ -448,20 +452,29 @@ export function inicializarFluxoCarrinho() {
 }
 
 export function configurarDropdown(botaoId, menuId) {
-    const btn = document.getElementById(botaoId);
-    const menu = document.getElementById(menuId);
+   const btnProdutos = document.querySelector('.dropbtn');
 
-    if (btn && menu) {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation(); 
-            
-            // Sênior: Fecha outros menus antes de abrir o atual
-            document.querySelectorAll('.dropdown-content').forEach(m => {
-                if (m !== menu) m.classList.remove('show');
-            });
+if (btnProdutos) {
+    // Removemos qualquer ouvinte antigo para evitar duplicados
+    btnProdutos.replaceWith(btnProdutos.cloneNode(true));
+        const novoBtn = document.querySelector('.dropbtn');
 
-            menu.classList.toggle('show');
+        novoBtn.addEventListener('click', function(e) {
+            if (window.innerWidth <= 768) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                // Sênior: Buscamos o menu que está DENTRO do mesmo pai do botão clicado
+                const menuApropriado = this.parentElement.querySelector('.dropdown-content');
+                
+                if (menuApropriado) {
+                    menuApropriado.classList.toggle('show');
+                    console.log("Classe 'show' aplicada ao menu:", menuApropriado);
+                    console.log("Total de menus abertos:", document.querySelectorAll('.dropdown-content.show').length);
+                } else {
+                    console.error("ERRO: O botão foi clicado, mas não encontrei o .dropdown-content ao lado dele!");
+                }
+            }
         });
     }
 }
