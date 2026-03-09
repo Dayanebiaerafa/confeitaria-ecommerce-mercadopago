@@ -3,18 +3,12 @@
    ============================================================ */
  /* BANNER DAS PAGINAS*/
  
-.hero img {
+   .hero img {
   width: 100%;
   max-height: 380px;
   object-fit: cover;
   display: block;
-}
-
-@media (max-width: 768px) {
-    .hero img {
-        /* Se quiser que o banner seja menor no celular */
-        max-height: 250px; 
-    }
+  
 }
 
 /* ===== EXCLUSIVO: CARROSSEL DA PÁGINA DE PEDIDO ===== */
@@ -307,29 +301,37 @@
 
 /* Banner Hero */
 [data-pagina="corte"] .hero-corte {
-    width: 100% !important;
-    max-width: 100%;
-    height: 480px;
-    margin: 0 auto;
-    position: relative;
+    width: 100%;
+    height: 450px; /* A altura que você deseja */
     overflow: hidden;
-    line-height: 0;
+    position: relative;
+    display: flex; /* Garante que o conteúdo se alinhe melhor */
+    align-items: center;
+    justify-content: center;
+    
+
 }
 
 [data-pagina="corte"] .hero-corte img {
+   /* FORÇA a imagem a ocupar 100% do novo espaço da section */
     width: 100%;
-    height: auto; /* Mantém a proporção da logo/banner */
-    display: block;
-    object-fit: cover;
+    height: 100%; 
+    
+    /* O 'cover' faz a imagem crescer e preencher tudo, */
+    /* eliminando a barra rosa lateral ou inferior. */
+    object-fit: cover; 
+    
+    /* Mantém o foco no meio do bolo */
+    object-position: center;
 }
 
+/* Ajuste Mobile para Corte */
 @media (max-width: 768px) {
     [data-pagina="corte"] .hero-corte {
-        /* Se quiser que o banner seja menor no celular */
-        max-height: 250px; 
+        /* No mobile, uma altura proporcional */
+        height: 350px; 
     }
 }
-
 /* Container de Botões de Formato (Quadrado/Redondo) */
 [data-pagina="corte"] .bolo-quadrado {
  
@@ -477,32 +479,41 @@
    4. PÁGINA: BOLOS PERSONALIZADOS
    ============================================================ */
 /* Container do Banner */
+/* Ajuste Geral para o Banner Personalizado */
+/* Jeito mais fácil e moderno para resolver de vez */
 [data-pagina="personalizado"] .hero {
-    width: 100% !important;
-    max-width: 100%;
-    height: 360px;
-    margin: 0 auto;
-    position: relative;  
+    width: 100%;
+    height: 520px; /* A altura que você deseja */
     overflow: hidden;
-    line-height: 0;       /* Alterado de inline-flex para block para ocupar 100% */
+    position: relative;
+    display: flex; /* Garante que o conteúdo se alinhe melhor */
+    align-items: center;
+    justify-content: center;
     
+
 }
 
-/* A Imagem do Banner - Ajuste de Nitidez e Proporção */
 [data-pagina="personalizado"] .hero img {
-    width: 100%; 
-    height: auto; /* Mantém a proporção da logo/banner */
-    display: block;
-    object-fit: cover;
+   /* FORÇA a imagem a ocupar 100% do novo espaço da section */
+    width: 100%;
+    height: 100%; 
+    
+    /* O 'cover' faz a imagem crescer e preencher tudo, */
+    /* eliminando a barra rosa lateral ou inferior. */
+    object-fit: cover; 
+    
+    /* Mantém o foco no meio do bolo */
+    object-position: center;
 }
-
-/* Ajuste para Celular - Essencial para não achatar */
+/* Ajuste Fino para Mobile */
 @media (max-width: 768px) {
     [data-pagina="personalizado"] .hero {
-        max-height: 250px; /* Reduzimos a altura no celular para manter a proporção fina */
+        height: 350px; /* Altura ideal para telas pequenas */
     }
+    
     [data-pagina="personalizado"] .hero img {
-        height: 100%;
+        /* No mobile, o cover vai focar no centro do bolo */
+        object-fit: cover;
     }
 }
 
@@ -519,8 +530,8 @@
 /* ===== TEXTO INTRO ===== */
 
 .intro {
-  padding: 20px 15px; /* Respiro nas laterais */
   text-align: center;
+  padding: 80px;
   line-height: 1.5;
   margin-top: -20px;
   padding-top: 20px !important;
@@ -543,25 +554,6 @@
   margin-bottom: 10px !important;
   line-height: 1.4; /* Melhora a leitura sem espalhar muito */
   
-}
-
-.intropreco h2 {
-    font-size: 18px;
-    background-color: #FAD5DC; /* Fundo rosado para destaque */
-    display: inline-block;
-    padding: 8px 15px;
-    border-radius: 20px;
-    color: #783606;
-}
-
-@media (max-width: 480px) {
-    .intro h1 {
-        font-size: 20px; /* Ainda menor em telas muito pequenas */
-    }
-    
-    .intro p {
-        font-size: 14px;
-    }
 }
 
 
