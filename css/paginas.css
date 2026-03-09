@@ -3,11 +3,18 @@
    ============================================================ */
  /* BANNER DAS PAGINAS*/
  
-   .hero img {
+.hero img {
   width: 100%;
   max-height: 380px;
   object-fit: cover;
   display: block;
+}
+
+@media (max-width: 768px) {
+    .hero img {
+        /* Se quiser que o banner seja menor no celular */
+        max-height: 250px; 
+    }
 }
 
 /* ===== EXCLUSIVO: CARROSSEL DA PÁGINA DE PEDIDO ===== */
@@ -305,13 +312,22 @@
     height: 480px;
     margin: 0 auto;
     position: relative;
+    overflow: hidden;
+    line-height: 0;
 }
 
 [data-pagina="corte"] .hero-corte img {
-    width: 100%; 
-    height: 100%;
-    object-fit: fill;
-    object-position: center -1px;
+    width: 100%;
+    height: auto; /* Mantém a proporção da logo/banner */
+    display: block;
+    object-fit: cover;
+}
+
+@media (max-width: 768px) {
+    [data-pagina="corte"] .hero-corte {
+        /* Se quiser que o banner seja menor no celular */
+        max-height: 250px; 
+    }
 }
 
 /* Container de Botões de Formato (Quadrado/Redondo) */
@@ -466,23 +482,24 @@
     max-width: 100%;
     height: 360px;
     margin: 0 auto;
-    position: relative;         /* Alterado de inline-flex para block para ocupar 100% */
+    position: relative;  
+    overflow: hidden;
+    line-height: 0;       /* Alterado de inline-flex para block para ocupar 100% */
     
 }
 
 /* A Imagem do Banner - Ajuste de Nitidez e Proporção */
 [data-pagina="personalizado"] .hero img {
     width: 100%; 
-    height: 100%;
-    object-fit: fill;
-    object-position: center -1px;
-    margin-bottom: 0px;
+    height: auto; /* Mantém a proporção da logo/banner */
+    display: block;
+    object-fit: cover;
 }
 
 /* Ajuste para Celular - Essencial para não achatar */
 @media (max-width: 768px) {
     [data-pagina="personalizado"] .hero {
-        height: 200px; /* Reduzimos a altura no celular para manter a proporção fina */
+        max-height: 250px; /* Reduzimos a altura no celular para manter a proporção fina */
     }
     [data-pagina="personalizado"] .hero img {
         height: 100%;
@@ -502,8 +519,8 @@
 /* ===== TEXTO INTRO ===== */
 
 .intro {
+  padding: 20px 15px; /* Respiro nas laterais */
   text-align: center;
-  padding: 80px;
   line-height: 1.5;
   margin-top: -20px;
   padding-top: 20px !important;
@@ -526,6 +543,25 @@
   margin-bottom: 10px !important;
   line-height: 1.4; /* Melhora a leitura sem espalhar muito */
   
+}
+
+.intropreco h2 {
+    font-size: 18px;
+    background-color: #FAD5DC; /* Fundo rosado para destaque */
+    display: inline-block;
+    padding: 8px 15px;
+    border-radius: 20px;
+    color: #783606;
+}
+
+@media (max-width: 480px) {
+    .intro h1 {
+        font-size: 20px; /* Ainda menor em telas muito pequenas */
+    }
+    
+    .intro p {
+        font-size: 14px;
+    }
 }
 
 
