@@ -2,13 +2,53 @@
    1. PÁGINA: MONTE SEU BOLO (INDEX / COMUM)
    ============================================================ */
  /* BANNER DAS PAGINAS*/
- 
-   .hero img {
-  width: 100%;
-  max-height: 380px;
-  object-fit: cover;
-  display: block;
-  
+ /* --- Reset de Margens e Vãos --- */
+body, .hero, .hero img {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* --- Banner para Desktop (PC/Tablet) --- */
+.hero {
+    width: 100%;
+    height: 400px; /* Altura que definimos para o PC */
+    overflow: hidden;
+    position: relative;
+    /* Encosta a section no topo (menu) */
+    top: 0;
+    margin-top: 0;
+}
+
+.hero img {
+    width: 100%;
+    height: 100%;
+    /* Carrega a imagem larga de PC e garante a nitidez */
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+
+/* --- O AJUSTE PROFISSIONAL PARA MOBILE (Celular) --- */
+@media (max-width: 768px) {
+    /* 1. Mudamos a imagem para a versão Mobile */
+    .hero img {
+        /* TROQUE PELO CAMINHO DA SUA NOVA IMAGEM QUADRADA NO CANVA */
+        content: url("assets/banner_mobile.png") !important; 
+        
+        /* 2. No mobile, o ideal é usar 'contain' para mostrar o bolo inteiro */
+        object-fit: contain !important; 
+        
+        /* 3. Centraliza a imagem */
+        object-position: center top; 
+        
+        /* 4. Altura automática para o contain funcionar */
+        height: auto !important; 
+    }
+
+    /* 2. Ajuste de altura para não criar o vão branco embaixo */
+    .hero {
+        height: auto !important; /* Deixa o container crescer conforme a imagem */
+    }
 }
 
 /* ===== EXCLUSIVO: CARROSSEL DA PÁGINA DE PEDIDO ===== */
