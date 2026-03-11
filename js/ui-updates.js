@@ -469,13 +469,13 @@ export function atualizarDadosCarrinho() {
                     
                     <img src="assets/lixeira.png" 
                         onclick="excluirBoloRascunho()" 
-                        style="position: absolute; top: 10px; right: 10px; width: 18px; cursor: pointer; opacity: 0.6;">
+                        style="position: absolute; top: 10px; right: 10px; width: 18px; cursor: pointer; opacity: 0.6; z-index: 10;">
 
                     <img src="${pedido.modeloImagem && pedido.pesoKg > 0 ? pedido.modeloImagem : 'assets/LOGO.jpg'}" 
                         style="width: 100px; height: 100px; object-fit: cover; border-radius: 5px;">
                     
                     <div style="flex: 1;">
-                        <div style="font-size: 13px; color: #333; padding-right: 20px;">
+                        <div style="font-size: 13px; color: #333; padding-right: 30px; line-height: 1.4;">
                             • <b>Formato:</b> ${pedido.formato || '---'}<br>
                             • <b>Massa:</b> ${pedido.massa || 'Selecione...'}<br>
                             • <b>Recheios:</b> ${pedido.recheios?.length > 0 ? pedido.recheios.join(', ') : 'Selecione...'}
@@ -493,22 +493,22 @@ export function atualizarDadosCarrinho() {
                             ${pedido.embalagem ? `<div style="color: #783606; margin-top: 3px;">✔ <b>Com Embalagem</b></div>` : ''}
                         </div>
 
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; border-top: 1px solid #ddd; padding-top: 5px;">
-                            <div style="display: flex; align-items: center; gap: 4px;">
-                                <img src="assets/peso.png" style="width: 16px; height: 16px;">
-                                <span style="font-weight: bold; font-size: 13px;">${pedido.pesoKg} kg</span>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; border-top: 1px dashed #ccc; padding-top: 10px; width: 100%; gap: 10px;">
+    
+                            <div style="display: flex; align-items: center; flex-shrink: 0;">
+                                <img src="assets/peso.png" style="width: 16px; height: 16px; margin-right: 2px; display: block; object-fit: contain;">
+                                <span style="font-weight: bold; font-size: 14px; color: #333; white-space: nowrap;">${item.pesoKg}kg</span>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 4px;">
-                                <img src="assets/coins.png" style="width: 16px; height: 16px;">
-                                <span style="font-weight: bold; color: #e91e63; font-size: 13px;">
-                                    R$ ${calcularValorApenasDesteBolo().toFixed(2).replace('.', ',')}
-                                </span>
+
+                            <div style="display: flex; align-items: center; flex-shrink: 0; text-align: right;">
+                                <img src="assets/coins.png" style="width: 16px; height: 16px; margin-right: 4px; display: block; object-fit: contain;">
+                                <span style="font-weight: bold; color: #e91e63; font-size: 16px; white-space: nowrap;">R$ ${item.valorIndividual.toFixed(2).replace('.', ',')}</span>
                             </div>
                         </div>
                     </div>
                 </div>
             `;
-        }
+                    }
     } else {
         if (blocoBolo) blocoBolo.style.display = 'none';
     }
@@ -521,17 +521,17 @@ export function atualizarDadosCarrinho() {
         
             htmlSacola += pedido.itens.map((item, idx) => `
                 
+                
                 <div class="card-produto-sacola" style="background: #f9f9f9; border-radius: 12px; padding: 15px; margin-bottom: 15px; position: relative; border: 1px solid #eee;">
-                    
-
                     <div style="display: flex; gap: 12px;">
                         <img src="${item.modeloImagem}" style="width: 150px; height: 150px; object-fit: cover; border-radius: 8px;">
 
                         <div style="flex: 1;">
                             <div style="font-size: 13px; color: #333; line-height: 1.4;">
-                            <div style="font-weight: bold; color: #e91e63; margin-bottom: 8px; font-size: 14px; text-transform: uppercase;">
-                                ${item.titulo || 'Bolo'} 
-                            </div>
+                                
+                                <div style="font-weight: bold; color: #e91e63; margin-bottom: 8px; font-size: 14px; text-transform: uppercase; padding-right: 25px;">
+                                    ${item.titulo || 'Bolo'} 
+                                </div>
                                 
                                 • <b>Formato:</b> ${item.formato}<br>
                                 • <b>Massa:</b> ${item.massa}<br>
@@ -553,14 +553,16 @@ export function atualizarDadosCarrinho() {
                                 ${item.embalagem ? `<span style="color: #e91e63; "> <b>✔ Com Embalagem</b></span>` : ''}
                             </div>
 
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; border-top: 1px dashed #ccc; padding-top: 10px;">
-                                <div style="display: flex; align-items: center; gap: 4px;">
-                                    <img src="assets/peso.png" style="width: 14px; height: 14px;"> 
-                                    <span style="font-weight: bold; font-size: 14px; color: #333;">${item.pesoKg} kg</span>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; border-top: 1px dashed #ccc; padding-top: 10px; width: 100%; gap: 10px;">
+    
+                                <div style="display: flex; align-items: center; flex-shrink: 0;">
+                                    <img src="assets/peso.png" style="width: 16px; height: 16px; margin-right: 2px; display: block; object-fit: contain;">
+                                    <span style="font-weight: bold; font-size: 14px; color: #333; white-space: nowrap;">${item.pesoKg}kg</span>
                                 </div>
-                                <div style="display: flex; align-items: center; gap: 4px;">
-                                    <img src="assets/coins.png" style="width: 14px; height: 14px;"> 
-                                    <span style="font-weight: bold; font-size: 16px; color: #e91e63;">R$ ${item.valorIndividual.toFixed(2).replace('.', ',')}</span>
+
+                                <div style="display: flex; align-items: center; flex-shrink: 0; text-align: right;">
+                                    <img src="assets/coins.png" style="width: 16px; height: 16px; margin-right: 4px; display: block; object-fit: contain;">
+                                    <span style="font-weight: bold; color: #e91e63; font-size: 16px; white-space: nowrap;">R$ ${item.valorIndividual.toFixed(2).replace('.', ',')}</span>
                                 </div>
                             </div>
                         </div>

@@ -78,8 +78,12 @@
 
 
 <!-- BANNER PRINCIPAL -->
-<section class="hero">
-  <img src="assets/bannerbolopersonalizado2.png" alt="Bolo Personalizados">
+
+<section class="hero-personalizado">
+  <picture>
+    <source media="(max-width: 768px)" srcset="assets/bannerbolopersonalizadomobile.png">
+    <img src="assets/bannerbolopersonalizado2.png" alt="Bolo personalizados" class="banner-img-personalizado">
+  </picture>
 </section>
 
 <main>
@@ -516,21 +520,18 @@
           </div>
 
           <div class="rodape">
-              <div class="rodape-linha" style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-                  
-                  <div id="container-preferencia-peso" class="peso-box" style="display: none; flex: 1;">
+              <div class="rodape-linha">
+                  <div id="container-preferencia-peso" class="peso-box">
                       <span class="titulo">Preferência de peso</span>
                       <label class="radio"><input type="radio" name="pesoPreferencia" value="Peso exato" /> Peso exato</label>
                       <label class="radio"><input type="radio" name="pesoPreferencia" value="Pode variar" /> Pode variar</label>
                   </div>
 
-                  <div id="container-total-rodape" class="total-coluna" style="flex: 1; display: flex; justify-content: flex-end;">
-                      <div class="total-card" style="text-align: center;">
-                          <span class="total-label">
-                              <img src="assets/coins.png" class="icon-small" /> Valor total
-                          </span>
-                          <strong id="valorTotalRodape">R$ 0,00</strong>
-                      </div>
+                  <div id="container-total-rodape" class="total-card">
+                      <span class="total-label">
+                          <img src="assets/coins.png" class="icon-small" /> Valor total
+                      </span>
+                      <strong id="valorTotalRodape">R$ 0,00</strong>
                   </div>
               </div>
           </div>

@@ -31,12 +31,7 @@
     font-family: var(--fonte-principal);
 }
 
-html, body {
-    width: 100%;
-    overflow-x: hidden;
-    background-color: var(--rosa-fundo);
-    scroll-behavior: smooth;
-}
+
 
 a {
     text-decoration: none;
@@ -95,24 +90,6 @@ img {
 }
 
 
-.icons {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.icons a {
-    display: flex;
-    text-decoration: none;
-}
-
-/* Controle rígido do tamanho dos Ícones */
-.icons img, 
-.cart-icon img {
-    height: 25px; /* Tamanho que você usava */
-    width: auto;
-    display: block;
-}
 
 .cart-icon {
     position: relative;
@@ -139,9 +116,7 @@ img {
 }
 
 /* Espaçador para o conteúdo não ficar atrás do header fixo */
-body {
-    padding-top: 70px; 
-}
+
 
 /* Dropdown de Produtos */
 .dropdown {
@@ -236,7 +211,7 @@ body {
     }
 
     /* Ajuste para o menu do Rodapé (abre para cima) */
-    .rodape .dropdown-content.show {
+    .dropdown-content.show {
         position: absolute !important;
         bottom: 100% !important;
         top: auto !important;
@@ -470,9 +445,6 @@ section.fundo-final {
         text-align: center;
     }
 
-    .total-info {
-        font-size: 18px;
-    }
 
     .rodape-menu {
         justify-content: center;
@@ -492,6 +464,44 @@ section.fundo-final {
     }
 }
 
+@media (max-width: 768px) {
+    /* 1. Alinha o total e o botão na mesma linha */
+    .secao-total {
+        display: flex !important;
+        flex-direction: row !important; /* Força ficar lado a lado */
+        align-items: center !important;
+        justify-content: space-between !important; /* Joga um para cada lado */
+        padding: 15px 10px !important;
+        gap: 10px; /* Espaço entre o preço e o botão */
+        width: 100%;
+    }
+
+    /* 2. Ajusta o tamanho do texto do total para não apertar o botão */
+    .total-info {
+        font-size: 18px !important;
+        flex-shrink: 0; /* Impede o preço de 'encolher' */
+    }
+
+    .total-info img {
+        width: 20px !important; /* Moedas um pouco menores no mobile */
+    }
+
+    /* 3. Ajusta o botão para caber na linha */
+    .btn-fechar {
+        padding: 10px 15px !important; /* Diminuímos o preenchimento */
+        font-size: 14px !important; /* Fonte levemente menor */
+        flex-grow: 1; /* Faz o botão ocupar o espaço restante se necessário */
+        text-align: center;
+        max-width: 180px; /* Limite para o botão não ficar gigante */
+    }
+
+    /* 4. Garante que o aviso de erro ocupe a linha inteira abaixo deles */
+    #avisoBloqueio {
+        width: 100%;
+        text-align: center;
+        order: 2; /* Joga o aviso para baixo se o container for flex-wrap */
+    }
+}
 
 /* Alinhamento */
 .center {
@@ -509,10 +519,7 @@ section.fundo-final {
   width: 100%;
 }
 /* SEGURANÇA FINAL */
-html, body {
-    max-width: 100%;
-    overflow-x: hidden;
-}
+
 
 img {
     max-width: 100%;
@@ -523,10 +530,6 @@ img {
 /* Ajuste global para ícones no Mobile */
 @media (max-width: 768px) {
     /* Ícones do Cabeçalho */
-    .icons img, .cart-icon img {
-        width: 30px !important; /* Tamanho confortável */
-        height: auto;
-    }
 
     .header-right {
         gap: 15px; /* Espaço entre redes sociais e carrinho */
@@ -579,26 +582,107 @@ img {
 
 @media (max-width: 768px) {
     .header-content {
-        flex-direction: column; /* Logo em cima, menu/ícones embaixo */
-        align-items: center;
-        gap: 10px;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        padding: 15px 10px !important;
+        gap: 15px !important;
+        height: auto !important; /* Permite que o cabeçalho cresça para baixo */
     }
 
+    /* 2. LOGO: Centralizada e com tamanho bom */
     .logo-topo {
-        max-width: 120px; /* Logo menor no mobile */
+        max-width: 130px !important;
+        height: auto !important;
+        margin: 0 auto !important;
     }
 
+    /* 3. MENU: Sobre | Produtos | Endereço lado a lado */
+    .menu {
+        display: flex !important;
+        flex-direction: row !important; /* Força horizontal */
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+
+    .menu a {
+        font-size: 15px !important;
+        white-space: nowrap !important;
+        color: #783606 !important;
+    }
+
+    /* Garante que o divisor | apareça */
+    .menu .divisor {
+        display: inline-block !important;
+        color: #783606 !important;
+        opacity: 0.6;
+    }
+
+    /* 4. ÍCONES E CARRINHO: Lado a lado centralizado */
     .header-right {
-        width: 100%;
-        justify-content: center;
-        border-top: 1px solid rgba(0,0,0,0.05); /* Linha sutil separando */
-        padding-top: 10px;
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 20px !important;
+        width: 100% !important;
+    }
+
+    
+    /* Ajuste do número do carrinho para não sumir */
+    .cart-count {
+        top: -5px !important;
+        right: -10px !important;
+        font-size: 11px !important;
     }
 }
 
+/* 1. RESET DE ÍCONES: Remova o display block que causa o erro */
+.icons img, 
+.cart-icon img, 
+.total-card img, 
+.icon-small,
+.icon {
+    display: inline-block !important; /* Permite alinhar com texto */
+    vertical-align: middle !important; /* Alinhamento clássico de segurança */
+    margin: 0 !important;
+}
 
+/* 2. CONTAINER DE ALINHAMENTO: Força o eixo central */
+.icons, 
+.total-card, 
+.total-linha, 
+.badges span {
+    display: flex !important;
+    align-items: center !important; /* Centraliza verticalmente */
+    gap: 8px !important;            /* Espaço entre ícone e texto */
+    line-height: 1 !important;      /* Mata o respiro da fonte */
+}
 
+/* 3. AJUSTE PARA O MOBILE (Respeitando seus tamanhos) */
+@media (max-width: 768px) {
+    /* Garante que o texto acompanhe a altura do ícone */
+    .icons a, 
+    .total-card span, 
+    .badges span {
+        display: flex;
+        align-items: center;
+        font-size: 14px; /* Ajuste para o tamanho desejado */
+    }
 
+    /* Ajuste fino: se o ícone parecer "alto", empurramos o texto 1px */
+    .icons img, .cart-icon img {
+        width: 30px !important; 
+        height: auto;
+    }
+}
+
+/* Garante que imagens de ícones na sacola nunca tenham margem extra */
+.card-produto-sacola img, .card-produto img {
+    vertical-align: middle !important;
+}
 
 
 
@@ -614,13 +698,6 @@ img {
 }
 
 /* RESET PARA ELIMINAR ESPAÇO BRANCO NO FIM DA PÁGINA */
-html, body {
-    margin: 0;
-    padding: 0;
-    min-height: 100%;
-    display: flex;
-    flex-direction: column;
-}
 
 html {
     scroll-behavior: smooth;

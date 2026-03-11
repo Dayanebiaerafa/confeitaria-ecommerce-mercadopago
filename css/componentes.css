@@ -421,15 +421,6 @@
     white-space: nowrap; /* Impede o texto do botão de quebrar */
 }
 
-
-.lixeira-padrao {
-    transition: transform 0.2s ease;
-}
-
-.lixeira-padrao:hover {
-    transform: scale(1.2); /* Dá um leve zoom ao passar o mouse */
-    opacity: 0.8;
-}
    
 
 .intropreco {
@@ -463,5 +454,148 @@
     text-align: justify;
 }
 
+/* Adicione isso fora de qualquer @media */
+
+/* --- Ajuste da Intro para Mobile --- */
+@media (max-width: 768px) {
+    .intro {
+        /* Reduzimos o padding lateral de 80px para 20px para o texto não ficar 'apertado' */
+        padding: 15px !important; 
+        margin-top: 0 !important;
+    }
+
+    .intro h1 {
+        /* Diminuímos o título para caber em menos linhas */
+        font-size: 25px !important; 
+        padding: 5px 0 !important;
+        margin-bottom: 2px !important;
+    }
+
+    .intro p {
+        /* Fonte 18px é o padrão ideal para leitura no celular */
+        font-size: 11px !important; 
+        line-height: 1.5;
+        margin-bottom: 10px !important;
+        padding: 0 10px;
+    }
+
+    .intropreco {
+        /* Removemos margens exageradas */
+        margin: 10px auto !important;
+        width: 90%; /* Ocupa quase toda a largura para centralizar bem */
+    }
+
+    .intropreco h2 {
+        /* O preço precisa de destaque, mas sem exagerar */
+        font-size: 20px !important; 
+        text-align: center; /* Centralizar o preço no mobile fica mais profissional */
+        margin-top: 10px !important;
+    }
+
+    .intropreco li {
+        font-size: 18px !important;
+        text-align: center; /* No mobile, listas curtas ficam melhores centralizadas */
+    }
+}
+
+
+
+/* mobile rodape*/
+
+@media (max-width: 768px) {
+    /* 1. Container do Total e Botão lado a lado */
+    .secao-total {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 20px !important;
+        gap: 10px;
+        
+    }
+
+    /* 2. Rodapé: Ajustando o Card */
+    .rodape-card {
+        padding: 20px 10px !important;
+        width: 100% !important;
+    }
+
+    /* 3. Alinhando os itens do rodapé um embaixo do outro */
+    .rodape-topo {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 20px !important;
+    
+    }
+
+    /* 2. LOGO: Tamanho controlado */
+    .logo-rodape {
+        max-width: 140px !important;
+        height: auto !important;
+    }
+
+    /* 3. MENU: Agora um do lado do outro */
+    .rodape-menu {
+        display: flex !important;
+        flex-direction: row !important; /* Força ficar lado a lado */
+        flex-wrap: wrap !important;     /* Permite baixar se o telemóvel for muito pequeno */
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 8px !important;            /* Espaço reduzido para caber tudo */
+        width: 100% !important;
+        padding: 0 10px !important;
+    }
+
+    .rodape-menu a {
+       font-size: 13px !important;      /* Fonte ligeiramente menor para caber na linha */
+       white-space: nowrap !important;  /* Impede que as palavras quebrem ao meio */
+       color: #783606 !important;
+       text-decoration: none; /* Impede que a palavra quebre */
+    }
+
+    /* Esconde o divisor | para o menu ficar limpo no celular */
+    .rodape-menu .divisor {
+        display: inline-block !important; /* Faz o | reaparecer */
+        color: #783606 !important;
+        font-size: 13px !important;
+        opacity: 0.7;
+    }
+
+    /* 4. ÍCONES: Lado a lado com tamanho bom */
+    .rodape-icones {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 20px !important;
+        justify-content: center !important;
+    }
+
+    .rodape-icones img {
+        width: 28px !important;         /* Tamanho ideal para toque no celular */
+        height: auto !important;
+    }
+}    
+
+/* Garante que as seções se empilhem corretamente */
+.fundo-final {
+    width: 100%;
+    position: relative;
+    z-index: 10;
+    background-color: #fff; /* Ou a cor do seu fundo */
+    padding-bottom: 20px;
+}
+
+
+
+@media (max-width: 768px) {
+    .secao-total {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        padding: 20px 15px !important;
+    }
+    
+
+}
 
 

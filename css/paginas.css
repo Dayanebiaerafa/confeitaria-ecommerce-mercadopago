@@ -2,55 +2,59 @@
    1. PÁGINA: MONTE SEU BOLO (INDEX / COMUM)
    ============================================================ */
  /* BANNER DAS PAGINAS*/
- /* --- Reset de Margens e Vãos --- */
-body, .hero, .hero img {
-    margin: 0 !important;
-    padding: 0 !important;
+/* Unificando todas as regras do HTML e BODY */
+html, body {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden; /* Evita rolagem lateral indesejada */
+    min-height: 100%;
+    background-color: var(--rosa-fundo);
+    scroll-behavior: smooth; /* Deixa a rolagem suave ao clicar em links */
+    display: flex; /* Mantido caso você use o rodapé colado no fundo */
+    flex-direction: column;
 }
 
-/* --- Banner para Desktop (PC/Tablet) --- */
+/* Espaçamento para o Menu Fixo */
+body {
+    padding-top: 70px !important; 
+}
+
+/* Ajuste do Menu no Celular */
+@media (max-width: 768px) {
+    body {
+        padding-top: 120px !important; 
+    }
+}
+
 .hero {
     width: 100%;
-    height: 400px; /* Altura que definimos para o PC */
+    /* No PC, limitamos a altura para o banner não virar um 'outdoor' gigante */
+    height: 450px !important; 
     overflow: hidden;
-    position: relative;
-    /* Encosta a section no topo (menu) */
-    top: 0;
-    margin-top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fce4ec; /* Cor de fundo para sumir com vãos brancos */
 }
 
-.hero img {
-    width: 100%;
-    height: 100%;
-    /* Carrega a imagem larga de PC e garante a nitidez */
-    object-fit: cover;
-    object-position: center;
-    display: block;
+.banner-img {
+    width: 100% !important;
+    height: 100% !important;
+    /* O 'contain' garante que o bolo apareça INTEIRO sem cortes */
+    object-fit: contain !important; 
+    /* Centraliza o bolo exatamente no meio da moldura de 300px */
+    object-position: center; 
 }
 
-/* --- O AJUSTE PROFISSIONAL PARA MOBILE (Celular) --- */
+/* --- Ajuste para Celular --- */
 @media (max-width: 768px) {
-    /* 1. Mudamos a imagem para a versão Mobile */
-    .hero img {
-        /* TROQUE PELO CAMINHO DA SUA NOVA IMAGEM QUADRADA NO CANVA */
-        content: url("assets/banner_mobile.png") !important; 
-        
-        /* 2. No mobile, o ideal é usar 'contain' para mostrar o bolo inteiro */
-        object-fit: contain !important; 
-        
-        /* 3. Centraliza a imagem */
-        object-position: center top; 
-        
-        /* 4. Altura automática para o contain funcionar */
-        height: auto !important; 
-    }
-
-    /* 2. Ajuste de altura para não criar o vão branco embaixo */
     .hero {
-        height: auto !important; /* Deixa o container crescer conforme a imagem */
+        /* No celular, diminuímos ainda mais a altura para o texto subir */
+        height: 280px !important; 
     }
 }
-
 /* ===== EXCLUSIVO: CARROSSEL DA PÁGINA DE PEDIDO ===== */
 
 [data-pagina="pedido"] .carousel-container {
@@ -248,36 +252,99 @@ body, .hero, .hero img {
 /* Responsividade: 2 por linha no celular */
 @media (max-width: 768px) {
     [data-pagina="doces"] #modeloCarousel {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 8px; /* Reduzi levemente o espaço para ganhar área útil */
-        padding: 5px;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important; 
+        gap: 8px !important;
+        padding: 8px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
     
     [data-pagina="doces"] .bolo-card {
-        padding: 10px; /* Reduzi o padding interno para o card não ficar "gordo" */
-        padding-bottom: 15px; 
+        width: 100% !important;
+        min-width: 0 !important; /* Permite que o card encolha */
+        margin: 0 !important;
+        padding: 5px !important;
+        border-radius: 10px !important;
     }
 
     [data-pagina="doces"] .bolo-card img {
-        width: 100%;    /* Ocupa toda a largura do card */
-        height: 120px;  /* Altura ideal para 2 colunas no mobile */
-        border-radius: 10px; /* Bordas um pouco menos arredondadas para combinar com o card */
+        width: 100% !important;
+        height: 100px !important; /* Reduzi para 100px para ficar mais delicado */
+        object-fit: cover !important;
+    }
+
+    /* Textos menores para caber no card pequeno */
+    [data-pagina="doces"].info-doce small {
+        font-size: 9px !important;
+        
+    }
+
+    [data-pagina="doces"] .info-doce p {
+        font-size: 12px !important;
+        margin: 2px 0 !important;
     }
 
     [data-pagina="doces"] .btn-eu-quero {
-        min-width: 100%; /* Botão ocupa toda a largura disponível no card */
-        font-size: 12px;  /* Fonte menor para não quebrar linha */
-        padding: 8px 5px;
+        font-size: 10px !important;
+        padding: 6px 2px !important;
     }
 }
 
+
 @media (max-width: 768px) {
-    [data-pagina="doces"] .contador-lateral {
-        left: 50%; /* Centraliza exatamente no meio */
-        transform: translateX(-50%);
-        width: 80%; /* No mobile ele deve ser mais largo para ser lido */
-        bottom: 10px;
-        padding: 10px;
+    #contador-fixo-doces {
+        /* FIXO NA TELA, IGNORANDO PAIS */
+        position: fixed !important;
+        bottom: 140px !important;
+        left: 0 !important;
+        
+        /* FORÇANDO A VISIBILIDADE */
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        
+        /* RETÂNGULO QUE PULA PARA FORA DA BORDA */
+        width: auto !important;
+        min-width: 120px !important;
+        height: 60px !important;
+        
+        /* PADDING EXTRA NA ESQUERDA PARA O TEXTO NÃO FICAR NO CANTO */
+        padding: 0 15px 0 25px !important; 
+        
+        /* DESIGN */
+        background-color: #e91e63 !important;
+        color: #ffffff !important;
+        border-radius: 0 30px 30px 0 !important; /* Arredondado só na ponta interna */
+        
+        /* CAMADA SUPREMA */
+        z-index: 9999999 !important;
+        
+        /* ALINHAMENTO INTERNO */
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+        
+        /* SOMBRA PARA DAR RELEVO */
+        box-shadow: 5px 5px 15px rgba(0,0,0,0.3) !important;
+        
+        /* CORREÇÃO DE CORTE */
+        transform: none !important;
+        margin: 0 !important;
+    }
+
+    #total-unidades-doces {
+        font-size: 20px !important;
+        font-weight: 700 !important;
+        line-height: 1 !important;
+        display: block !important;
+    }
+
+    #contador-fixo-doces span, 
+    #contador-fixo-doces small {
+        font-size: 13px !important;
+        line-height: 1.2 !important;
+        white-space: nowrap !important;
     }
 }
 
@@ -342,34 +409,49 @@ body, .hero, .hero img {
 /* Banner Hero */
 [data-pagina="corte"] .hero-corte {
     width: 100%;
-    height: 450px; /* A altura que você deseja */
+    height: 450px; 
     overflow: hidden;
-    position: relative;
-    display: flex; /* Garante que o conteúdo se alinhe melhor */
-    align-items: center;
-    justify-content: center;
-    
+    line-height: 0;
+    display: block;/* Rosa do fundo da imagem */
+    margin-top: 0 !important;
 
 }
 
 [data-pagina="corte"] .hero-corte img {
    /* FORÇA a imagem a ocupar 100% do novo espaço da section */
-    width: 100%;
-    height: 100%; 
+    width: 100% !important;
+    height: auto !important; /* NUNCA use 100% na altura se quiser que não estique */
     
-    /* O 'cover' faz a imagem crescer e preencher tudo, */
-    /* eliminando a barra rosa lateral ou inferior. */
-    object-fit: cover; 
+    /* O 'contain' garante que o bolo apareça inteiro sem distorcer */
+    object-fit: contain !important; 
     
-    /* Mantém o foco no meio do bolo */
-    object-position: center;
+    /* Centraliza o bolo no espaço disponível */
+    display: block;
+    margin: 0 auto; 
 }
 
 /* Ajuste Mobile para Corte */
+/* Ajuste Mobile para Corte */
 @media (max-width: 768px) {
     [data-pagina="corte"] .hero-corte {
-        /* No mobile, uma altura proporcional */
-        height: 350px; 
+        /* Mantemos os 350px que você gostou para o topo ficar livre */
+        height: 350px !important; 
+        overflow: hidden;
+        display: flex;
+        /* Alinhamos o conteúdo ao topo do container */
+        align-items: flex-start; 
+    }
+
+    [data-pagina="corte"] .hero-corte img {
+        width: 100% !important;
+        /* A altura precisa ser 100% para preencher os 350px */
+        height: 100% !important; 
+        
+        object-fit: cover !important; 
+        
+        /* O SEGREDO: 'center top' fixa o topo da imagem no teto do site. 
+           Assim, todo o excesso de 'comprimento' é cortado apenas embaixo. */
+        object-position: center top !important; 
     }
 }
 /* Container de Botões de Formato (Quadrado/Redondo) */
@@ -383,12 +465,7 @@ body, .hero, .hero img {
     max-width: 800px;
     margin: 0 auto;
 }
-[data-pagina="corte"] .bolo-quadrado {
-    display: flex;
-    gap: 25px; /* Espaço entre o botão Redondo, Quadrado e Coração */
-    justify-content: center;
-    flex-wrap: wrap; /* Para não quebrar em telas pequenas */
-}
+
 
 @media (max-width: 480px) {
     [data-pagina="corte"] .bolo-quadrado {
@@ -459,102 +536,89 @@ body, .hero, .hero img {
 }
 
 /* Note o ESPAÇO entre o colchete e o ponto */
+/* Container que segura os dois cards de bolo */
 [data-pagina="corte"] .foto-container {
-    display: flex !important;
-    flex-direction: row !important; /* Força a linha */
+    display: flex;
+    flex-wrap: wrap; /* Permite quebrar linha no celular se o espaço acabar */
     justify-content: center;
-    align-items: center;
-    gap: 10px; /* Reduzi um pouco para caber melhor no mobile */
+    align-items: flex-start;
+    gap: 18px; /* Mesma distância dos topos */
     width: 100%;
-    margin-top: 10px;
-    flex-wrap: nowrap !important; /* IMPEDE a quebra de linha de qualquer jeito */
+    margin-top: 15px;
 }
 
-/* Card Individual de Bolo (O bloco lilás) */
+/* O Card do Bolo - Cópia exata do .topo-item */
 [data-pagina="corte"] .bolo-card {
-   background-color: #CEC6DB !important;
-   padding: 12px;
-   border-radius: 18px;
-   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    
-    /* Mágica da centralização interna */
-   flex: 1;          /* Faz os dois cards dividirem o espaço igualmente */
-   max-width: 20%;   /* Garante que um não empurre o outro para fora */
-   display: flex;
-   flex-direction: column;
-   align-items: center;
+    background: #CEC6DB; /* Cor lilás oficial */
+    border-radius: 18px;
+    padding: 12px;
+    width: 10px; /* Tamanho fixo que você usa no topo */
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 100px; /* Um pouco menor que o topo pois não tem botão */
+    transition: transform 0.3s ease;
 }
 
-/* 3. A Imagem */
+/* Efeito de subir ao passar o mouse */
+[data-pagina="corte"] .bolo-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+}
+
+/* A Imagem do Bolo - Cópia exata do .topo-item img */
 [data-pagina="corte"] .bolo-card img {
-    display: block;
-    margin: 0 auto; /* Reforço para centralização */
-    width: 140px;
-    height: 180px;
-    object-fit: cover;
-    border: 3px solid #783606;
-    border-radius: 14px;
-}
-
-/* =====================================================
-   RESPONSIVIDADE (Ajustada)
-===================================================== */
-
-@media (max-width: 480px) {
-    [data-pagina="corte"] .foto-container {
-        flex-wrap: nowrap !important; /* MANTÉM lado a lado no celular */
-        gap: 8px;
-    }
-    
-}
-
-/* Ajuste para telas maiores (Desktop) */
-@media (min-width: 768px) {
-    [data-pagina="corte"] .bolo-card img {
-        width: 210px;
-        height: 280px;
-    }
+    width: 100%;
+    height: 350px; /* Altura exata que você usa no topo */
+    object-fit: cover; /* Faz a imagem preencher o espaço sem distorcer */
+    border-radius: 18px;
+    border: 3px solid #783606; /* Borda marrom oficial */
 }
 /* ============================================================
    4. PÁGINA: BOLOS PERSONALIZADOS
    ============================================================ */
 /* Container do Banner */
-/* Ajuste Geral para o Banner Personalizado */
-/* Jeito mais fácil e moderno para resolver de vez */
-[data-pagina="personalizado"] .hero {
+/* Container do Banner */
+[data-pagina="personalizado"] .hero-personalizado {
     width: 100%;
-    height: 520px; /* A altura que você deseja */
+    height: 450px; 
     overflow: hidden;
-    position: relative;
-    display: flex; /* Garante que o conteúdo se alinhe melhor */
-    align-items: center;
-    justify-content: center;
-    
-
+    line-height: 0;
+    display: block;/* Rosa do fundo da imagem */
+    margin-top: 0 !important;
 }
 
-[data-pagina="personalizado"] .hero img {
-   /* FORÇA a imagem a ocupar 100% do novo espaço da section */
-    width: 100%;
-    height: 100%; 
+/* Regra para a imagem dentro da tag picture */
+[data-pagina="personalizado"] .banner-img-personalizado {
+    width: 100% !important;
+    height: auto !important; /* NUNCA use 100% na altura se quiser que não estique */
     
-    /* O 'cover' faz a imagem crescer e preencher tudo, */
-    /* eliminando a barra rosa lateral ou inferior. */
-    object-fit: cover; 
+    /* O 'contain' garante que o bolo apareça inteiro sem distorcer */
+    object-fit: contain !important; 
     
-    /* Mantém o foco no meio do bolo */
-    object-position: center;
+    /* Centraliza o bolo no espaço disponível */
+    display: block;
+    margin: 0 auto; 
 }
-/* Ajuste Fino para Mobile */
+
+/* --- Ajuste Mobile (Celular) --- */
 @media (max-width: 768px) {
-    [data-pagina="personalizado"] .hero {
-        height: 350px; /* Altura ideal para telas pequenas */
+    [data-pagina="personalizado"] .hero-personalizado {
+        height: auto !important; /* Deixa a imagem mandar na altura */
+        max-height: 300px; /* Limite máximo para não ficar gigante */
+        overflow: hidden;
+        background-color: #fce4ec; /* Garante que o container cresça conforme a imagem */
+    }    
+        /* 4. LIMITE DE ALTURA: Use max-height para "segurar" a imagem. */
+    [data-pagina="personalizado"] .banner-img-personalizado {    /* Assim, se a foto for muito comprida, ela para aqui e não cria o 'infinito' */
+         max-height: 400px !important;  
     }
-    
-    [data-pagina="personalizado"] .hero img {
-        /* No mobile, o cover vai focar no centro do bolo */
-        object-fit: cover;
-    }
+}
+
+
+[data-pagina="personalizado"] main {
+    height: auto !important;
 }
 
 [data-pagina="personalizado"] .upload-referencia {
@@ -653,6 +717,8 @@ body, .hero, .hero img {
     margin-bottom: 15px;
     width: 100%;
 }
+
+
 
 /* Área de Upload de Foto */
 [data-pagina="personalizado"] .upload-container {

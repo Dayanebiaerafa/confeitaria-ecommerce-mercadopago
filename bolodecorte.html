@@ -78,8 +78,13 @@
 
 
 <!-- BANNER PRINCIPAL -->
+
+
 <section class="hero-corte">
-  <img src="assets/bannerbolodecorte1.png" alt="Bolo de corte">
+  <picture>
+    <source media="(max-width: 768px)" srcset="assets/bannerbolodecoretmobile.png">
+    <img src="assets/bannerbolodecorte1.png" alt="Bolo de Corte" class="banner-img">
+  </picture>
 </section>
 
 <main>
@@ -241,7 +246,7 @@
           <button id="entendiBtn">Entendi e concordo</button>
       </div>
 </div>
-modeloCarousel
+
 
 <div id="modalErroAceite" class="modal">
     <div class="modal-conteudo" style="text-align: center;">
@@ -342,68 +347,55 @@ modeloCarousel
 
 <!-- TOTAL -->
 <section class="fundo-final">
-
     <div class="secao-total">
-        
-            <div class="total-info">
-                <img src="assets/coins.png" alt="Moedas">
-                <span>Total <strong id="valorTotalCorte">R$ 0,00</strong></span>
-                
+        <div class="total-info">
+            <img src="assets/coins.png" alt="Moedas">
+            <span>Total <strong id="valorTotalCorte">R$ 0,00</strong></span>
+        </div>
+
+        <button class="btn-fechar" id="btnConfirmarPedido">
+            Fechar pedido
+        </button>
+    </div>
+    
+    <p id="avisoBloqueio" style="color: #d9534f; font-size: 13px; margin-bottom: 10px; font-weight: bold; display: none; text-align: center;">
+        ⚠️ Por favor, aceite os termos de variação de peso para continuar.
+    </p>
+</section> <footer class="rodape">
+    <div class="rodape-card">
+        <div class="rodape-topo">
+            <img src="assets/MARCA DAGUA.png" class="logo-rodape" alt="Logo">
+
+            <nav class="rodape-menu">
+                <a href="sobre.html">Sobre</a>
+                <span class="divisor">|</span> 
+                <div class="dropdown">
+                    <a href="#" class="dropbtn" id="btnProdutosRodape">Produtos</a>
+                    <div class="dropdown-content" id="menuProdutosRodape">
+                        <a href="bolopersonalizado.html">Bolos Personalizados</a>
+                        <a href="bolodecorte.html">Bolo de Corte</a>
+                        <a href="doces.html">Doces Tradicionais</a>
+                        <a href="index.html">Bolos Clássicos</a>
+                    </div>
+                </div>
+                <span class="divisor">|</span>
+                <a href="https://maps.app.goo.gl/gTp6KAYNjbFVxqoR9" target="_blank">Endereço</a>
+                <span class="divisor">|</span>
+                <a href="privacidade.html">Política de Privacidade</a>
+            </nav>
+
+            <div class="rodape-icones">
+                <a href="https://www.instagram.com/dayane.teodoro.confeitaria" target="_blank"><img src="assets/instagram.svg" alt="Instagram"></a>
+                <a href="https://wa.me/5534996360443" target="_blank"><img src="assets/whatsapp.svg" alt="WhatsApp"></a>
+                <img src="assets/6.png" alt="Ícone">
             </div>
-
-            <p id="avisoBloqueio" style="color: #d9534f; font-size: 13px; margin-bottom: 10px; font-weight: bold; display: none;">
-                ⚠️ Por favor, aceite os termos de variação de peso para continuar.
-            </p>
-
-            <button class="btn-fechar" id="btnConfirmarPedido">
-                Fechar pedido
-            </button>
         </div>
     </div>
+</footer>
 
-    <footer class="rodape">
-        <div class="rodape-card">
-            <div class="rodape-topo">
-                <img src="assets/MARCA DAGUA.png" class="logo-rodape" alt="Logo">
 
-                <nav class="rodape-menu">
-                    <a href="sobre.html">Sobre</a>                                    
-                    <span class="divisor">|</span> 
 
-                    <div class="dropdown">
-                      <a href="#" class="dropbtn" id="btnProdutosRodape">Produtos</a>
-                      <div class="dropdown-content" id="menuProdutosRodape">
-                          <a href="bolopersonalizado.html">Bolos Personalizados</a>
-                          <a href="bolodecorte.html">Bolo de Corte</a>
-                          <a href="doces.html">Doces Tradicionais</a>
-                          <a href="index.html">Bolos Clássicos</a>
-                      </div>
-                  </div>
-                    <span class="divisor">|</span>
 
-                    <a href="https://maps.app.goo.gl/gTp6KAYNjbFVxqoR9" target="_blank" rel="noopener noreferrer">Endereço</a>
-                    <span class="divisor">|</span>
-                    <a href="privacidade.html">Política de Privacidade</a>
-                </nav>
-
-                <div class="rodape-icones">
-                  <a href="https://www.instagram.com/dayane.teodoro.confeitaria?igsh=a3d2d2tzcDJ0cm9w&utm_source=qr" target="_blank" rel="noopener noreferrer">
-                    <img src="assets/instagram.svg" alt="Instagram">
-                  </a>
-                  
-                  <a href="https://wa.me/5534996360443?text=Olá%20Dayane%2C%20estou%20no%20site%20e%20gostaria%20de%20tirar%20uma%20dúvida%20sobre%20meu%20bolo!" target="_blank" rel="noopener noreferrer">
-                    <img src="assets/whatsapp.svg" alt="WhatsApp">
-                  </a>  
-
-                    <img src="assets/6.png" alt="Ícone">
-                </div>
-            </div>
-
-            
-        </div>
-    </footer>
-
-</section>
 
 <div id="caixa-cookies" class="cookies-flutuante" style="display: none;">
     <span id="fechar-cookies" style="position: absolute; top: 10px; right: 15px; cursor: pointer; font-weight: bold; color: #783606;">X</span>
@@ -512,21 +504,18 @@ modeloCarousel
           </div>
 
           <div class="rodape">
-              <div class="rodape-linha" style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-                  
-                  <div id="container-preferencia-peso" class="peso-box" style="display: none; flex: 1;">
+              <div class="rodape-linha">
+                  <div id="container-preferencia-peso" class="peso-box">
                       <span class="titulo">Preferência de peso</span>
                       <label class="radio"><input type="radio" name="pesoPreferencia" value="Peso exato" /> Peso exato</label>
                       <label class="radio"><input type="radio" name="pesoPreferencia" value="Pode variar" /> Pode variar</label>
                   </div>
 
-                  <div id="container-total-rodape" class="total-coluna" style="flex: 1; display: flex; justify-content: flex-end;">
-                      <div class="total-card" style="text-align: center;">
-                          <span class="total-label">
-                              <img src="assets/coins.png" class="icon-small" /> Valor total
-                          </span>
-                          <strong id="valorTotalRodape">R$ 0,00</strong>
-                      </div>
+                  <div id="container-total-rodape" class="total-card">
+                      <span class="total-label">
+                          <img src="assets/coins.png" class="icon-small" /> Valor total
+                      </span>
+                      <strong id="valorTotalRodape">R$ 0,00</strong>
                   </div>
               </div>
           </div>
