@@ -1,5 +1,5 @@
 
-function gerarMensagemWhatsCompleta(pedido) {
+export function gerarMensagemWhatsCompleta(pedido) {
     const p = pedido;
     const c = p.cliente;
     const restante = p.valorTotal - p.pagamento.valorPago;
@@ -43,7 +43,7 @@ function gerarMensagemWhatsCompleta(pedido) {
 }
 
 
-function abrirWhatsApp(telefone, mensagem) {
+export function abrirWhatsApp(telefone, mensagem) {
   const numero = telefone.replace(/\D/g, '');
   const texto = encodeURIComponent(mensagem);
   const url = `https://wa.me/55${numero}?text=${texto}`;

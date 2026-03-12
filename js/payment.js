@@ -1,6 +1,7 @@
 import { pedido, metodoSelecionado, porcentagemPagamento } from './state.js';
 import { calcularTotal } from './calculate.js';
 import { CONFIG } from './config.js';
+import { gerarMensagemWhatsCompleta, abrirWhatsApp } from './whatsapp.js';
 
 // Variável para evitar criar o Brick várias vezes e dar erro
 export let paymentBrickController = null;
@@ -156,6 +157,8 @@ export async function enviarPagamentoAoBackend(formData, totalCalculado) {
             // 3. Injeção dos dados (QR Code e Copia e Cola)
             const qrImg = document.getElementById("pix-qr-img");
             if (qrImg) qrImg.src = `data:image/png;base64,${resultado.qr_code_base64}`;
+            localStorage.setItem('ultimo_pedido_id', resultado.id);
+            localStorage.setItem('dados_ultimo_pedido', JSON.stringify(pedido));
 
             const copiaCola = document.getElementById("pix-copia-e-cola");
             if (copiaCola) copiaCola.value = resultado.qr_code;
@@ -164,7 +167,8 @@ export async function enviarPagamentoAoBackend(formData, totalCalculado) {
             limparDadosAposPedido();
 
             if (resultado.id) {
-                verificarStatusPagamento(resultado.id);
+                // Passamos o objeto 'pedido' (que você importou do state.js) para a função
+                verificarStatusPagamento(resultado.id, pedido); 
             }
 
             // Scroll para o topo para garantir visibilidade
@@ -203,13 +207,6 @@ function limparDadosAposPedido() {
     //if (btnVoltar) btnVoltar.style.display = "none"; 
 }
 
-// Mantenha esta função no arquivo, ela é necessária!
-function abrirWhatsApp(telefone, mensagem) {
-    const numero = telefone.replace(/\D/g, '');
-    const texto = encodeURIComponent(mensagem);
-    const url = `https://wa.me/55${numero}?text=${texto}`;
-    window.open(url, '_blank');
-}
 
 export function verificarStatusPagamento(paymentId, dadosDoPedido) { 
     // Passamos dadosDoPedido como parâmetro para a função conhecer o objeto 'pedido'

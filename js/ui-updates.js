@@ -633,6 +633,7 @@ export function atualizarDadosCarrinho() {
     
     }  
 
+
     // Localize a parte que controla a visibilidade dos campos de texto do topo
     // --- LÓGICA DO TOPO (DINÂMICA POR PÁGINA) ---
     const paginaAtual = document.body.getAttribute('data-pagina');
@@ -690,6 +691,36 @@ export function atualizarDadosCarrinho() {
         const elemento = document.getElementById(id);
         if (elemento) elemento.innerText = valorTotalFormatado;
     });
+
+    // --- CONTROLE DE VISIBILIDADE DO CONTADOR DE DOCES ---
+    const contadorDoces = document.getElementById('contador-fixo-doces');
+    const paginaAtualDoces = document.body.getAttribute('data-pagina');
+
+    if (contadorDoces) {
+        // 1. Pegamos a div que representa o carrinho aberto (drawer)
+        const drawerCarrinho = document.getElementById('drawerCarrinho');
+        
+        // 2. Verificamos se o carrinho está visível (se tem a classe 'ativo' ou se não está hidden)
+        const carrinhoEstaAberto = drawerCarrinho && (
+            drawerCarrinho.classList.contains('ativo') || 
+            drawerCarrinho.style.display === 'flex' ||
+            drawerCarrinho.style.display === 'block'
+        );
+
+        // 3. Lógica: Só mostra se estiver na página de doces E o carrinho estiver FECHADO
+        if (paginaAtualDoces === 'doces' && !carrinhoEstaAberto) {
+            const totalDoces = (pedido.doces || []).reduce((acc, d) => acc + (d.qtd || 0), 0);
+            
+            if (totalDoces > 0) {
+                contadorDoces.style.setProperty('display', 'flex', 'important');
+            } else {
+                contadorDoces.style.setProperty('display', 'none', 'important');
+            }
+        } else {
+            // Se abriu o carrinho ou mudou de página, esconde na hora
+            contadorDoces.style.setProperty('display', 'none', 'important');
+        }
+    }
     
 }
 

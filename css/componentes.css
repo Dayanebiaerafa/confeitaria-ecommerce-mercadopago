@@ -393,16 +393,6 @@
   
 }
 
-/* Container interno para garantir que fiquem lado a lado */
-.total-card {
-    display: flex;
-    flex-direction: row; /* 2. ESCRITA E BOTÃO LADO A LADO */
-    align-items: center;
-    justify-content: center;
-    gap: 0px; /* Distância entre o preço e o botão */
-    width: 50%;
-    max-width: 1200px;
-}
 
 
 .total-info img {
@@ -542,9 +532,11 @@
         flex-wrap: wrap !important;     /* Permite baixar se o telemóvel for muito pequeno */
         justify-content: center !important;
         align-items: center !important;
-        gap: 8px !important;            /* Espaço reduzido para caber tudo */
+        gap: 10px !important;            /* Espaço reduzido para caber tudo */
         width: 100% !important;
         padding: 0 10px !important;
+        margin-bottom: 20px;
+   
     }
 
     .rodape-menu a {
@@ -552,6 +544,8 @@
        white-space: nowrap !important;  /* Impede que as palavras quebrem ao meio */
        color: #783606 !important;
        text-decoration: none; /* Impede que a palavra quebre */
+       font-weight: bold;
+    
     }
 
     /* Esconde o divisor | para o menu ficar limpo no celular */
@@ -575,14 +569,16 @@
         height: auto !important;
     }
 }    
-
+#menuProdutosRodape {
+    bottom: 100%; /* Faz o menu abrir para CIMA no rodapé */
+    top: auto;
+}
 /* Garante que as seções se empilhem corretamente */
-.fundo-final {
-    width: 100%;
-    position: relative;
-    z-index: 10;
-    background-color: #fff; /* Ou a cor do seu fundo */
-    padding-bottom: 20px;
+.fundo-final, footer {
+    width: 100% !important;
+    display: block !important;
+    padding: 40px 20px !important; /* Aumenta o respiro interno sem deixar branco */
+    margin: 0 !important;
 }
 
 

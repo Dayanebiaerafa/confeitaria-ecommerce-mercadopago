@@ -217,4 +217,37 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log(`🚀 Sistema Dayane Bolos sincronizado! Página: ${tipoPagina || 'Geral'}`);
 });
 
+function verificarPedidoPendente() {
+    const ultimoId = localStorage.getItem('ultimo_pedido_id');
+    if (ultimoId) {
+        // Cria um pequeno banner ou botão flutuante na tela
+        const banner = document.createElement('div');
+        banner.innerHTML = `
+            <div style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#783606; color:white; padding:15px; border-radius:10px; z-index:9999; box-shadow:0 4px 15px rgba(0,0,0,0.3); text-align:center;">
+                <p style="margin:0 0 10px 0;">Você tem um pedido aguardando pagamento!</p>
+                <button onclick="recuperarPixPendente()" style="background:#fff; color:#783606; border:none; padding:8px 15px; border-radius:5px; font-weight:bold; cursor:pointer;">Ver QR Code do Pix</button>
+            </div>
+        `;
+        document.body.appendChild(banner);
+    }
+}
 
+// Chame essa função ao carregar a página
+window.onload = verificarPedidoPendente;
+
+window.recuperarPixPendente = function() {
+    const paymentId = localStorage.getItem('ultimo_pedido_id');
+    const dadosPedido = JSON.parse(localStorage.getItem('dados_ultimo_pedido'));
+    
+    if (paymentId && dadosPedido) {
+        // Abre a tela de pagamento novamente ou chama o verificador
+        // Se você já estiver na página de checkout, pode apenas re-exibir o container do Pix
+        const pixContainer = document.getElementById("pix-container");
+        if (pixContainer) {
+            pixContainer.style.display = "flex";
+            pixContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+        // Reinicia a verificação automática para ver se ele pagou enquanto estava fora
+        verificarStatusPagamento(paymentId, dadosPedido);
+    }
+};

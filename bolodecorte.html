@@ -448,26 +448,7 @@
 
           <div id="itens-carrinho"></div>
 
-          <div class="bloco-produto" id="bloco-bolo-carrinho" style="display: none;">
-              <span class="pill" id="labelTipoBolo">Encomenda</span>
-              <div class="card-produto">
-                  <img id="cartImagem" class="img-bolo" src="assets/LOGO.jpg" />
-                
-                  <div class="descricao">
-                      <div id="cartDescricao">
-                          <p>Selecione um bolo...</p>
-                      </div>
-
-                      <div class="badges">
-                          <span>
-                              <img src="assets/peso.png" class="icon" />
-                              <span id="cartPeso">0</span> kg
-                          </span>
-                      </div>
-                  </div>
-                  <img src="assets/lixeira.png" class="lixeira" data-item="bolo" />
-              </div>
-          </div>
+          
 
           <div class="bloco-produto" id="bloco-doces-carrinho" style="display: none; margin-top: 15px;">
               <span class="pill">Doces Tradicionais</span>
@@ -522,6 +503,13 @@
       </div>
 
       <div id="etapaIdentificacao" class="etapa hidden">
+        <div style="margin-top: 10px; margin-bottom: 20px;">
+            <span class="pill-titulo">Seus Dados</span>
+        </div>
+        <div class="titulo-secao">
+            <p>Preencha as informações para a retirada</p>
+        </div>
+
         <div class="form-bloco floating">
           <input type="text" id="nomeCliente" name="nomeCliente" placeholder=" " autocomplete="name" required>
           <label for="nomeCliente">Nome completo *</label>

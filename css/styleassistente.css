@@ -11,7 +11,7 @@
   border-radius: 50%;
   border: 3px solid #783606;
   cursor: pointer;
-  z-index: 999;
+  z-index: 900;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   transition: transform 0.3s ease;
 }
@@ -28,7 +28,7 @@
   width: 300px;
   background: #fff;
   border-radius: 15px;
-  z-index: 1000;
+  z-index: 900;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
   overflow: hidden; /* Para o header arredondado funcionar */
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;

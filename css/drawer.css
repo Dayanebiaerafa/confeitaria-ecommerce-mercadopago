@@ -14,13 +14,13 @@
 }
 
 .drawer {
-    position: fixed;
+    position: fixed !important;
     top: 0;
     right: -100%; /* Começa escondido à direita */
     width: 50%;
     height: 100vh;
     background: #fff;
-    z-index: 2001;
+    z-index: 2000 !important;
     display: flex;
     flex-direction: column;
     transition: right 0.4s ease-in-out;
@@ -32,22 +32,32 @@
 .drawer-content {
     flex: 1;           /* Ocupa o espaço entre o topo e o rodapé */
     overflow-y: auto;  /* Habilita a rolagem */
-    padding: 30px;     /* Espaçamento interno */
+    padding-top: 20px !important;
+    padding-bottom: 120px !important;
+    padding: 10px 20px 100px 20px !important;/* Adiciona respiro lateral e superior */
+    display: flex;
+    flex-direction: column;
+    gap: 25px;     /* Espaçamento interno */
 }
 
 .etapa {
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    height: auto !important; /* Força a etapa a ter apenas o tamanho do conteúdo */
+    padding: 10px 20px 100px 20px !important; /* Substitua o gap de 15px por 20px para dar mais clareza no mobile */
+    gap: 25px !important; 
+    height: auto !important;
     min-height: auto !important;
-    padding-bottom: 0 !important;
+    /* REMOVIDO: padding-bottom: 0 !important (Isso impedia o respiro final) */
+    margin-bottom: 20px;
 }
 
 #etapaContainer {
     display: flex;
     flex-direction: column;
     height: auto !important;
+    gap: 20px;
+    width: 100%;
+    
 }
 
 .drawer.ativo {
@@ -70,6 +80,7 @@
   position: relative;
   background: #fff;
   padding: 16px 48px 8px;
+  border-bottom: 1px solid #eee;
 }
 
 .drawer-topo .stepper {
@@ -108,21 +119,27 @@
 #etapaPagamento,
 #etapaFinalizar {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
+    display: none;
+    gap: 15px;
+    position: relative;
+    flex-direction: column !important;
     width: 100%;
-    /* O segredo está aqui: um padding que seja do tamanho do rodapé */
-    padding-bottom: 80px !important; 
+    margin-bottom: 20px !important;
+    padding-top: 20px !important;/* MANTENHA ISSO: Protege o conteúdo do botão fixo/rodapé */
+    padding-bottom: 100px !important; 
     box-sizing: border-box;
+    margin-top: 25px !important;
+    padding: 15px !important;
+    border-top: 1px dashed #783606;
 }
 
 /* Garante que o container de itens não corte o conteúdo */
 #itens-carrinho {
-    display: flex;
-    flex-direction: column;
+    display: flex !important;
+    flex-direction: column !important;
     height: auto !important;
     padding-bottom: 20px !important;
+    gap: 15px;
 }
 
 /* =====================================================
@@ -200,37 +217,56 @@
    CARD PRODUTO
 ===================================================== */
 .bloco-produto {
-  display: flex;
+  display: none;
   flex-direction: column;
   gap: 10px;
+  margin-top: 10px !important;
+  margin-bottom: 25px !important; /* Aumente este valor para dar mais distância */
+  position: relative;
+  width: 100%;
 }
 
 .card-produto {
-  position: relative;
+  position: relative !important;
   background: #C5DADB;
   border-radius: 18px;
-  padding: 12px;
   display: flex;
-  gap: 20px;
+  width: 100% !important;
+  padding: 10px !important;
+  gap: 15px; /* Cria um espaço fixo entre a imagem e o texto */
+  align-items: flex-start;
+  overflow: hidden;
 }
 
 .img-bolo {
-  width: 80px;
-  height: 120px;
-  border-radius: 10px;
+  width: 100px !important; /* Tamanho fixo menor para a foto */
+  height: 100px !important;
   object-fit: cover;
+  border-radius: 8px;
 }
 
 .descricao {
-  flex: 1;
-  font-size: 15px;
-  color: #333;
+  flex: 1; /* Faz esse bloco ocupar todo o resto da largura */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+/* 4. Ajusta o texto para não transbordar */
+#cartDescricao p {
+  font-size: 13px !important; /* Diminui levemente a fonte se necessário */
+  line-height: 1.2;
+  margin-bottom: 5px;
+  word-wrap: break-word;
 }
 
 .badges {
+  margin-top: auto;
   display: flex;
-  gap: 16px;
-  margin-top: 20px;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 
 
@@ -241,13 +277,14 @@
    PILLS
 ===================================================== */
 .pill {
-  display: inline-block;
+  display: inline-block !important;
   background: var(--marrom);
   color: #fff;
   font-size: 15px;
   padding: 8px 12px;
   border-radius: 18px;
   width: fit-content;
+  margin-bottom: 10px !important;
 }
 
 /* =====================================================
@@ -256,11 +293,11 @@
 /* VERSÃO UNIFICADA E CORRIGIDA */
 .confirmacoes-container {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     flex-wrap: wrap;          /* Permite quebrar linha se o celular for pequeno */
     align-items: center;
     justify-content: space-between;
-    gap: 8px;                 /* Espaço entre os blocos rosa */
+    gap: 10px;                 /* Espaço entre os blocos rosa */
     margin-top: 10px;
     margin-bottom: 10px;
     width: 100%;
@@ -291,10 +328,11 @@
 /* =====================================================
    OBSERVAÇÃO
 ===================================================== */
-.observacao {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.observacao {  
+    width: 100% !important;
+    display: block !important;
+    box-sizing: border-box !important;
+    margin-bottom: 25px !important;
 }
 
 .observacao-textarea {
@@ -334,30 +372,6 @@
 
 
 
-
-/* Ajuste das Bolinhas e Escrita */
-.radio {
-  display: flex;
-  align-items: center; /* Centraliza a bolinha com o meio do texto */
-  justify-content: flex-start; /* Garante que comece na esquerda */
-  gap: 8px; /* Distância curta entre bolinha e texto */
-  font-size: 15px;
-  color: #000;
-  cursor: pointer;
-  width: auto; /* Não deixa a label ocupar a linha toda se não precisar */
-}
-
-/* Garante que o input (bolinha) não tenha margens estranhas */
-.radio input[type="radio"] {
-  margin: 0; 
-  cursor: pointer;
-  width: 15px; /* Tamanho da bolinha */
-  height: 15px;
-}
-
-
-
-
 /* REGRA PARA PÁGINA DE DOCES (Quando o peso some) */
 /* Se a peso-box for escondida pelo JS, o total-card ocupa 100% */
 .peso-box[style*="display: none"] + .total-card {
@@ -365,17 +379,6 @@
 }
 
 
-/* Linha da Imagem + Texto Valor Total */
-.total-label {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px; /* Espaço entre o ícone e o texto */
-  width: 100%;
-  font-size: 20px; /* Ajuste conforme necessário */
-  color: #783606; /* Substitua pela sua var(--marrom) */
-  margin-bottom: 5px; /* Espaço para o preço ficar embaixo */
-}
 
 
 
@@ -404,12 +407,18 @@
     border-radius: 8px;
     outline: none;
     background-color: white;
+    display: flex;
+    gap: 15px; /* Espaço entre Data e Horário quando estão lado a lado */
+    margin-bottom: 20px !important;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 /* Container do campo flutuante */
 .form-bloco.floating {
     position: relative;
     margin-top: 15px;
+    
 }
 
 .form-bloco.floating input {
@@ -417,6 +426,8 @@
     border: 1.5px solid #ccc;
     font-size: 16px;
     background: transparent;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 .form-bloco.floating label {
@@ -452,12 +463,18 @@
     gap: 15px;
     margin-top: 15px;
     width: 100%;
+    display: flex;
+    gap: 15px; /* Espaço entre Data e Horário quando estão lado a lado */
+    margin-bottom: 20px !important;
 }
 
 .form-linha .form-bloco {
     flex: 1;
     display: flex;
     flex-direction: column;
+    display: flex;
+    gap: 15px; /* Espaço entre Data e Horário quando estão lado a lado */
+    margin-bottom: 20px !important;
 }
 
 .form-linha label {
@@ -472,6 +489,40 @@
     padding: 12px;
     border: 1.5px solid #ccc;
     font-size: 14px;
+    display: flex;
+    gap: 15px; /* Espaço entre Data e Horário quando estão lado a lado */
+    margin-bottom: 20px !important;
+}
+
+/* 2. Ajusta o input para empurrar o ícone para a direita */
+#dataPedido {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    
+    /* Estilo do bloco */
+    padding: 10px 12px !important;
+    border: 1px solid #ccc !important;
+    border-radius: 8px !important;
+    background-color: #fff !important;
+    box-sizing: border-box !important;
+}
+
+/* 3. Move o ícone do calendário (o "quadradinho") para a direita */
+/* Mesmo que não esteja no seu HTML, o navegador reconhece esse seletor */
+#dataPedido::-webkit-calendar-picker-indicator {
+    margin: 0 !important;
+    padding: 0 !important;
+    cursor: pointer;
+    /* Isso garante que ele fique no final do bloco (direita) */
+    order: 1; 
+}
+
+/* Ajuste para o texto da data não grudar no ícone */
+#dataPedido::-webkit-datetime-edit {
+    flex: 1;
+    text-align: left;
 }
 
 /* Bloco Azul do Endereço */
@@ -489,10 +540,19 @@
 .etapa input, 
 .etapa select, 
 .etapa textarea {
+    width: 100%;
+    border-radius: 8px;
     padding: 12px;
-    margin-top: 8px;
+    margin-top: 5px; /* Reduzi de 8px para 5px para o título não ficar longe do campo */
     border: 1px solid #ccc;
+    background-color: white;
     font-size: 16px;
+    box-sizing: border-box;
+}
+
+/* Ajuste para o primeiro item não ter margem no topo e grudar no header */
+.etapa:first-of-type {
+    margin-top: 15px;
 }
 
 .info-grupo {
@@ -559,7 +619,10 @@
 
 /* Distância entre Título e Bloco de Descrição */
 .etapa h3, .etapa .titulo-etapa {
-    margin-bottom: 15px !important;
+    margin-top: 10px !important;
+    margin-bottom: 5px !important; /* O gap da .etapa já vai completar o espaço */
+    font-size: 1.2rem;
+    color: #783606;
 }
 
 /* Distância entre Bloco Descrição e Título Observação */
@@ -589,13 +652,29 @@ textarea, #observacaoPedido, .textarea-box {
 ===================================================== */
 /* --- CONTAINER PAI --- */
 .rodape {
-    position: sticky !important;
-    bottom: 0 !important;
-    background: #fff !important;
-    padding: 10px 15px !important; /* Diminuí o padding vertical */
-    border-top: 1px solid #eee !important;
-    z-index: 100 !important;
-    margin-top: 0 !important; /* ZERE ISSO PARA TIRAR O ESPAÇO */
+    /* 1. Troca o branco pelo rosa */
+    background: #FAD5DC !important; 
+    
+    /* 2. Tira o efeito de ficar grudado (sticky/fixo) */
+    position: relative !important; 
+    bottom: auto !important;
+    
+    /* 3. Remove o preenchimento que causava a "moldura" branca */
+    padding: 0 !important; 
+    
+    /* 4. Garante o fechamento total */
+    width: 100% !important;
+    margin-top: 0 !important;
+    z-index: 10;
+    text-align: center;
+}
+
+.rodape-card {
+    background: #FAD5DC !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 40px 20px !important; /* O padding agora fica no filho */
+    box-sizing: border-box;
 }
 
 .rodape-linha {
@@ -647,18 +726,21 @@ textarea, #observacaoPedido, .textarea-box {
 }
 
 .total-label {
+  
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 5px;
-    font-size: 14px;
+    font-size: 20px;
     color: #783606;
 }
 
 #valorTotalRodape {
-    font-size: 20px;
-    font-weight: bold;
-    color: #783606;
+    font-size: 30px !important; /* Tamanho destaque */
+    color: #783606 !important; /* Cor marrom padrão do seu sistema */
+    font-weight: 700 !important; /* Extra negrito */
+    line-height: 1 !important;
+    display: block !important;
 }
 
 /* --- AJUSTE MOBILE --- */
@@ -694,7 +776,9 @@ textarea, #observacaoPedido, .textarea-box {
     font-weight: bold;
     font-size: 16px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    display: inline-block;
+    margin-bottom: 20px !important;
+    display: block !important;
+    margin-top: 10px !important;
 }
 
 /* Seleção do Método de Pagamento (PIX / Cartão) */
@@ -703,6 +787,8 @@ textarea, #observacaoPedido, .textarea-box {
     justify-content: center;
     gap: 20px;
     margin-bottom: 20px;
+    margin-top: 15px !important;
+    gap: 15px !important;
 }
 
 .btn-pagamento {
@@ -924,6 +1010,7 @@ textarea, #observacaoPedido, .textarea-box {
     align-items: flex-start;
     text-align: left;
     transition: transform 0.3s, box-shadow 0.3s;
+    margin-bottom: 15px !important;
 }
 
 .box-opcao.visivel { display: flex !important; }
@@ -973,10 +1060,7 @@ textarea, #observacaoPedido, .textarea-box {
     gap: 10px;
 }
 
-/* Animação do Ícone de Carrinho */
-.cart-count {
-    transition: transform 0.2s ease;
-}
+
 
 .animar-batida {
     transform: scale(1.2);
@@ -1027,7 +1111,7 @@ textarea, #observacaoPedido, .textarea-box {
     width: 18px !important;
     height: 18px !important;
     cursor: pointer;
-    z-index: 10;
+    z-index: 10 !important;
     display: block !important;
 }
 
@@ -1115,10 +1199,13 @@ textarea, #observacaoPedido, .textarea-box {
 
     /* 3. Blocos dentro da margem */
     .observacao, .customizacao-doces, .bloco-produto {
-        width: auto !important; /* Garante que respeite o padding do pai */
-        margin-left: 15px !important;
-        margin-right: 15px !important;
-        box-sizing: border-box !important;
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        box-sizing: border-box;
+        margin-top: 25px !important;
+        margin-bottom: 20px !important;
+        display: inline-block !important;
     }
 
 
@@ -1128,6 +1215,7 @@ textarea, #observacaoPedido, .textarea-box {
         padding-right: 40px !important; 
         display: flex !important;
         align-items: flex-start !important;
+        overflow: hidden;
     }
 
     /* 2. Posicionamento da Lixeira no Topo */
@@ -1151,4 +1239,166 @@ textarea, #observacaoPedido, .textarea-box {
 }
 
 
+/* Removemos o :has que estava bugando e usamos uma classe simples */
 
+
+/* Garante que o contador só apareça se o JS mandar, sem interferência de conflitos de CSS */
+/* Localize o ID do seu contador */
+#contador-fixo-doces {
+    /* 1. Garante que ele flutue sobre o layout flex do body */
+    position: fixed !important;
+    
+    /* 2. Posicionamento estratégico (geralmente embaixo) */
+    bottom: 20px !important;
+    right: 20px !important;
+    
+    /* 3. A SOLUÇÃO: Z-index agressivo para vencer o isolation:isolate */
+    z-index: 9999999 !important;
+    
+    /* 4. Garante que ele seja visível e não transparente */
+    display: flex !important; 
+    background-color: #e91e63!important; /* Ou a cor do seu design */
+    
+    /* 5. Evita que cliques passem por ele ou ele seja ignorado */
+    pointer-events: auto !important;
+    
+    /* Respiro interno para o texto não encostar na borda do contador */
+    padding: 10px 15px;
+    border-radius: 50px;
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+}
+
+/* IMPORTANTE: Remova a regra que esconde o contador se ela estiver atrapalhando */
+body.checkout-ativo #contador-fixo-doces {
+    /* Mantenha display: none apenas se quiser esconder no checkout real */
+   display: none !important; 
+}
+
+/* Estilização do Título da Etapa */
+.titulo-secao {
+    margin-bottom: 20px !important;
+    display: block !important;
+    margin-top: 10px !important;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.titulo-secao h3 {
+    color: #e91e63; /* O rosa que você usa no projeto */
+    font-size: 20px;
+    margin: 0;
+    font-weight: 700;
+}
+
+.titulo-secao p {
+    color: #000;
+    font-size: 14px;
+    margin: 5px 0 0 0;
+}
+
+/* Ajuste de margem para os blocos flutuantes não colarem no título */
+#etapaIdentificacao .form-bloco.floating:first-of-type {
+    margin-top: 10px;
+}
+
+#etapaIdentificacao .pill-titulo {
+    /* 1. O SEGREDO: Faz o bloco ter apenas a largura do texto interno */
+    display: inline-block !important; 
+    width: auto !important;
+    
+    /* 2. Mantém o design de 'pílula' */
+    background-color: #783606 !important; /* Cor rosa padrão */
+    color: #ffffff !important;
+    padding: 8px 15px !important; /* Respiro interno horizontal e vertical */
+    border-radius: 18px !important; /* Arredondado nas pontas */
+    
+    /* 3. Ajustes de fonte e alinhamento */
+    font-size: 18px !important;
+    
+    text-align: center !important;
+    
+    /* 4. Margens para não grudar no que vem depois */
+    margin-bottom: 18px !important;
+    margin-top: 10px !important;
+}
+
+/* Garante que o container acima dele não o force a esticar */
+#etapaIdentificacao div:has(> .pill-titulo) {
+    text-align: left !important; /* Mantém ele alinhado à esquerda */
+    width: 100%;
+}
+
+/* Ajuste para mobile no título */
+@media (max-width: 768px) {
+    .pill-titulo {
+        font-size: 12px;
+        padding: 5px 15px;
+    }
+}
+
+#container-preferencia-peso .radio{
+    display: flex !important;
+    align-items: center !important; /* Alinha bolinha e texto perfeitamente */
+    justify-content: flex-start !important;
+    
+    /* Redução do Bloco */
+    padding: 8px 12px !important; /* Padding menor para o bloco ficar mais fino */
+    margin-bottom: 5px !important;
+    
+    border: 1px dashed #783606 !important;
+    border-radius: 6px !important;
+    width: 100% !important;
+    font-size: 14px !important; /* Texto levemente menor para combinar */
+    line-height: 1 !important;   /* Garante que não haja folga em cima/baixo */
+    color: #783606;
+}
+
+
+
+#container-preferencia-peso input[type="radio"] {
+   -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+
+    /* Define o novo tamanho reduzido */
+    width: 12px !important; 
+    height: 12px !important;
+    
+    /* Cria a borda da bolinha */
+    border: 1.5px solid #783606 !important;
+    border-radius: 50% !important;
+    
+    /* Garante que ela não estique e fique centralizada */
+    display: inline-block !important;
+    margin: 0 8px 0 0 !important; /* Espaço entre bolinha e texto */
+    cursor: pointer;
+    vertical-align: middle;
+    background-color: #fff;
+    position: relative;
+}
+
+#container-preferencia-peso .radio span, 
+#container-preferencia-peso .radio {
+    text-decoration: none !important;
+    border: none !important; 
+    text-align: left !important;
+}
+
+/* Estilo de quando a bolinha está marcada */
+#container-preferencia-peso input[type="radio"]:checked {
+    background-color: #e91e63 !important;
+    border-color: #e91e63 !important;
+    
+    /* Opcional: Criar um pontinho branco interno se achar que ficou muito pequena */
+    box-shadow: inset 0 0 0 2px #fff !important; 
+}
+
+/* 1. Título alinhado à esquerda */
+#container-preferencia-peso .titulo {
+    display: block !important;
+    text-align: left !important; /* Move o título para a esquerda */
+    font-size: 17px !important;
+    font-weight: bold;
+    color: #783606;
+    margin-bottom: 10px !important;
+}
