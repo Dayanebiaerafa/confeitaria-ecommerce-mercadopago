@@ -50,27 +50,32 @@ export function atualizarContadorSacola() {
     });
 }
 
-export function abrirDrawer() {
-    // Removemos a trava do "if (!temDoces...)" para permitir que o drawer abra 
-    // e mostre a mensagem "Sua sacola está vazia" caso o clique seja muito rápido.
-    
-    const tipoPagina = document.body.getAttribute('data-pagina');
-    const blocoBolo = document.getElementById('bloco-bolo-carrinho');
 
-    if (tipoPagina === 'doces' && blocoBolo) {
-        blocoBolo.style.display = 'none'; 
-    }
+export function abrirDrawer() {
+    // ID CORRETO conforme seu console: 'drawerCarrinho'
+    const drawer = document.getElementById('drawerCarrinho'); 
+    const overlay = document.getElementById('overlay');
+
+    console.log("Tentando abrir drawer...", drawer); // Se aparecer null aqui, o ID no HTML mudou
 
     if (drawer && overlay) {
+        // 1. Sincroniza os dados antes de mostrar
+        const dadosSalvos = localStorage.getItem('carrinho_dayane');
+        if (dadosSalvos) {
+            Object.assign(pedido, JSON.parse(dadosSalvos));
+        }
+
+        // 2. Abre visualmente
         drawer.classList.add("ativo");
         overlay.classList.add("ativo");
         
-        // ESSENCIAL: Força a atualização dos dados assim que abre
-        atualizarDadosCarrinho(); 
-        mostrarEtapa(0);
+        // 3. Força a renderização
+        mostrarEtapa(0); 
+        atualizarDadosCarrinho();
+    } else {
+        console.error("Erro: Elementos do drawer não encontrados no DOM!");
     }
 }
-
 export function fecharDrawer() {
     if (drawer && overlay) {
         drawer.classList.remove("ativo");
@@ -79,6 +84,15 @@ export function fecharDrawer() {
 }
 
 export function mostrarEtapa(index) {
+    console.trace("Abrindo etapa: " + index)
+
+    if (index === 1 && window.bloquearEtapa1) {
+        console.warn("🚫 Redirecionando clique do banner para Etapa 3...");
+        window.bloquearEtapa1 = false; // Libera para as próximas interações
+        mostrarEtapa(3); // Força o destino correto
+        return; 
+    }
+
     window.scrollTo(0, 0); 
 
     // 2. RESET DO SCROLL INTERNO (A solução para o seu problema)
@@ -90,6 +104,7 @@ export function mostrarEtapa(index) {
 
     // --- RESET DE SEGURANÇA (ETAPA 2) ---
     if (index === 2) {
+        restaurarEstadoBotoesPagamento();
         if (typeof intervaloPix !== 'undefined') clearInterval(intervaloPix);
         
         window.mpInstanciado = false; 
@@ -131,21 +146,69 @@ export function mostrarEtapa(index) {
         const pixContainer = document.getElementById("pix-container");
         const containerMP = document.getElementById("container-pagamento-mp");
         const brickC = document.getElementById("paymentBrick_container");
-
-        if (pixContainer) pixContainer.style.display = "none";
         
-        if (containerMP) {
-            containerMP.style.display = "block";
-            if (brickC) brickC.innerHTML = ""; 
+        const dadosPixRaw = localStorage.getItem('dados_pix_resultado');
+        const temPixPendente = localStorage.getItem('ultimo_pedido_id');
+
+        // --- 1. LÓGICA DE EXIBIÇÃO ---
+        if (temPixPendente && dadosPixRaw) {
+            const pixDados = JSON.parse(dadosPixRaw);
+            
+            if (containerMP) containerMP.style.display = "none";
+            if (pixContainer) {
+                pixContainer.style.display = "flex";
+                pixContainer.style.flexDirection = "column";
+                pixContainer.style.alignItems = "center";
+
+                // SÊNIOR: Se a imagem estiver vazia (o que aconteceu com você), 
+                // nós forçamos o preenchimento aqui também como garantia extra!
+                const qrImg = document.getElementById("pix-qr-img");
+                const copiaCola = document.getElementById("pix-copia-e-cola");
+                
+                if (qrImg && !qrImg.src.includes('base64') && pixDados.qr_code_base64) {
+                    qrImg.src = `data:image/png;base64,${pixDados.qr_code_base64}`;
+                }
+                if (copiaCola && !copiaCola.value && pixDados.qr_code) {
+                    copiaCola.value = pixDados.qr_code;
+                }
+            }
+        } else {
+            // Fluxo normal Mercado Pago
+            if (pixContainer) pixContainer.style.display = "none";
+            if (containerMP) {
+                containerMP.style.display = "block";
+                // Só limpa o brick se for um novo pagamento real
+                if (brickC) brickC.innerHTML = ""; 
+                
+                setTimeout(() => {
+                    if (typeof inicializarCheckoutTransparente === 'function') {
+                        inicializarCheckoutTransparente();
+                    }
+                }, 500);
+            }
         }
 
-        // Delay essencial para o container "existir" visualmente antes do script rodar
-        setTimeout(() => {
-            console.log("🛠️ Tentando carregar Checkout...");
-            if (typeof inicializarCheckoutTransparente === 'function') {
-                inicializarCheckoutTransparente();
-            }
-        }, 500); 
+        // --- 2. O BOTÃO DE ALTERAR (Sempre no final da etapa) ---
+        // Removemos se já existir para não duplicar, e criamos de novo no final
+        const btnAntigo = document.getElementById("btn-alterar-pagamento");
+        if (btnAntigo) btnAntigo.remove();
+
+        const btnTroca = document.createElement("button");
+        btnTroca.id = "btn-alterar-pagamento";
+        btnTroca.innerText = "🔄 Alterar forma de pagamento";
+        btnTroca.className = "btn-link-pequeno"; 
+        btnTroca.style.display = "block";
+        btnTroca.style.margin = "20px auto";
+        
+        btnTroca.onclick = () => {
+            localStorage.removeItem('ultimo_pedido_id');
+            localStorage.removeItem('dados_pix_resultado');
+            if (window.intervaloPix) clearInterval(window.intervaloPix);
+            if (brickC) brickC.innerHTML = ""; 
+            mostrarEtapa(2); // Volta para a escolha Pix/Cartão
+        };
+
+        document.getElementById("etapaFinalizar").appendChild(btnTroca);
     }
 
     // --- CONTROLE DOS BOTÕES (Sua lógica original mantida e protegida) ---
@@ -177,7 +240,8 @@ export function mostrarEtapa(index) {
         atualizarRodape(index); // Mantém a sincronização do rodapé
     }
 }
-         
+
+window.mostrarEtapa = mostrarEtapa;
 
         
 
@@ -418,6 +482,7 @@ export function toggleTopo(selecionado, event) {
 =============================== */
 
 export function atualizarDadosCarrinho() {
+
     // --- 1. MAPEAMENTO DE ELEMENTOS ---
     const imgBolo = document.getElementById('cartImagem');
     const descBolo = document.getElementById('cartDescricao');
@@ -450,7 +515,17 @@ export function atualizarDadosCarrinho() {
     // --- 3. ATUALIZAÇÃO DO BOLO ATUAL (O que está sendo montado) ---
     // --- 3. RENDERIZAÇÃO DO RASCUNHO SÊNIOR ---
     
+    if (!containerItens) return;
 
+    const itens = pedido.itens || [];
+
+    if (itens.length === 0 && !temRascunho && itensDoces.length === 0) {
+        containerItens.innerHTML = "";
+        if (sacolaVaziaMsg) sacolaVaziaMsg.style.display = 'block';
+        // Não damos return aqui para permitir que outros blocos (como totais) atualizem
+    } else {
+        if (sacolaVaziaMsg) sacolaVaziaMsg.style.display = 'none';
+    }
     // Controle do Bloco de Forminhas
     if (blocoForminhas) {
         blocoForminhas.style.display = temDocesNaSacola ? 'block' : 'none';
@@ -497,20 +572,18 @@ export function atualizarDadosCarrinho() {
     
                             <div style="display: flex; align-items: center; flex-shrink: 0;">
                                 <img src="assets/peso.png" style="width: 16px; height: 16px; margin-right: 2px; display: block; object-fit: contain;">
-                                <span style="font-weight: bold; font-size: 14px; color: #333; white-space: nowrap;">${item.pesoKg}kg</span>
+                                <span style="font-weight: bold; font-size: 14px; color: #333; white-space: nowrap;">${pedido.pesoKg}kg</span>
                             </div>
 
                             <div style="display: flex; align-items: center; flex-shrink: 0; text-align: right;">
                                 <img src="assets/coins.png" style="width: 16px; height: 16px; margin-right: 4px; display: block; object-fit: contain;">
-                                <span style="font-weight: bold; color: #e91e63; font-size: 16px; white-space: nowrap;">R$ ${item.valorIndividual.toFixed(2).replace('.', ',')}</span>
+                                <span style="font-weight: bold; color: #e91e63; font-size: 16px; white-space: nowrap;">R$ ${(pedido.valorIndividual || 0).toFixed(2).replace('.', ',')}</span>
                             </div>
                         </div>
                     </div>
                 </div>
             `;
-                    }
-    } else {
-        if (blocoBolo) blocoBolo.style.display = 'none';
+        }
     }
 
     // --- 4. SACOLA (Múltiplos Bolos) ---
@@ -519,60 +592,70 @@ export function atualizarDadosCarrinho() {
         if (temItensNaSacola) {
             let htmlSacola = `<span class="pill" style="margin-bottom: 10px; display: inline-block;">Encomendas na Sacola</span>`;
         
-            htmlSacola += pedido.itens.map((item, idx) => `
+            htmlSacola += pedido.itens.map((item, idx) => {
+                try {
+                    return `
                 
                 
-                <div class="card-produto-sacola" style="background: #f9f9f9; border-radius: 12px; padding: 15px; margin-bottom: 15px; position: relative; border: 1px solid #eee;">
-                    <div style="display: flex; gap: 12px;">
-                        <img src="${item.modeloImagem}" style="width: 150px; height: 150px; object-fit: cover; border-radius: 8px;">
+                        <div class="card-produto-sacola" style="background: #f9f9f9; border-radius: 12px; padding: 15px; margin-bottom: 15px; position: relative; border: 1px solid #eee;">
+                            <div style="display: flex; gap: 12px;">
+                                <img src="${item.modeloImagem}" style="width: 150px; height: 150px; object-fit: cover; border-radius: 8px;">
 
-                        <div style="flex: 1;">
-                            <div style="font-size: 13px; color: #333; line-height: 1.4;">
-                                
-                                <div style="font-weight: bold; color: #e91e63; margin-bottom: 8px; font-size: 14px; text-transform: uppercase; padding-right: 25px;">
-                                    ${item.titulo || 'Bolo'} 
-                                </div>
-                                
-                                • <b>Formato:</b> ${item.formato}<br>
-                                • <b>Massa:</b> ${item.massa}<br>
-                                • <b>Recheio:</b> ${item.recheios.join(', ')}<br>
-                                ${item.complemento ? `• <b>Complemento:</b> ${item.complemento}<br>` : ''}
-                                ${item.topo ? `
-                                    <div style="margin-top: 5px;">
-                                        <b style="color: #e91e63;">✔ Com Topo</b>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 13px; color: #333; line-height: 1.4;">
                                         
-                                        ${(item.nomeTopo || item.idadeTopo || item.obsTopo) ? `
-                                            <div style="margin-top: 2px;">
-                                                <span style="margin-left: 10px; color: #333;">• <b>Nome:</b> ${item.nomeTopo || '---'}</span><br>
-                                                <span style="margin-left: 10px; color: #333;">• <b>Idade:</b> ${item.idadeTopo || '---'}</span><br>
-                                                <span style="margin-left: 10px; color: #333;">• <b>Obs:</b> ${item.obsTopo || '---'}</span>
+                                        <div style="font-weight: bold; color: #e91e63; margin-bottom: 8px; font-size: 14px; text-transform: uppercase; padding-right: 25px;">
+                                            ${item.titulo || 'Bolo'} 
+                                        </div>
+                                        
+                                        • <b>Formato:</b> ${item.formato}<br>
+                                        • <b>Massa:</b> ${item.massa}<br>
+                                        • <b>Recheio:</b> ${item.recheios.join(', ')}<br>
+                                        ${item.complemento ? `• <b>Complemento:</b> ${item.complemento}<br>` : ''}
+                                        ${item.topo ? `
+                                            <div style="margin-top: 5px;">
+                                                <b style="color: #e91e63;">✔ Com Topo</b>
+                                                
+                                                ${(item.nomeTopo || item.idadeTopo || item.obsTopo) ? `
+                                                    <div style="margin-top: 2px;">
+                                                        <span style="margin-left: 10px; color: #333;">• <b>Nome:</b> ${item.nomeTopo || '---'}</span><br>
+                                                        <span style="margin-left: 10px; color: #333;">• <b>Idade:</b> ${item.idadeTopo || '---'}</span><br>
+                                                        <span style="margin-left: 10px; color: #333;">• <b>Obs:</b> ${item.obsTopo || '---'}</span>
+                                                    </div>
+                                                ` : ''}
                                             </div>
                                         ` : ''}
+                                        ${item.embalagem ? `<span style="color: #e91e63; "> <b>✔ Com Embalagem</b></span>` : ''}
                                     </div>
-                                ` : ''}
-                                ${item.embalagem ? `<span style="color: #e91e63; "> <b>✔ Com Embalagem</b></span>` : ''}
-                            </div>
 
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; border-top: 1px dashed #ccc; padding-top: 10px; width: 100%; gap: 10px;">
-    
-                                <div style="display: flex; align-items: center; flex-shrink: 0;">
-                                    <img src="assets/peso.png" style="width: 16px; height: 16px; margin-right: 2px; display: block; object-fit: contain;">
-                                    <span style="font-weight: bold; font-size: 14px; color: #333; white-space: nowrap;">${item.pesoKg}kg</span>
-                                </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; border-top: 1px dashed #ccc; padding-top: 10px; width: 100%; gap: 10px;">
+            
+                                        <div style="display: flex; align-items: center; flex-shrink: 0;">
+                                            <img src="assets/peso.png" style="width: 16px; height: 16px; margin-right: 2px; display: block; object-fit: contain;">
+                                            <span style="font-weight: bold; font-size: 14px; color: #333; white-space: nowrap;">${item.pesoKg}kg</span>
+                                        </div>
 
-                                <div style="display: flex; align-items: center; flex-shrink: 0; text-align: right;">
-                                    <img src="assets/coins.png" style="width: 16px; height: 16px; margin-right: 4px; display: block; object-fit: contain;">
-                                    <span style="font-weight: bold; color: #e91e63; font-size: 16px; white-space: nowrap;">R$ ${item.valorIndividual.toFixed(2).replace('.', ',')}</span>
+                                        <div style="display: flex; align-items: center; flex-shrink: 0; text-align: right;">
+                                            <img src="assets/coins.png" style="width: 16px; height: 16px; margin-right: 4px; display: block; object-fit: contain;">
+                                            <span style="font-weight: bold; color: #e91e63; font-size: 16px; white-space: nowrap;">R$ ${item.valorIndividual.toFixed(2).replace('.', ',')}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+                            
+                            <img src="assets/lixeira.png" onclick="removerItemSacola(${idx})" 
+                                style="position: absolute; top: 10px; right: 10px; width: 20px; cursor: pointer; opacity: 0.6;">
                         </div>
-                    </div>
-                    
-                    <img src="assets/lixeira.png" onclick="removerItemSacola(${idx})" 
-                        style="position: absolute; top: 10px; right: 10px; width: 20px; cursor: pointer; opacity: 0.6;">
-                </div>
-            `).join('');
+                    `;
+
+                } catch (err) {
+                    console.error("Erro ao renderizar item do carrinho:", err);
+                    return "";
+                }
+            }).join('');
+            
             containerItens.innerHTML = htmlSacola;
+    
         }
     }
     
@@ -724,51 +807,6 @@ export function atualizarDadosCarrinho() {
     
 }
 
-export function confirmarBoloNoCarrinho() {
-    // 1. Validamos se o rascunho atual está completo
-    if (pedido.pesoKg <= 0 || !pedido.massa) {
-        alert("Selecione o peso e a massa antes de confirmar.");
-        return;
-    }
-
-    // 2. Criamos um objeto independente para este bolo (Imutabilidade)
-    const boloFinalizado = {
-        id: Date.now(), // ID único para não dar erro na lixeira
-        formato: pedido.formato,
-        massa: pedido.massa,
-        recheios: [...pedido.recheios],
-        pesoKg: pedido.pesoKg,
-        modeloImagem: pedido.modeloImagem,
-        complemento: pedido.complemento,
-        valorIndividual: calcularValorApenasDesteBolo(),
-        tipo: pedido.tipo // Identifica se veio de 'corte' ou 'personalizado'
-    };
-
-    // 3. Adicionamos ao array de itens (Onde o map vai ler)
-    if (!pedido.itens) pedido.itens = [];
-    pedido.itens.push(boloFinalizado);
-
-    // 4. RESET SENIOR: Limpamos APENAS o rascunho, mantendo os adicionais globais (se desejar)
-    pedido.pesoKg = 0;
-    pedido.massa = "";
-    pedido.recheios = [];
-    pedido.modeloImagem = null;
-    pedido.complemento = "";
-    pedido.topo = false;
-    pedido.nomeTopo = ""; // Crucial: limpa o rascunho
-    pedido.idadeTopo = "";
-    pedido.obsTopo = "";
-    // Nota: pedido.itens continua intacto com os bolos anteriores!
-
-    // 5. Atualizamos a interface
-    // 5. Persistência
-    if (typeof salvarNoLocalStorage === "function") {
-        salvarNoLocalStorage();
-    }
-    atualizarTudo();
-    atualizarDadosCarrinho();
-}
-
 
 export function resetarBotoesVisualmente(tipo) {
     const classesDestaque = ['ativo', 'active', 'selecionado'];
@@ -805,33 +843,32 @@ export function resetarBotoesVisualmente(tipo) {
 export function atualizarResumoFinal() {
     const tipoPg = document.body.getAttribute('data-pagina');
     
-    // 1. PRIMEIRO: Calculamos os valores base
-    // Sênior Log: Somamos o rascunho atual + o que já está na sacola (pedido.itens)
+    // --- AJUSTE SÊNIOR: Recuperação de variáveis globais ---
+    // Se a variável global sumiu no refresh, tentamos pegar do objeto pedido
+    const porcentagem = window.porcentagemPagamento || 1; 
+    const metodo = window.metodoSelecionado || (pedido.pagamento ? pedido.pagamento.metodo : '');
+
+    // 1. CÁLCULO DE VALORES
     const valorBaseBolo = typeof calcularTotal === "function" ? calcularTotal(pedido, tipoPg) : 0;
     const valorApenasDoces = (pedido.doces || []).reduce((acc, d) => acc + (parseFloat(d.valor) || 0), 0);
-    
-    // NOVIDADE: Somar itens que já estão na sacola definitiva
     const valorSacola = (pedido.itens || []).reduce((acc, item) => acc + (item.valorIndividual || 0), 0);
 
-    // 2. SEGUNDO: Criamos o totalOriginal (Soma total de tudo)
+    // O Total real é a soma de tudo
     const totalOriginal = valorBaseBolo + valorApenasDoces + valorSacola;
 
-    // 3. TERCEIRO: Calculamos o pagamento e o restante
-    const valorPagarAgora = totalOriginal * (porcentagemPagamento || 1);
+    // 3. PAGAMENTO
+    const valorPagarAgora = totalOriginal * porcentagem;
     const valorRestante = totalOriginal - valorPagarAgora;
     
-    // 4. QUARTO: Criamos o formatador
     const formatador = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 
-   
+    // --- IDENTIFICAÇÃO (Melhorado) ---
+    // Prioriza o que está no objeto pedido (que veio do LocalStorage)
+    const nome = pedido.cliente?.nome || document.getElementById("nomeCliente")?.value || "---";
+    const tel = pedido.cliente?.telefone || document.getElementById("telefoneCliente")?.value || "---";
+    const email = pedido.cliente?.email || document.getElementById("emailCliente")?.value || "---";
 
-    
-    // --- 1. BLOCO NOME COMPLETO (IDENTIFICAÇÃO) ---
-    const nome = document.getElementById("nomeCliente")?.value || "---";
-    const tel = document.getElementById("telefoneCliente")?.value || "---";
-    const email = document.getElementById("emailCliente")?.value || "---";
     const elNome = document.getElementById("resumoNome");
-
     if (elNome) {
         elNome.innerHTML = `
             <b>Nome:</b> ${nome}<br>
@@ -854,6 +891,7 @@ export function atualizarResumoFinal() {
             htmlProdutos += `&nbsp;&nbsp;<b>Massa:</b> ${item.massa || '---'}<br>`;
             htmlProdutos += `&nbsp;&nbsp;<b>Recheio:</b> ${item.recheios?.join(', ') || '---'}<br>`;
             htmlProdutos += `&nbsp;&nbsp;<b>Complemento:</b> ${item.complemento || '---'}<br>`;
+            
             
             // Lógica de Topo
             // ... dentro do loop de pedido.itens na função atualizarResumoFinal()
@@ -927,7 +965,7 @@ export function atualizarResumoFinal() {
         }
 
         // Observação do pedido
-        const obsGeral = document.getElementById("observacaoPedido")?.value.trim();
+        const obsGeral = pedido.observacao || document.getElementById("observacaoPedido")?.value.trim();
         if (obsGeral) {
             htmlProdutos += `• <b>Observação:</b> ${obsGeral}<br>`;
         }
@@ -964,6 +1002,9 @@ export function atualizarResumoFinal() {
         }, {});
 
         htmlProdutos += `<b>Doces:</b><br>`;
+        if (pedido.corForminhas) {
+            htmlProdutos += `<span style="color: #000;">• <b>Cor das forminhas:</b> ${pedido.corForminhas}</span><br>`;
+        }
         Object.entries(agrupados).forEach(([nome, info]) => {
             htmlProdutos += `<div style="display: flex; justify-content: space-between;">
                 <span>• ${info.qtd} un. Docinho ${nome}</span>
@@ -971,6 +1012,14 @@ export function atualizarResumoFinal() {
             </div>`;
         });
         htmlProdutos += `<hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0;">`;
+        
+    }
+
+    if (pedido.pesoKg <= 0 && (pedido.doces && pedido.doces.length > 0)) {
+        const obsGeralDoces = pedido.observacao || document.getElementById("observacaoPedido")?.value.trim();
+        if (obsGeralDoces) {
+            htmlProdutos += `• <b>Observação:</b> ${obsGeralDoces}<br>`;
+        }
     }
 
     const elDesc = document.getElementById("resumoDescricao");
@@ -980,15 +1029,23 @@ export function atualizarResumoFinal() {
     const mSel = typeof metodoSelecionado !== 'undefined' ? metodoSelecionado : '';
     
     // AJUSTE: Negrito aplicado nas escritas Pix e Cartão
-    const txtMetodo = mSel === 'pix' ? '<b>Pix</b>' : (mSel === 'credit_card' ? '<b>Cartão</b>' : '---');
-    const txtPorcentagem = (porcentagemPagamento === 0.5) ? '50% (Entrada)' : '100% (Total)';
+    const txtMetodo = metodo === 'pix' ? '<b>Pix</b>' : (metodo === 'credit_card' ? '<b>Cartão</b>' : '---');
+    const txtPorcentagem = (porcentagem === 0.5) ? '50% (Entrada)' : '100% (Total)';
 
-    // Preenche Pagamento, Subtotal e Total
+    // Preenche Pagamento
     const elPagamento = document.getElementById("resumoPagamento");
     if (elPagamento) {
-        elPagamento.innerHTML = `${txtMetodo} - ${txtPorcentagem}`;
+        // Buscamos diretamente das globais que sincronizamos no refresh
+        const metodoAtivo = window.metodoSelecionado || pedido.pagamento?.metodo || "Não definido";
+        const valorPorc = window.porcentagemPagamento || pedido.pagamento?.porcentagem || 1.0;
+
+        const txtMetodoFormatado = metodoAtivo.toUpperCase();
+        const txtPorcentagemFormatada = (valorPorc === 0.5) ? "50% (Sinal)" : "100% (Total)";
+
+        elPagamento.innerHTML = `<b>${txtMetodoFormatado}</b> - ${txtPorcentagemFormatada}`;
     }
 
+    // Atualiza os valores na tela
     const mappings = {
         "resumoSubtotal": formatador.format(totalOriginal),
         "resumoTotal": formatador.format(valorPagarAgora)
@@ -1019,13 +1076,20 @@ export function atualizarResumoFinal() {
     }
 
     // Data e Horário
+    
+    // --- DATA E HORÁRIO (Sincronizado com Objeto e Input) ---
     const dataInput = document.getElementById("dataPedido")?.value;
-    const dataBr = dataInput ? dataInput.split('-').reverse().join('/') : "---";
+    const dataObjeto = pedido.cliente?.data;
+    const dataFinal = dataInput || dataObjeto || "";
+    const dataBr = dataFinal ? dataFinal.split('-').reverse().join('/') : "---";
+
+    const horaFinal = document.getElementById("horarioPedido")?.value || pedido.cliente?.horario || "---";
+
     const elData = document.getElementById("resumoData");
     const elHora = document.getElementById("resumoHorario");
-    
+
     if (elData) elData.innerText = dataBr;
-    if (elHora) elHora.innerText = document.getElementById("horarioPedido")?.value || "---";
+    if (elHora) elHora.innerText = horaFinal;
 
 
     // --- ACRESCENTE ESTE BLOCO AQUI (Final da função) ---
@@ -1046,26 +1110,47 @@ export const fecharErro = () => { if (modalErro) modalErro.style.display = "none
 export const abrirModalTermos = () => { if(modalTermos) modalTermos.style.display = "block"; };
 
 
-
+// --- FUNÇÃO 2: Escolher o Método (Pix ou Cartão) ---
 export function escolherMetodo(metodo) {
-    setMetodoSelecionado(metodo);
-    window.metodoSelecionado = metodo; // Linha de segurança para o payment.js ler
+    window.metodoSelecionado = metodo; 
     
-    document.querySelectorAll('.btn-pagamento').forEach(btn => btn.classList.remove('selected'));
-    const idAlvo = metodo === 'pix' ? 'btnMetodoPix' : 'btnMetodoCartao';
-    const elemento = document.getElementById(idAlvo);
-    if (elemento) elemento.classList.add('selected');
+    if (!pedido.pagamento) pedido.pagamento = {};
+    pedido.pagamento.metodo = metodo;
+    
+    // SÊNIOR: Removemos o IF que forçava 1.0 aqui. 
+    // Se o valor já for 0.5, ele vai continuar sendo 0.5.
+    // Se não existir nada, a variável global (que já inicia em 1.0 no state) resolve.
 
-    // Força a limpeza do container toda vez que o método é trocado
+    // Feedback visual
+    atualizarVisualMetodo(metodo);
+
+    // Limpa o Mercado Pago
     const container = document.getElementById("paymentBrick_container");
     if (container) container.innerHTML = "";
     window.mpInstanciado = false; 
 
-    // Destaca o botão selecionado (sua lógica visual)
-    atualizarVisualMetodo(metodo);
+    salvarNoLocalStorage(); 
+    atualizarResumoFinal();
 }
 
+export function restaurarEstadoBotoesPagamento() {
+    // SÊNIOR: Prioridade para a Global, depois Objeto, depois Padrão 1.0
+    const porcSalva = window.porcentagemPagamento || pedido.pagamento?.porcentagem || 1.0;
+    const metodoSalvo = window.metodoSelecionado || pedido.pagamento?.metodo || null;
 
+    console.log("🎨 Restaurando visual:", { porcSalva, metodoSalvo });
+
+    // Ajusta botões de porcentagem
+    document.querySelectorAll('.btn-valor').forEach(btn => btn.classList.remove('active'));
+    const idPorc = (porcSalva === 0.5) ? 'btnPagar50' : 'btnPagar100';
+    const elPorc = document.getElementById(idPorc);
+    if (elPorc) elPorc.classList.add('active');
+
+    // Ajusta botões de método
+    if (metodoSalvo && typeof atualizarVisualMetodo === 'function') {
+        atualizarVisualMetodo(metodoSalvo);
+    }
+}
 
 
 
@@ -1109,24 +1194,13 @@ export function mostrarNotificacao(mensagem) {
 
 
 
+// Em ui-updates.js
 export function selecionarPorcentagem(valor) {
-    // 1. Atualiza o valor no estado global
-    setPorcentagemPagamento(valor);
-
-    // 2. Atualiza o visual dos botões
-    const btn50 = document.getElementById("btnPagar50");
-    const btn100 = document.getElementById("btnPagar100");
-
-    if (valor === 0.5) {
-        btn50?.classList.add("active");
-        btn100?.classList.remove("active");
-    } else {
-        btn100?.classList.add("active");
-        btn50?.classList.remove("active");
+    // SÊNIOR: Em vez de ter lógica aqui, apenas chamamos a função global
+    // que definimos no main.js para evitar duplicidade.
+    if (typeof window.selecionarPorcentagem === 'function') {
+        window.selecionarPorcentagem(valor);
     }
-    
-    // 3. Atualiza o valor total no resumo, se necessário
-    if (typeof atualizarResumoFinal === "function") atualizarResumoFinal();
 }
 
 // Função auxiliar para evitar repetição de código
@@ -1494,10 +1568,27 @@ export function adicionarBoloAoCarrinho() {
     });
 
     // 7. Persistência e Atualização Global
+    localStorage.setItem('carrinho_dayane', JSON.stringify(pedido));
     if (typeof salvarNoLocalStorage === "function") salvarNoLocalStorage();
+
+    // AGORA chamamos a atualização da interface
+    if (typeof atualizarDadosCarrinho === "function") {
+        atualizarDadosCarrinho(); 
+    }
+
+
     
-    atualizarTudo(); 
-    if (typeof abrirDrawer === "function") abrirDrawer();
+
+    const banner = document.getElementById('banner-pendente');
+    if (banner) {
+        banner.remove();
+        console.log("🧹 Banner removido: Cliente iniciou uma nova compra.");
+    }
+    // POR ÚLTIMO, abrimos o carrinho
+    // Não chame atualizarTudo() aqui se ela resetar o estado da página
+    abrirDrawer(); 
+    
+    console.log("🚀 Bolo adicionado e carrinho comandado a abrir!");
 
 }
 
@@ -1511,7 +1602,7 @@ export function inicializarEventosDoces() {
             const quantidade = 25; 
             const subtotal = precoUnid * quantidade;
 
-            // --- NOVO: Alimenta o array de controle dos botões (pedido.doces) ---
+            // 1. Controle interno para pintar botões
             if (!pedido.doces) pedido.doces = [];
             let doceExistente = pedido.doces.find(d => d.nome === nome);
             
@@ -1527,8 +1618,9 @@ export function inicializarEventosDoces() {
                 });
             }
 
-            // --- SEU CÓDIGO ORIGINAL (Mantido para a Sacola) ---
+            // 2. Criar o objeto para a sacola (Carrinho)
             const novoDoce = {
+                id: Date.now(), // Adicionado um ID único por segurança
                 tipo: 'doces',
                 nome: nome,
                 quantidade: quantidade,
@@ -1536,17 +1628,27 @@ export function inicializarEventosDoces() {
                 imagem: btn.closest('.bolo-card').querySelector('img').src
             };
 
+            // 3. Adiciona ao array global de itens
             if (!pedido.itens) pedido.itens = [];
             pedido.itens.push(novoDoce);
 
+            // 4. Persistência
             localStorage.setItem('carrinho_dayane', JSON.stringify(pedido));
 
-            // Atualiza o botão (para ficar rosa) e a sacola
-            atualizarInterfaceDoces(btn, nome); 
-            atualizarDadosCarrinho();
+            // 5. ATUALIZAÇÃO DA TELA (Onde a mágica acontece)
+            if (typeof atualizarInterfaceDoces === "function") {
+                atualizarInterfaceDoces(btn, nome); 
+            }
             
-            if (typeof abrirDrawer === "function") abrirDrawer();
-            console.log(`✅ ${nome} adicionado!`);
+            // Atualiza os números dentro da sacola
+            atualizarDadosCarrinho(); 
+            
+            // ABRE O CARRINHO IMEDIATAMENTE (Sem travas de termos)
+            if (typeof abrirDrawer === "function") {
+                abrirDrawer(); 
+            }
+
+            console.log(`✅ ${nome} adicionado e carrinho aberto!`);
         });
     });
 }

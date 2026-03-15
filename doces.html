@@ -29,12 +29,7 @@
 <body data-pagina="doces">
 
 
-<div id="btnAbrirCarrinho" style="cursor: pointer; position: fixed; top: 20px; right: 20px; z-index: 999;">
-    <img src="assets/lixeira.png" alt="Sacola" style="width: 40px;">
-    <span class="cart-count" style="display: none; position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px; font-weight: bold;">
-        0
-    </span>
-</div>    
+  
 
 <!-- HEADER FIXO -->
 <!-- HEADER -->
@@ -406,27 +401,8 @@
           </p>
 
           <div id="itens-carrinho"></div>
-          
-          <div class="bloco-produto" id="bloco-bolo-carrinho" style="display: none;">
-              <span class="pill" id="labelTipoBolo">Encomenda</span>
-              <div class="card-produto">
-                  <img id="cartImagem" class="img-bolo" src="assets/LOGO.jpg" />
-                
-                  <div class="descricao">
-                      <div id="cartDescricao">
-                          <p>Selecione um bolo...</p>
-                      </div>
 
-                      <div class="badges">
-                          <span>
-                              <img src="assets/peso.png" class="icon" />
-                              <span id="cartPeso">0</span> kg
-                          </span>
-                      </div>
-                  </div>
-                  <img src="assets/lixeira.png" class="lixeira" data-item="bolo" />
-              </div>
-          </div>
+          
 
           <div class="bloco-produto" id="bloco-doces-carrinho" style="display: none; margin-top: 15px;">
               <span class="pill">Doces Tradicionais</span>
@@ -436,13 +412,13 @@
 
           <div class="confirmacoes-container">
               <div id="checkEmbalagem" class="box-opcao" style="display: none;">
-                  <span>✔ Sim, quero embalagem</span>
+                  <span>✔ Com Embalagem</span>
                   <img src="assets/lixeira.png" class="lixeira" data-item="embalagem" onclick="excluirEmbalagem()" />
               </div>
 
               <div id="checkTopo" class="box-opcao" style="display: none;">
                   <div class="topo-conteudo">
-                      <span id="titulo-topo-drawer">✔ Sim, quero topo personalizado</span>
+                      <span id="titulo-topo-drawer">✔ Com Topo</span>
                       <div id="detalhes-topo-carrinho" style="font-size: 11px; color: #783606; display: none; margin-top: 5px; text-align: left;"></div>
                   </div>
                   <img src="assets/lixeira.png" class="lixeira" data-item="topo" onclick="excluirTopo()" />
@@ -463,21 +439,18 @@
           </div>
 
           <div class="rodape">
-              <div class="rodape-linha" style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-                  
-                  <div id="container-preferencia-peso" class="peso-box" style="display: none; flex: 1;">
+              <div class="rodape-linha">
+                  <div id="container-preferencia-peso" class="peso-box">
                       <span class="titulo">Preferência de peso</span>
                       <label class="radio"><input type="radio" name="pesoPreferencia" value="Peso exato" /> Peso exato</label>
                       <label class="radio"><input type="radio" name="pesoPreferencia" value="Pode variar" /> Pode variar</label>
                   </div>
 
-                  <div id="container-total-rodape" class="total-coluna" style="flex: 1; display: flex; justify-content: flex-end;">
-                      <div class="total-card" style="text-align: center;">
-                          <span class="total-label">
-                              <img src="assets/coins.png" class="icon-small" /> Valor total
-                          </span>
-                          <strong id="valorTotalRodape">R$ 0,00</strong>
-                      </div>
+                  <div id="container-total-rodape" class="total-card">
+                      <span class="total-label">
+                          <img src="assets/coins.png" class="icon-small" /> Valor total
+                      </span>
+                      <strong id="valorTotalRodape">R$ 0,00</strong>
                   </div>
               </div>
           </div>
@@ -527,12 +500,12 @@
           <div id="btnPagar50" class="btn-valor" onclick="selecionarPorcentagem(0.5)">
             <strong>50%</strong>
             <span>Pagar entrada</span>
+          </div>
+          <div id="btnPagar100" class="btn-valor active" onclick="selecionarPorcentagem(1.0)">
+            <strong>100%</strong>
+            <span>Pagar total</span>
+          </div>
         </div>
-        <div id="btnPagar100" class="btn-valor active" onclick="selecionarPorcentagem(1.0)">
-          <strong>100%</strong>
-          <span>Pagar total</span>
-        </div>
-      </div>
 
         <div class="titulo-pagamento-container">
           <span class="btn-falso-titulo">Forma de Pagamento</span>
@@ -613,11 +586,15 @@
             <div id="paymentBrick_container"></div> 
         </div>
 
-        <div id="pix-container" style="display: none; text-align: center; margin-top: 20px; padding: 20px; border: 2px dashed #783606; border-radius: 10px; background: #fdf5e6;">
-            <h4 style="color: #783606;">Escaneie o QR Code:</h4>
-            <img id="pix-qr-img" src="" alt="QR Code Pix" style="width: 220px; height: 220px; margin: 10px 0;" />
+        <div id="pix-container" style="text-align: center; margin-top: 20px; padding: 20px; border: 2px dashed rgb(120, 54, 6); border-radius: 10px; background: rgb(253, 245, 230);">
+            <h4 style="color: #783606; margin-bottom: 15px;">Escaneie o QR Code:</h4>
+            
+            <img id="pix-qr-img" src="" alt="QR Code Pix" style="width: 220px; height: 220px; display: block; margin: 15px auto;" />
+            
             <p style="font-size: 12px; color: #666;">Ou copie o código abaixo:</p>
-            <textarea id="pix-copia-e-cola" readonly style="width: 100%; height: 70px; padding: 5px; font-size: 12px; border: 1px solid #ccc; border-radius: 5px;"></textarea>
+            
+            <textarea id="pix-copia-e-cola" readonly style="width: 100%; height: 70px; padding: 5px; font-size: 12px; border: 1px solid #ccc; border-radius: 5px; margin-top: 5px; resize: none;"></textarea>
+            
             <button onclick="copiarPix()" style="background: #783606; color: white; padding: 10px; border: none; border-radius: 5px; margin-top: 10px; cursor: pointer; width: 100%;">
                 Copiar Código Pix
             </button>

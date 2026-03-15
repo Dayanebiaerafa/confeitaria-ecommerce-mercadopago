@@ -130,6 +130,16 @@ export function atualizarTudo() {
   pedido.valorTotal = valorRascunhoAtual + totalSacola + totalDoces;
 
   // 5. Formatação
+  const porc = window.porcentagemPagamento || 1.0;
+  pedido.valorPago = pedido.valorTotal * porc;
+
+  // Garante que o objeto pagamento esteja sincronizado
+  if (!pedido.pagamento) pedido.pagamento = {};
+  pedido.pagamento.porcentagem = porc;
+  pedido.pagamento.metodo = window.metodoSelecionado || pedido.pagamento.metodo;
+  // --- FIM DA CORREÇÃO SÊNIOR ---
+
+  // 6. Formatação
   const totalFormatado = pedido.valorTotal.toLocaleString("pt-BR", {
     style: "currency",
     currency: "BRL",
@@ -153,11 +163,6 @@ export function atualizarTudo() {
   // 7. Sincronização e UI
   salvarNoLocalStorage();
   if (typeof atualizarContadorSacola === "function") atualizarContadorSacola();
-
-  // Chama a atualização visual do carrinho
-  import("./ui-updates.js").then((m) => {
-    if (m.atualizarDadosCarrinho) m.atualizarDadosCarrinho();
-  });
 }
 
 // Importe as constantes do seu arquivo de config

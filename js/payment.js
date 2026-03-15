@@ -9,7 +9,7 @@ export let isRendering = false;
 export let intervaloPix; // Variável para controlar o timer
 
 export async function inicializarCheckoutTransparente() {
-    // 1. Limpa o container
+    console.log("Dados para o Pix:", pedido.cliente)    // 1. Limpa o container
     const container = document.getElementById('paymentBrick_container');
 
     // TRAVA 1: Se o container não existe ou não está visível, não faz nada
@@ -131,48 +131,57 @@ export async function enviarPagamentoAoBackend(formData, totalCalculado) {
 
         // --- CASO 1: CARTÃO APROVADO NA HORA ---
         if (resultado.status === 'approved') {
-            console.log("💳 Cartão aprovado! Redirecionando...");
-            limparDadosAposPedido();
+            // SÓ AQUI limpamos o carrinho
+            localStorage.removeItem('carrinho_dayane');
+            localStorage.removeItem('ultimo_pedido_id');
+            localStorage.removeItem('dados_pix_resultado');
             window.location.href = "sucesso.html";
-            return; // Encerra aqui
+        } else {
+            // Se for 'pending' (Pix gerado), NÃO LIMPAMOS. 
+            // Assim o banner continua funcionando com os dados salvos.
+            console.log("Pagamento pendente, mantendo dados para recuperação.");
         }
 
         // --- CASO 2: PIX GERADO (STATUS PENDING) ---
         if (resultado.qr_code_base64 || resultado.status === 'pending') {
             console.log("🎨 Iniciando troca de telas: Mercado Pago -> Pix");
 
-            // 1. Limpeza do container do Mercado Pago
+            // 1. SALVAMENTO DE SEGURANÇA
+            localStorage.setItem('ultimo_pedido_id', resultado.id);
+            localStorage.setItem('pedido_salvo_para_automacao', JSON.stringify(pedido)); 
+            localStorage.setItem('dados_pix_resultado', JSON.stringify(resultado));
+            localStorage.setItem('carrinho_dayane', JSON.stringify(pedido));
+
+            // 2. PREPARAÇÃO DA INTERFACE (Aumente o nível de certeza aqui)
             if (containerMP) {
                 containerMP.style.display = "none"; 
                 containerMP.innerHTML = ""; 
             }
 
-            // 2. Exibição e Alinhamento do Pix
             const pixContainer = document.getElementById("pix-container");
             if (pixContainer) {
-                pixContainer.style.display = "flex"; 
-                pixContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                pixContainer.style.display = "flex";
+                pixContainer.style.flexDirection = "column";
+                pixContainer.style.alignItems = "center";
             }
 
-            // 3. Injeção dos dados (QR Code e Copia e Cola)
-            const qrImg = document.getElementById("pix-qr-img");
-            if (qrImg) qrImg.src = `data:image/png;base64,${resultado.qr_code_base64}`;
-            localStorage.setItem('ultimo_pedido_id', resultado.id);
-            localStorage.setItem('dados_ultimo_pedido', JSON.stringify(pedido));
+            // 3. INJEÇÃO DE DADOS (Com atraso para não ser atropelado pelo DOM)
+            setTimeout(() => {
+                const qrImg = document.getElementById("pix-qr-img");
+                const copiaCola = document.getElementById("pix-copia-e-cola");
 
-            const copiaCola = document.getElementById("pix-copia-e-cola");
-            if (copiaCola) copiaCola.value = resultado.qr_code;
+                if (qrImg) qrImg.src = `data:image/png;base64,${resultado.qr_code_base64}`;
+                if (copiaCola) copiaCola.value = resultado.qr_code;
+                
+                console.log("💎 Pix injetado com sucesso na primeira geração.");
+                
+                if (resultado.id) {
+                    verificarStatusPagamento(resultado.id, pedido); 
+                }
+            }, 200); // 200ms é o tempo ideal para o Render do navegador
 
-            // 4. Limpeza do Carrinho e Início da Verificação Automática
-            limparDadosAposPedido();
-
-            if (resultado.id) {
-                // Passamos o objeto 'pedido' (que você importou do state.js) para a função
-                verificarStatusPagamento(resultado.id, pedido); 
-            }
-
-            // Scroll para o topo para garantir visibilidade
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        
 
         } else {
             // --- CASO 3: ERRO OU REJEIÇÃO ---
@@ -187,61 +196,93 @@ export async function enviarPagamentoAoBackend(formData, totalCalculado) {
     }
 }
 
-function limparDadosAposPedido() {
-    console.log("🧹 Limpando dados do pedido para evitar duplicidade...");
+// payment.js ou utils.js
+export function limparDadosAposPedido() {
+    console.log("🧹 Pagamento Aprovado: Limpando tudo.");
+
+    // 1. Limpa o Storage (Todos os rastros do pedido anterior)
+    localStorage.removeItem('ultimo_pedido_id');
+    localStorage.removeItem('dados_ultimo_pedido');
+    localStorage.removeItem('dados_pix_resultado'); // ESSENCIAL: para o banner não tentar injetar lixo
+    localStorage.removeItem('carrinho_dayane'); 
     
-    // 1. Limpa o Carrinho (se você usa localStorage)
-    localStorage.removeItem('carrinho'); 
-    
-    // 2. Limpa os campos de texto do formulário (opcional, mas recomendado)
-    // document.getElementById("observacaoPedido").value = "";
-    
-    // 3. Reseta o estado da sacola na interface
-    // Se você tiver uma função que atualiza o contador da sacola para 0, chame-a aqui
+    // 2. Limpa o objeto global pedido (para não sobrar dados na memória)
+    // Usamos o delete para manter a referência da constante 'pedido'
+    if (typeof pedido === 'object') {
+        Object.keys(pedido).forEach(key => delete pedido[key]);
+    }
+
+    // 3. Remove o banner da tela
+    const banner = document.getElementById('banner-pendente');
+    if (banner) banner.remove();
+
+    // 4. Interface
     if (typeof atualizarSacola === 'function') {
         atualizarSacola(0); 
     }
 
-    // 4. Bloqueia o botão "Voltar" ou avisa que o pedido já foi registrado
-    //const btnVoltar = document.getElementById("btnVoltar");
-    //if (btnVoltar) btnVoltar.style.display = "none"; 
+    // 5. REDIRECIONAMENTO (O passo final do sucesso)
+    // Sênior: Só redirecionamos após garantir que o storage está limpo
+    window.location.href = "sucesso.html";
 }
 
 
+// payment.js
+
 export function verificarStatusPagamento(paymentId, dadosDoPedido) { 
-    // Passamos dadosDoPedido como parâmetro para a função conhecer o objeto 'pedido'
-    if (intervaloPix) clearInterval(intervaloPix);
+    // Garante que não existam dois verificadores rodando ao mesmo tempo
+    if (typeof intervaloPix !== 'undefined') clearInterval(intervaloPix);
 
     console.log("🕵️ Verificador iniciado...");
-    intervaloPix = setInterval(async () => {
+
+    // Definimos o intervalo globalmente para podermos limpar depois
+    window.intervaloPix = setInterval(async () => {
         try {
             const response = await fetch(`https://site-backend-mrgq.onrender.com/consultar-pagamento/${paymentId}`);
             const statusData = await response.json();
 
             // QUANDO O PAGAMENTO É APROVADO:
             if (statusData.status === 'approved') {
-                clearInterval(intervaloPix);
-                
+                clearInterval(window.intervaloPix);
                 console.log("✅ Pagamento aprovado! Automatizando processos...");
 
-                // 1. Enviar para a sua Planilha/IA (Silencioso)
-                // Use a URL que você obteve ao implantar o Apps Script
-                fetch(CONFIG.URL_PLANILHA, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify(dadosDoPedido)
-                });
+                const dadosFinais = dadosDoPedido || JSON.parse(localStorage.getItem('dados_ultimo_pedido'));
 
-                // 2. Disparar WhatsApp (O cliente clica e já envia a msg pronta)
-                const msg = gerarMensagemWhatsCompleta(dadosDoPedido);
-                abrirWhatsApp(dadosDoPedido.cliente.telefone, msg);
+                try {
+                    // 1. Enviar para Planilha
+                    fetch(CONFIG.URL_PLANILHA, { method: 'POST', mode: 'no-cors', body: JSON.stringify(dadosFinais) });
+
+                    // 2. Disparar WhatsApp
+                    const msg = gerarMensagemWhatsCompleta(dadosFinais);
+                    abrirWhatsApp(dadosFinais.cliente.telefone, msg);
+                    
+                } catch (msgError) {
+                    console.error("Erro na automação:", msgError);
+                }
+
+                // 3. AGORA SIM: Limpa e Redireciona
+                limparDadosAposPedido(); 
                 
-                // 3. Limpar e Finalizar
-                limparDadosAposPedido();
-                window.location.href = "sucesso.html";
+                setTimeout(() => {
+                    window.location.href = "sucesso.html";
+                }, 1500); // 1.5s para dar tempo do WhatsApp abrir
             }
         } catch (err) {
-            console.error("Erro na consulta:", err);
+            console.error("Erro na consulta do status:", err);
         }
     }, 4000);
+}
+
+// SÊNIOR: Exportação global para que o main.js e o HTML consigam acessar
+window.verificarStatusPagamento = verificarStatusPagamento;
+
+export function prepararTrocaDeMetodo() {
+    console.log("🔄 Limpando estado de pagamento anterior para novo método...");
+    localStorage.removeItem('ultimo_pedido_id');
+    localStorage.removeItem('dados_pix_resultado');
+    
+    // Para o verificador de Pix se ele estiver rodando
+    if (window.intervaloPix) {
+        clearInterval(window.intervaloPix);
+    }
 }

@@ -131,6 +131,7 @@
       <label for="checkTermos">
           Li e aceito a <span id="abrirModal" style="color: #4B2C20; text-decoration: underline; cursor: pointer;">variação de peso e preço</span>.
       </label>
+      <span id="setaVermelha" style="display: none; color: red; font-size: 20px; margin-left: 10px;">⬅️ Marque aqui</span>
   </div>
 </div>
 
@@ -518,7 +519,7 @@
           </p>
 
           <div id="itens-carrinho"></div>
-          
+
           
 
           <div class="bloco-produto" id="bloco-doces-carrinho" style="display: none; margin-top: 15px;">
@@ -624,12 +625,12 @@
           <div id="btnPagar50" class="btn-valor" onclick="selecionarPorcentagem(0.5)">
             <strong>50%</strong>
             <span>Pagar entrada</span>
+          </div>
+          <div id="btnPagar100" class="btn-valor active" onclick="selecionarPorcentagem(1.0)">
+            <strong>100%</strong>
+            <span>Pagar total</span>
+          </div>
         </div>
-        <div id="btnPagar100" class="btn-valor active" onclick="selecionarPorcentagem(1.0)">
-          <strong>100%</strong>
-          <span>Pagar total</span>
-        </div>
-      </div>
 
         <div class="titulo-pagamento-container">
           <span class="btn-falso-titulo">Forma de Pagamento</span>
@@ -712,15 +713,19 @@
             <div id="paymentBrick_container"></div> 
         </div>
 
-        <div id="pix-container" style="display: none; text-align: center; margin-top: 20px; padding: 20px; border: 2px dashed #783606; border-radius: 10px; background: #fdf5e6;">
-            <h4 style="color: #783606;">Escaneie o QR Code:</h4>
-            <img id="pix-qr-img" src="" alt="QR Code Pix" style="width: 220px; height: 220px; margin: 10px 0;" />
+        <div id="pix-container" style="text-align: center; margin-top: 20px; padding: 20px; border: 2px dashed rgb(120, 54, 6); border-radius: 10px; background: rgb(253, 245, 230);">
+            <h4 style="color: #783606; margin-bottom: 15px;">Escaneie o QR Code:</h4>
+            
+            <img id="pix-qr-img" src="" alt="QR Code Pix" style="width: 220px; height: 220px; display: block; margin: 15px auto;" />
+            
             <p style="font-size: 12px; color: #666;">Ou copie o código abaixo:</p>
-            <textarea id="pix-copia-e-cola" readonly style="width: 100%; height: 70px; padding: 5px; font-size: 12px; border: 1px solid #ccc; border-radius: 5px;"></textarea>
+            
+            <textarea id="pix-copia-e-cola" readonly style="width: 100%; height: 70px; padding: 5px; font-size: 12px; border: 1px solid #ccc; border-radius: 5px; margin-top: 5px; resize: none;"></textarea>
+            
             <button onclick="copiarPix()" style="background: #783606; color: white; padding: 10px; border: none; border-radius: 5px; margin-top: 10px; cursor: pointer; width: 100%;">
                 Copiar Código Pix
             </button>
-        </div> 
+        </div>
 
           
         </div>

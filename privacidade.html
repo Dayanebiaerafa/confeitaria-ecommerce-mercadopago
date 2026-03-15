@@ -23,10 +23,16 @@
         /* Cabeçalho maior para destacar a logo */
         .header-privacidade {
             width: 100%;
-            padding: 50px 0;
-            text-align: center;
-            border-bottom: 1px solid #783606;
-            background-color: #FAD5DC;
+            height: 100px !important; 
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* Distribui: Logo | Menu | Icones */
+            background-color: #fce4ec;
+            padding: 0 40px; /* Um pouco mais de respiro nas laterais */
+            box-sizing: border-box;
+            border-bottom: 2px solid #783606;
+            position: relative;
+            z-index: 1000; 
         }
 
         .header {
@@ -34,15 +40,118 @@
             padding: 30px 0;
         }
 
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #FAD5DC; /* Cor rosa conforme pedido */
+            min-width: 180px;
+            box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+            z-index: 9999; /* Camada superior */
+            border-radius: 8px;
+            overflow: hidden;
+            top: 100%; /* Abre para baixo no topo */
+        }
+
+        .dropdown-content a {
+            color: #783606 !important;
+            padding: 12px 16px;
+            display: block;
+            border-bottom: 1px solid white; /* Linha branca separando paginas */
+        }
+
+        .dropdown-content a:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block; /* Mostra ao passar o mouse */
+        }
+        .rodape .dropdown-content {
+            top: auto;
+            bottom: 100%; /* Faz abrir para cima */
+            margin-bottom: 10px;
+        }
+
         
 
         h1 {
             margin-top: 40px;
         }
+        .menu-privacidade {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex: 1; /* Ocupa o centro e empurra os outros para as pontas */
+        }
 
-        .logo-privacidade-grande {
-            height: 180px; /* Logo bem maior conforme solicitado */
+        .menu-privacidade a, .divisor {
+            text-decoration: none;
+            color: #783606;
+            font-weight: bold;
+        }
+
+
+        .logo-privacidade-grande { 
+            height: 60px; 
+            width: auto; 
+            min-width: 120px;
+        } 
+        .icons-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            justify-content: flex-end;
+            min-width: 120px; /* Garante espaço igual ao da logo para não entortar o centro */
+        }
+
+
+        .icons-header img { width: 30px; }
+        /* Rodapé Ajustado */
+        .rodape {
+            background-color: #FAD5DC;
+            padding: 20px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid #783606;
+        }
+
+        .logo-rodape {
+            height: 50px; /* Logo menor no rodapé conforme pedido */
             width: auto;
+            min-width: 120px;
+        }
+
+        .menu-rodape-marrom {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .menu-rodape-marrom a {
+            color: #783606; /* Cor marrom conforme pedido */
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .icons-rodape { 
+            display: flex; 
+            align-items: center; 
+            justify-content: flex-end; 
+            min-width: 120px; 
+        }
+        .icons-rodape img {
+            width: 30px; /* Ícones menores no rodapé conforme pedido */
+            height: auto;
+            margin-left: 10px;
         }
 
         .container-privacidade { 
@@ -104,7 +213,20 @@
 
         /* Ajuste responsivo para celular */
         @media (max-width: 768px) {
-            .logo-privacidade-grande { height: 120px; }
+            .header-privacidade, .rodape {
+                flex-direction: column; /* Empilha no mobile para não amassar */
+                height: auto !important;
+                padding: 20px;
+                gap: 15px;
+            }
+
+            .menu-privacidade, .menu-rodape-marrom {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .logo-privacidade-grande { height: 60px; } /* Ajuste para não ocupar a tela toda */
+            .icons-privacidade { justify-content: center; }
             .bloco-conteudo { width: 100%; }
             h1 { font-size: 26px; }
         }
@@ -113,20 +235,19 @@
 <body>
 
     <header class="header-privacidade">
-        <div class="header-content">
-
             <img src="assets/MARCA DAGUA.png" class="logo-privacidade-grande" alt="Logo">
 
-            <nav class="menu">
+            <nav class="menu-privacidade">
             <a href="sobre.html">Sobre</a>
             <span class="divisor">|</span>
 
             <div class="dropdown">
                 <a href="javascript:void(0)" class="dropbtn">Produtos</a>
                 <div class="dropdown-content">
-                    <a href="#">Bolos Personalizados</a>
+                    <a href="bolopersonalizado.html">Bolos Personalizados</a>
                     <a href="bolodecorte.html">Bolos de Corte</a>
-                    <a href="#">Doces Tradicionais</a>
+                    <a href="index.html">Bolos Clássicos</a>
+                    <a href="doces.html">Doces Tradicionais</a>
                 </div>
             </div>
             <span class="divisor">|</span>
@@ -136,7 +257,7 @@
             </nav>
 
             <div class="header-right">
-            <div class="icons">
+            <div class="icons-header">
                 <a href="https://wa.me/5534996360443?text=Olá%20Dayane%2C%20estou%20no%20site%20e%20gostaria%20de%20tirar%20uma%20dúvida%20sobre%20meu%20bolo!">
                 <img src="assets/whatsapp.svg" alt="WhatsApp">
                 </a> 
@@ -188,11 +309,10 @@
 
     <section class="fundo-final">
         <footer class="rodape">
-            <div class="rodape-card">
-                <div class="rodape-topo">
+            
                     <img src="assets/MARCA DAGUA.png" class="logo-rodape" alt="Logo">
 
-                    <nav class="rodape-menu">
+                    <nav class="menu-rodape-marrom">
                         <a href="sobre.html">Sobre</a>                                     
                         <span class="divisor">|</span> 
 
@@ -211,7 +331,7 @@
                         <a href="privacidade.html">Política de Privacidade</a>
                     </nav>
 
-                    <div class="rodape-icones">
+                    <div class="icons-rodape">
                         <a href="https://www.instagram.com/dayane.teodoro.confeitaria?igsh=a3d2d2tzcDJ0cm9w&utm_source=qr" target="_blank" rel="noopener noreferrer">
                             <img src="assets/instagram.svg" alt="Instagram">
                         </a>

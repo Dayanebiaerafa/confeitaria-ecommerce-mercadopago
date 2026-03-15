@@ -20,7 +20,7 @@
     width: 50%;
     height: 100vh;
     background: #fff;
-    z-index: 2000 !important;
+    z-index: 10000 !important;
     display: flex;
     flex-direction: column;
     transition: right 0.4s ease-in-out;
@@ -1253,7 +1253,7 @@ textarea, #observacaoPedido, .textarea-box {
     right: 20px !important;
     
     /* 3. A SOLUÇÃO: Z-index agressivo para vencer o isolation:isolate */
-    z-index: 9999999 !important;
+    z-index: 5000 !important;
     
     /* 4. Garante que ele seja visível e não transparente */
     display: flex !important; 
@@ -1402,3 +1402,4 @@ body.checkout-ativo #contador-fixo-doces {
     color: #783606;
     margin-bottom: 10px !important;
 }
+

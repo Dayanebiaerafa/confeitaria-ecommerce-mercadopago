@@ -7,6 +7,7 @@ import { atualizarTudo } from './calculate.js';
 =============================== */
 export function configurarCalendario() {
     const dataInput = document.getElementById("dataPedido");
+    const horarioSelect = document.getElementById("horarioPedido");
     if (!dataInput) return;
 
     const hoje = new Date();
@@ -21,10 +22,7 @@ export function configurarCalendario() {
         const diaSemana = dataSelecionada.getDay();
         const anoSelecionado = dataSelecionada.getFullYear();
         
-        // Feriados Móveis (Ex: Carnaval 2026 - Ajuste conforme o ano se necessário)
-        const inicioCarnaval = new Date(`${anoSelecionado}-02-14T00:00:00`);
-        const fimCarnaval = new Date(`${anoSelecionado}-02-18T00:00:00`);
-
+        // --- Validações de Feriado/Domingo ---
         const mesDia = (dataSelecionada.getMonth() + 1).toString().padStart(2, '0') + "-" + 
                        dataSelecionada.getDate().toString().padStart(2, '0');
 
@@ -45,6 +43,39 @@ export function configurarCalendario() {
             this.value = "";
             return;
         }
+
+        gerarOpcoesDeHorario(diaSemana);
+        
+        // Salva a data no objeto global
+        if (!pedido.cliente) pedido.cliente = {};
+        pedido.cliente.data = this.value;
+        localStorage.setItem('carrinho_dayane', JSON.stringify(pedido));
+    });
+}
+
+function gerarOpcoesDeHorario(diaSemana) {
+    const horarioSelect = document.getElementById("horarioPedido");
+    if (!horarioSelect) return;
+
+    horarioSelect.innerHTML = '<option value="">Escolha o horário</option>';
+
+    let horarios = [];
+    
+    // Regra: Sábado (dia 6) fecha mais cedo, Segunda a Sexta (1 a 5) horário normal
+    if (diaSemana === 6) { // Sábado
+        horarios = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"];
+    } else { // Segunda a Sexta
+        horarios = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"];
+    }
+
+    horarios.forEach(hora => {
+        const option = document.createElement("option");
+        // Ajustamos o valor para bater com o que você já salvou: "19h às 19:00h" ou apenas "19:00"
+        // Se você usa o formato "19h às 19:00h", mude a linha abaixo:
+        const textoHora = `${hora.split(':')[0]}h às ${hora}h`; 
+        option.value = textoHora;
+        option.textContent = textoHora;
+        horarioSelect.appendChild(option);
     });
 }
 

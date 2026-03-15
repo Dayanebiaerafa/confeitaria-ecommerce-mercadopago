@@ -594,4 +594,30 @@
 
 }
 
+/* CSS para o botão de alterar pagamento */
+.btn-link-pequeno {
+    background-color: transparent;
+    border: 1px solid #e91e63; /* Rosa padrão da sua loja */
+    color: #e91e63;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: all 0.3s ease;
+    display: block;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.btn-link-pequeno:hover {
+    background-color: #fce4ec; /* Rosa bem clarinho no hover */
+    transform: scale(1.05);
+}
+
+.btn-link-pequeno:active {
+    transform: scale(0.95);
+}
 

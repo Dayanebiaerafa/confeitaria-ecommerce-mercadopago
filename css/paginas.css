@@ -363,7 +363,7 @@ section, div, footer, header {
         border-radius: 0 30px 30px 0 !important; /* Arredondado só na ponta interna */
         
         /* CAMADA SUPREMA */
-        z-index: 9999999 !important;
+        z-index: 5000 !important;
         
         /* ALINHAMENTO INTERNO */
         flex-direction: column !important;

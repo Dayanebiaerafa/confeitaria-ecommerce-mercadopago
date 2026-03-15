@@ -1,11 +1,12 @@
-export let metodoSelecionado = null;  
-export let etapaAtual = 0;
-export let porcentagemPagamento = 1.0;
-// ====== OBJETO PRINCIPAL DO PEDIDO ======
-
 const Salvo = localStorage.getItem('carrinho_dayane');
+const pedidoRecuperado = Salvo ? JSON.parse(Salvo) : null;
+export let etapaAtual = 0;
+// SÊNIOR: Se existe algo no storage, usamos o que está lá. Se não, usamos o padrão.
+export let metodoSelecionado = pedidoRecuperado?.pagamento?.metodo || null;  
+export let porcentagemPagamento = pedidoRecuperado?.pagamento?.porcentagem || 1.0; 
 
-export let pedido = Salvo ? JSON.parse(Salvo) : {
+// ====== OBJETO PRINCIPAL DO PEDIDO ======
+export let pedido = pedidoRecuperado || {
     cliente: {
         nome: "",
         telefone: "",
@@ -42,15 +43,45 @@ export let pedido = Salvo ? JSON.parse(Salvo) : {
     // Pagamento e Valores
     observacao: "",
     preferenciaPeso: "Pode variar",
-    porcentagemPagamento: 1.0, // 0.5 (50%) ou 1.0 (100%)
-    metodoPagamento: null, // 'pix' ou 'credit_card'
+    
+    // O GRUPO TEM QUE SER ASSIM:
+    pagamento: {
+        metodo: null,
+        porcentagem: 1.0,
+        pixPendente: false
+    },
+    
     subtotal: 0,
     valorPago: 0,
-    valorTotal: 0,
+    valorTotal: 0
 };
 
+// ... código existente (pedidoRecuperado, etc)
 
+if (Salvo) {
+    // SÊNIOR: Tenta buscar do lugar novo (pagamento.porcentagem) 
+    // OU do lugar antigo (porcentagemPagamento) caso tenha sobrado lixo no storage
+    const m = pedido.pagamento?.metodo || pedido.metodoPagamento;
+    const p = pedido.pagamento?.porcentagem || pedido.porcentagemPagamento;
 
+    if (m) {
+        metodoSelecionado = m;
+        if (!pedido.pagamento) pedido.pagamento = {};
+        pedido.pagamento.metodo = m;
+    }
+    
+    if (p !== undefined && p !== null) {
+        porcentagemPagamento = p;
+        if (!pedido.pagamento) pedido.pagamento = {};
+        pedido.pagamento.porcentagem = p;
+    }
+    
+    // Sincroniza com o window
+    window.metodoSelecionado = metodoSelecionado;
+    window.porcentagemPagamento = porcentagemPagamento;
+
+    console.log("✅ Estado sincronizado:", { metodo: m, porcentagem: p });
+}
 export function excluirItemPedido(tipo) {
     if (tipo === 'topo') {
         pedido.topo = false;
@@ -148,6 +179,11 @@ export function setMetodoSelecionado(valor) {
 }
 
 export function setPorcentagemPagamento(valor) {
-    porcentagemPagamento = valor;
-    pedido.porcentagemPagamento = valor;
+    porcentagemPagamento = valor; // variável local do state
+    window.porcentagemPagamento = valor; // global
+    
+    if (!pedido.pagamento) pedido.pagamento = {};
+    pedido.pagamento.porcentagem = valor; // PADRÃO CORRETO
+    
+    // Remova a linha: pedido.porcentagemPagamento = valor; (ISSO É LIXO)
 }

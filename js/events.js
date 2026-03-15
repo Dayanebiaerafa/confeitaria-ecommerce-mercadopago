@@ -25,9 +25,10 @@ import {
     escolherMetodo,
     adicionarBoloAoCarrinho,
     drawer,
-    overlay
+    overlay,
+    atualizarContadorSacola
 } from './ui-updates.js';
-import { atualizarContadorSacola } from './ui-updates.js';
+
 
 
 
@@ -47,6 +48,19 @@ export function inicializarEventosBase() {
         atualizarTudo();
         atualizarDadosCarrinho();
     });
+
+    const inputHora = document.getElementById('horarioPedido');
+    if (inputHora) {
+        inputHora.addEventListener('change', (e) => {
+            if (!pedido.cliente) pedido.cliente = {};
+            pedido.cliente.horario = e.target.value;
+            
+            // Sênior: Salva imediatamente para não perder se der F5
+            localStorage.setItem('carrinho_dayane', JSON.stringify(pedido));
+            console.log("💾 Horário salvo no Storage:", e.target.value);
+        });
+    }
+
 
     document.querySelectorAll('input[name="recheio"]').forEach(r => {
         r.addEventListener("change", () => {
@@ -79,6 +93,17 @@ export function inicializarEventosBase() {
             atualizarDadosCarrinho();
         });
     });
+
+    document.querySelectorAll('input[name="pesoPreferencia"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            pedido.preferenciaPeso = e.target.value;
+            salvarNoLocalStorage(); // Garante que salvou a escolha
+            
+            if (typeof atualizarResumoFinal === "function") {
+                atualizarResumoFinal();
+            }
+        });
+    });
 }
 
 // --- UNIFICADO: EVENTOS DE BOTÕES "EU QUERO" ---
@@ -89,9 +114,9 @@ export function inicializarEventosBotoes() {
         btn.addEventListener("click", function(e) {
             console.log("Clique detectado em:", e.target); 
             e.stopPropagation();
-            const tipo = this.getAttribute('data-tipo');
+            const tipo = e.currentTarget.getAttribute('data-tipo');
             const valorPersonalizado = this.innerText.trim().toLowerCase();
-
+            console.log("Tipo clicado:", tipo);
             // --- 1. REGRA PÁGINA PERSONALIZADO: TOPO SIM/NÃO ---
             if (this.classList.contains('btn-opcao')) {
                 const pai = this.parentElement;
@@ -169,7 +194,7 @@ export function inicializarEventosBotoes() {
 
                 // Salvar imediatamente para não perder se mudar de página antes de "Avançar"
                 salvarNoLocalStorage(); 
-                atualizarDadosCarrinho();
+                atualizarTudo();
             }
             
             // --- LÓGICA DE DOCES (SOMA EM LOTES DE 25) ---
@@ -226,20 +251,78 @@ export function inicializarEventosBotoes() {
     });
 
     // 3. Evento do botão final
-    const btnFechar = document.getElementById('btn-fechar-pedido'); 
-    if (btnFechar) {
-        btnFechar.addEventListener('click', () => {
-            // Apenas executa a função que já criamos e validamos
-            adicionarBoloAoCarrinho();
+    // --- O BOTÃO FINAL (A ÚNICA PORTA DE ENTRADA CENTRALIZADA) ---
+    const btnFechar = document.getElementById('btnConfirmarPedido'); 
 
-            // Atualiza a interface
-            if (typeof atualizarDadosCarrinho === "function") atualizarDadosCarrinho();
-            if (typeof abrirDrawer === "function") abrirDrawer();
+    if (btnFechar) {
+        const novoBotao = btnFechar.cloneNode(true);
+        btnFechar.parentNode.replaceChild(novoBotao, btnFechar);
+
+        novoBotao.addEventListener('click', (event) => {
+            const check = document.getElementById('checkTermos');
+            const pesoSelect = document.getElementById('pesoSelect');
+            const pesoValor = pesoSelect ? parseFloat(pesoSelect.value) : 0;
+
+            // 1. VALIDAÇÃO DE PESO
+            if (pesoValor <= 0) {
+                alert("⚠️ Por favor, selecione o peso do bolo antes de adicionar.");
+                pesoSelect?.focus();
+                pesoSelect?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
+            // 2. VALIDAÇÃO DE TERMOS (Apenas se o checkbox existir na página)
+            if (check && !check.checked) {
+                const seta = document.getElementById('setaVermelha');
+                if (seta) seta.style.display = 'inline-block';
+                
+                const container = document.querySelector('.container-aceite');
+                if (container) {
+                    container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                }
+                
+                alert("⚠️ Você precisa aceitar os termos de variação de peso para este bolo.");
+                return; 
+            }
+
+            // 3. SUCESSO: Adiciona ao carrinho e ABRE a sacola
+            console.log("✅ Termos aceitos e peso ok. Adicionando...");
             
-            mostrarNotificacao("Bolo adicionado à sacola! 🎂");
+            // Limpa avisos visuais
+            const seta = document.getElementById('setaVermelha');
+            if (seta) seta.style.display = 'none';
+            
+            adicionarBoloAoCarrinho(); // Esta função joga o bolo no array itens
+            abrirDrawer(); // Abre para o cliente ver que o bolo entrou
+            mostrarNotificacao("Bolo adicionado com sucesso! 🎂");
         });
     }
 
+    // 3. EVENTO EXTRA: Esconde a seta assim que o cliente clicar no checkbox
+    const check = document.getElementById('checkTermos');
+    const btnConfirmar = document.getElementById('btnConfirmarPedido'); // O botão já clonado
+
+    if (check && btnConfirmar) {
+        // 1. Estado inicial
+        btnConfirmar.style.opacity = check.checked ? "1" : "0.5";
+
+        check.addEventListener('change', () => {
+            // 2. Ajusta opacidade
+            btnConfirmar.style.opacity = check.checked ? "1" : "0.5";
+            
+            // 3. Limpa alertas visuais se marcar como "Aceito"
+            if (check.checked) {
+                const seta = document.getElementById('setaVermelha');
+                const aviso = document.getElementById('avisoBloqueio');
+                const container = document.querySelector('.container-aceite');
+                
+                if (seta) seta.style.display = 'none';
+                if (aviso) aviso.style.display = 'none';
+                if (container) container.style.border = "none";
+            }
+        });
+    }
     // Captura a preferência de peso (Radio Buttons)
     document.querySelectorAll('input[name="pesoPreferencia"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
@@ -314,43 +397,15 @@ export function inicializarFluxoCarrinho() {
 
 
     // 1. Botão Confirmar do site (Abre o carrinho) - MANTIDO
-    const btnConfirmar = document.getElementById("btnConfirmarPedido");
-    if (btnConfirmar) {
-        btnConfirmar.onclick = function() {
-            if (!validarCarrinhoAntesDeAbrir()) return false;
-            
-            // Se for um bolo, adiciona ao carrinho antes de abrir
-            if (pedido.pesoKg > 0 && pedido.massa) {
-                adicionarBoloAoCarrinho({
-                    tipo: 'bolo',
-                    modelo: pedido.modelo,
-                    pesoKg: pedido.pesoKg,
-                    massa: pedido.massa,
-                    recheios: [...pedido.recheios],
-                    complemento: pedido.complemento,
-                    topo: pedido.topo,
-                    embalagem: pedido.embalagem,
-                    valorCalculado: pedido.valorTotal
-                });
-                resetarBotoesVisualmente('bolo');
-            }
-
-            atualizarTudo();
-            atualizarDadosCarrinho();
-            mostrarNotificacao("Adicionado com sucesso! 🎂");
-            atualizarContadorSacola();
-            abrirDrawer();
-        };
-    }
+   
 
     // 2. Ícone da Sacola - MANTIDO
+    
     if (btnCarrinhoIcone) {
         btnCarrinhoIcone.onclick = function(e) {
             e.preventDefault();
-            if (typeof abrirDrawer === "function") {
-                abrirDrawer();
-                atualizarDadosCarrinho();
-            }
+            console.log("Ícone da sacola clicado");
+            abrirDrawer(); // Chama a função que agora é "livre"
         };
     }
 
@@ -401,17 +456,31 @@ export function inicializarFluxoCarrinho() {
                 if (!horario) { processandoClique = false; novoBtnAvancar.style.pointerEvents = 'auto'; return alert("⚠️ Por favor, selecione o horário."); }
 
                 pedido.cliente = { nome, telefone: tel, email, data, horario };
-                console.log("Sênior Log: Dados salvos:", pedido.cliente);
+                localStorage.setItem('carrinho_dayane', JSON.stringify(pedido)); // <--- ADICIONE ISSO
+                console.log("Sênior Log: Dados salvos e persistidos.");
             }
-
             // --- MANTER REGRA EXISTENTE: ETAPA 2 (Pagamento) ---
             if (etapaAtual === 2) {
                 const metodoReal = window.metodoSelecionado || metodoSelecionado;
                 if (!metodoReal) {
                     processandoClique = false; 
                     novoBtnAvancar.style.pointerEvents = 'auto';
-                    return alert("⚠️ Por favor, selecione uma forma de pagamento (Pix ou Cartão).");
+                    return alert("⚠️ Por favor, selecione uma forma de pagamento.");
                 }
+
+                // SÊNIOR: Captura a porcentagem da global ANTES de salvar o objeto final
+                const porcFinal = window.porcentagemPagamento || 1;
+
+                pedido.pagamento = {
+                    metodo: metodoReal,
+                    pixPendente: (metodoReal === 'pix'),
+                    porcentagem: porcFinal // AGORA O VALOR VAI PARA O STORAGE CORRETAMENTE
+                };
+                
+                // Sincroniza o valor pago no objeto para o resumo ler certo
+                pedido.valorPago = (pedido.valorTotal || 0) * porcFinal;
+
+                localStorage.setItem('carrinho_dayane', JSON.stringify(pedido));
             }
 
             // --- MANTER REGRA EXISTENTE: MUDANÇA DE TELA ---
@@ -446,6 +515,7 @@ export function inicializarFluxoCarrinho() {
     // --- 6. ESCUTA DE E-MAIL (CORRIGIDA) ---
     if (emailInput) {
         emailInput.oninput = (e) => {
+            if (!pedido.cliente) pedido.cliente = {}; // Cria se não existir
             pedido.cliente.email = e.target.value.trim();
         };
     }
