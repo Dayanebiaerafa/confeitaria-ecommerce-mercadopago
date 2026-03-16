@@ -3,7 +3,7 @@ export let fluxoJaInicializado = false;
 // 1. UNIFICAÇÃO DE IMPORTS (Todos no topo, sem repetições)
 import { pedido, etapaAtual, adicionarDoceAoPedido, salvarNoLocalStorage } from './state.js';
 import { atualizarTudo } from './calculate.js'
-import { validarCarrinhoAntesDeAbrir } from './utils.js';
+import { validarCarrinhoAntesDeAbrir, configurarCalendario } from './utils.js';
 import { 
     abrirDrawer, 
     fecharDrawer, 
@@ -684,79 +684,6 @@ export function excluirPedidoBolo() {
     // 3. Recalcula o valor (Financeiro)
     atualizarTudo();
 }
-
-// Adicione este evento no seu código de inicialização
-document.getElementById('dataPedido')?.addEventListener('change', configurarHorarios);
-
-function configurarHorarios() {
-    const dataInput = document.getElementById('dataPedido');
-    const horarioSelect = document.getElementById('horarioPedido');
-    const paginaAtual = document.body.getAttribute('data-pagina');
-
-    if (!dataInput.value) return;
-
-    // Calcula a diferença de dias
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-    const dataEscolhida = new Date(dataInput.value + 'T00:00:00');
-    const diferencaDias = Math.ceil((dataEscolhida - hoje) / (1000 * 60 * 60 * 24));
-
-    // Limpa o select
-    horarioSelect.innerHTML = '<option value="">Selecione um horário</option>';
-
-    let horarios = [];
-
-    // --- REGRA 1: PERSONALIZADO E DOCES (Mínimo 3 dias) ---
-    if (paginaAtual === 'personalizado' || paginaAtual === 'doces') {
-        if (diferencaDias < 3) {
-            alert("Bolos personalizados e doces exigem no mínimo 3 dias de antecedência.");
-            dataInput.value = "";
-            return;
-        }
-        horarios = gerarIntervalos("09:00", "19:00");
-    } 
-    
-    // --- REGRA 2: PEDIDO E BOLO DE CORTE ---
-    else if (paginaAtual === 'pedido' || paginaAtual === 'corte') {
-        if (diferencaDias < 1) {
-            alert("A encomenda deve ser feita com no mínimo 1 dia de antecedência.");
-            dataInput.value = "";
-            return;
-        }
-
-        if (diferencaDias === 1) {
-            // De um dia para o outro: 16h às 19h
-            horarios = ["16:00 às 17:00", "17:00 às 18:00", "18:00 às 19:00"];
-        } else {
-            // 2 dias ou mais: 09h às 18:30h
-            horarios = gerarIntervalos("09:00", "19:00");
-        }
-    }
-
-    // Preenche o select com os horários permitidos
-    horarios.forEach(h => {
-        const opt = document.createElement('option');
-        opt.value = h;
-        opt.text = h;
-        horarioSelect.appendChild(opt);
-    });
-}
-
-// Função auxiliar para criar horários de 1 em 1 hora
-function gerarIntervalos(inicio, fim) {
-    const lista = [];
-    let hora = parseInt(inicio.split(':')[0]);
-    const horaFim = parseInt(fim.split(':')[0]);
-    
-    for (let i = hora; i < horaFim; i++) {
-        let proxima = i + 1;
-        lista.push(`${i}h às ${proxima}h`);
-    }
-    // Adiciona o último intervalo se necessário (ex: até 18:30)
-    lista.push(`${horaFim}h às 19:00h`); 
-    return lista;
-}
-
 
 
 // Expomos para o HTML (caso seu botão use onclick="clicarBotaoAdicionarDoce(...)")

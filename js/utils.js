@@ -7,24 +7,35 @@ import { atualizarTudo } from './calculate.js';
 =============================== */
 export function configurarCalendario() {
     const dataInput = document.getElementById("dataPedido");
-    const horarioSelect = document.getElementById("horarioPedido");
     if (!dataInput) return;
 
     const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0); // Garante que o cálculo comece do início do dia
+
+    const temPersonalizado = pedido.itens?.some(item => item.tipo === 'personalizado');
+    const temDoces = (pedido.doces && pedido.doces.length > 0) || 
+                     (pedido.itens?.some(item => item.tipo === 'doces')) ||
+                     (document.body.getAttribute('data-pagina') === 'doces');
+    
+    // Define se pula 1 ou 2 dias
+    const diasAntecedencia = (temPersonalizado || temDoces) ? 2 : 1;
+
     let dataMinima = new Date(hoje);
-    dataMinima.setDate(hoje.getDate() + 1);
-    dataInput.setAttribute("min", dataMinima.toISOString().split("T")[0]);
+    dataMinima.setDate(hoje.getDate() + diasAntecedencia);
+    
+    // FORMATAÇÃO MANUAL (Evita o erro de fuso horário do ISOString)
+    const ano = dataMinima.getFullYear();
+    const mes = String(dataMinima.getMonth() + 1).padStart(2, '0');
+    const dia = String(dataMinima.getDate()).padStart(2, '0');
+    const dataFormatada = `${ano}-${mes}-${dia}`;
+
+    // AQUI ESTAVA O ERRO: Use apenas a dataFormatada
+    dataInput.setAttribute("min", dataFormatada);
 
     dataInput.addEventListener("change", function() {
         if (!this.value) return;
-
         const dataSelecionada = new Date(this.value + "T00:00:00");
         const diaSemana = dataSelecionada.getDay();
-        const anoSelecionado = dataSelecionada.getFullYear();
-        
-        // --- Validações de Feriado/Domingo ---
-        const mesDia = (dataSelecionada.getMonth() + 1).toString().padStart(2, '0') + "-" + 
-                       dataSelecionada.getDate().toString().padStart(2, '0');
 
         if (diaSemana === 0) {
             alert("🧁 Não realizamos entregas aos domingos.");
@@ -32,50 +43,56 @@ export function configurarCalendario() {
             return;
         }
 
-        if (feriadosFixos.includes(mesDia)) {
-            alert("🧁 Ops! Esta data é feriado e não teremos retiradas.");
-            this.value = "";
-            return;
-        }
-
-        if (dataSelecionada >= inicioCarnaval && dataSelecionada <= fimCarnaval) {
-            alert("🎊 No período de Carnaval não teremos retiradas.");
-            this.value = "";
-            return;
-        }
-
-        gerarOpcoesDeHorario(diaSemana);
+        gerarOpcoesDeHorario(dataSelecionada);
         
-        // Salva a data no objeto global
         if (!pedido.cliente) pedido.cliente = {};
         pedido.cliente.data = this.value;
         localStorage.setItem('carrinho_dayane', JSON.stringify(pedido));
     });
 }
 
-function gerarOpcoesDeHorario(diaSemana) {
+function gerarOpcoesDeHorario(dataSelecionada) {
     const horarioSelect = document.getElementById("horarioPedido");
     if (!horarioSelect) return;
 
-    horarioSelect.innerHTML = '<option value="">Escolha o horário</option>';
-
-    let horarios = [];
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
     
-    // Regra: Sábado (dia 6) fecha mais cedo, Segunda a Sexta (1 a 5) horário normal
-    if (diaSemana === 6) { // Sábado
-        horarios = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"];
-    } else { // Segunda a Sexta
-        horarios = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"];
+    const amanha = new Date(hoje);
+    amanha.setDate(hoje.getDate() + 1);
+
+    // Compara se a data clicada é igual a AMANHÃ
+    const ehAmanha = dataSelecionada.getDate() === amanha.getDate() && 
+                     dataSelecionada.getMonth() === amanha.getMonth() &&
+                     dataSelecionada.getFullYear() === amanha.getFullYear();
+
+    const diaSemana = dataSelecionada.getDay(); 
+    horarioSelect.innerHTML = '<option value="">Selecione o horário</option>';
+    
+    let horarios = []; // Declaramos uma vez só aqui no topo
+
+    // REGRA 1: Pedido para AMANHÃ (Somente Corte/Clássico)
+    if (ehAmanha) {
+        if (diaSemana === 6) { // Se amanhã for Sábado
+            horarios = ["16h às 17h"];
+        } else { // Segunda a Sexta
+            horarios = ["16h às 17h", "17h às 18h", "18h às 19h"];
+        }
+    } 
+    // REGRA 2: Pedido com 2 dias ou mais (Horário Comercial)
+    else {
+        if (diaSemana === 6) { // Sábados
+            horarios = ["09h às 10h", "10h às 11h", "11h às 12h", "13h às 14h", "14h às 15h", "15h às 16h", "16h às 17h"];
+        } else { // Dias de semana
+            horarios = ["09h às 10h", "10h às 11h", "11h às 12h", "13h às 14h", "15h às 16h", "16h às 17h", "17h às 18h", "18h às 19h"];
+        }
     }
 
-    horarios.forEach(hora => {
-        const option = document.createElement("option");
-        // Ajustamos o valor para bater com o que você já salvou: "19h às 19:00h" ou apenas "19:00"
-        // Se você usa o formato "19h às 19:00h", mude a linha abaixo:
-        const textoHora = `${hora.split(':')[0]}h às ${hora}h`; 
-        option.value = textoHora;
-        option.textContent = textoHora;
-        horarioSelect.appendChild(option);
+    horarios.forEach(h => {
+        const opt = document.createElement("option");
+        opt.value = h;
+        opt.textContent = h;
+        horarioSelect.appendChild(opt);
     });
 }
 
@@ -84,7 +101,6 @@ export function formatarDataBR(data) {
     const [ano, mes, dia] = data.split("-");
     return `${dia}/${mes}/${ano}`;
 }
-
 /* ===============================
     MÁSCARAS E INPUTS
 =============================== */

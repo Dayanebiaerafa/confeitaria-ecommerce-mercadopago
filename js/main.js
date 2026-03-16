@@ -113,6 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
         window.porcentagemPagamento = pedido.pagamento?.porcentagem || 1.0;
         window.metodoSelecionado = pedido.pagamento?.metodo || null;
 
+        
         console.log("✅ Carrinho e Globais reidratados.");
 
         // Reidratação dos Inputs
