@@ -23,6 +23,10 @@ body {
     padding-top: 90px !important; 
 }
 
+body.modal-aberto {
+    overflow: hidden;
+}
+
 /* Ajuste do Menu no Celular */
 @media (max-width: 768px) {
     body {

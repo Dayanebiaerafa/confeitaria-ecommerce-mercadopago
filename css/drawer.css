@@ -398,8 +398,6 @@
 
 /* Estilos de Base para os Campos (Evita repetição) */
 .form-bloco.floating input,
-.form-linha input, 
-.form-linha select,
 .etapa input, 
 .etapa select, 
 .etapa textarea {
@@ -461,6 +459,7 @@
 .form-linha {
     display: flex;
     gap: 15px;
+    flex-wrap: wrap;
     margin-top: 15px;
     width: 100%;
     display: flex;
@@ -468,13 +467,11 @@
     margin-bottom: 20px !important;
 }
 
-.form-linha .form-bloco {
-    flex: 1;
+.form-bloco {
+    flex: 1;         /* Faz os campos dividirem o espaço no desktop */
+    min-width: 250px; /* Impede que fiquem esmagados */
     display: flex;
     flex-direction: column;
-    display: flex;
-    gap: 15px; /* Espaço entre Data e Horário quando estão lado a lado */
-    margin-bottom: 20px !important;
 }
 
 .form-linha label {
@@ -492,6 +489,30 @@
     display: flex;
     gap: 15px; /* Espaço entre Data e Horário quando estão lado a lado */
     margin-bottom: 20px !important;
+}
+
+.container, .form-container {
+    padding: 0 15px; /* Evita que o campo encoste no vidro do celular */
+    box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+    .form-linha {
+        flex-direction: column; /* Empilha Data sobre Horário */
+        gap: 15px;             /* Espaçamento entre os blocos no celular */
+    }
+
+    .form-bloco {
+        width: 100%;
+    }
+
+    /* Garante que o select não seja bloqueado por elementos vizinhos */
+    #horarioPedido, #dataPedido {
+        height: 45px;          /* Aumenta a área de toque (UX Sênior) */
+        font-size: 16px;       /* Evita o zoom automático do iPhone ao clicar */
+        z-index: 10;           /* Garante que esteja na camada da frente */
+        position: relative;
+    }
 }
 
 /* 2. Ajusta o input para empurrar o ícone para a direita */

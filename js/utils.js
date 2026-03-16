@@ -34,8 +34,28 @@ export function configurarCalendario() {
 
     dataInput.addEventListener("change", function() {
         if (!this.value) return;
+
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+
+        // Corrigindo o erro de fuso horário e declarando a variável
         const dataSelecionada = new Date(this.value + "T00:00:00");
+        
+        // CALCULA AQUI (A causa do seu erro era a falta desta linha ou da declaração let/const)
+        const diffDias = Math.ceil((dataSelecionada - hoje) / (1000 * 60 * 60 * 24));
+        
         const diaSemana = dataSelecionada.getDay();
+
+        // Pega os dados do pedido para saber a antecedência
+        const temPersonalizado = pedido.itens?.some(item => item.tipo === 'personalizado');
+        const temDoces = (pedido.doces && pedido.doces.length > 0);
+        const diasNecessarios = (temPersonalizado || temDoces) ? 2 : 1;
+
+        if (diffDias < diasNecessarios) {
+            alert(`🧁 Ops! Para este pedido precisamos de ${diasNecessarios} dia(s) de antecedência.`);
+            this.value = "";
+            return;
+        }
 
         if (diaSemana === 0) {
             alert("🧁 Não realizamos entregas aos domingos.");
@@ -43,7 +63,9 @@ export function configurarCalendario() {
             return;
         }
 
-        gerarOpcoesDeHorario(dataSelecionada);
+        if (typeof window.gerarOpcoesDeHorario === 'function') {
+            window.gerarOpcoesDeHorario(dataSelecionada);
+        }
         
         if (!pedido.cliente) pedido.cliente = {};
         pedido.cliente.data = this.value;
@@ -51,7 +73,7 @@ export function configurarCalendario() {
     });
 }
 
-function gerarOpcoesDeHorario(dataSelecionada) {
+export function gerarOpcoesDeHorario(dataSelecionada) {
     const horarioSelect = document.getElementById("horarioPedido");
     if (!horarioSelect) return;
 
@@ -95,6 +117,8 @@ function gerarOpcoesDeHorario(dataSelecionada) {
         horarioSelect.appendChild(opt);
     });
 }
+
+window.gerarOpcoesDeHorario = gerarOpcoesDeHorario;
 
 export function formatarDataBR(data) {
     if (!data) return "Não selecionada";

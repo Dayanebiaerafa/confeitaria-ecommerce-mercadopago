@@ -98,11 +98,14 @@ window.removerItemSacola = (index) => {
 };
 window.inicializarEventosDoces = inicializarEventosDoces;
 window.atualizarResumoFinal = atualizarResumoFinal
-
+window.gerarOpcoesDeHorario = gerarOpcoesDeHorario; 
+window.configurarCalendario = configurarCalendario;
 // ================================================================
 // 5. COMANDO DE INÍCIO (Executa quando a página termina de carregar)
 // ================================================================
 document.addEventListener("DOMContentLoaded", () => {
+    console.clear();
+
     const dadosSalvos = localStorage.getItem('carrinho_dayane'); 
     
     if (dadosSalvos) {
@@ -143,8 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
         pedido.recheios = [];
         pedido.modeloImagem = "";
         // ... outras limpezas que você já tem
-    } else {
-        console.log("⚠️ Limpeza abortada: Existe um pedido pendente no Storage.");
+    
     }
     // 2. DEPOIS AS INICIALIZAÇÕES
     window.scrollTo(0, 0);
@@ -162,6 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Inicializações Básicas
     configurarCalendario();
     aplicarMascaraTelefone();
+  
     
     
     if (tipoPagina === 'personalizado') carregarPesosPersonalizados();
@@ -263,27 +266,40 @@ document.addEventListener("DOMContentLoaded", () => {
     const inicializarUIConfirmacao = () => {
         console.log("🔍 Verificando estados finais...");
 
-        if (pedido.cliente) {
+        if (typeof atualizarTudo === 'function') {
+            atualizarTudo(); 
+        }
+
+        if (pedido.cliente && pedido.cliente.data) {
             const elData = document.getElementById('dataPedido');
             const elHora = document.getElementById('horarioPedido');
             
-            if (elData && pedido.cliente.data) {
+            if (elData) {
                 elData.value = pedido.cliente.data;
                 
-                // 🔥 O SEGREDO: Disparar manualmente o evento 'change' na data.
-                // Isso força a função 'configurarCalendario' a criar as opções de hora agora!
+                // SÊNIOR: Em vez de apenas disparar o evento, 
+                // chamamos a função de geração manualmente para garantir o preenchimento imediato
+                if (typeof window.gerarOpcoesDeHorario === 'function') {
+                    // Usamos a string da data com o sufixo de hora para evitar erro de fuso horário (Data vira ontem)
+                    const dataCorreta = new Date(pedido.cliente.data + "T00:00:00");
+                    window.gerarOpcoesDeHorario(dataCorreta); 
+                    console.log("🕒 Horas geradas manualmente na reidratação");
+                }
+
+                // Dispara o evento para qualquer outra lógica acoplada
                 elData.dispatchEvent(new Event('change'));
 
-                // Agora sim, damos um tempo para o HTML processar as novas opções e injetamos a hora
                 setTimeout(() => {
                     if (elHora && pedido.cliente.horario) {
                         elHora.value = pedido.cliente.horario;
-                        console.log("⏰ Horário injetado com sucesso:", elHora.value);
+                        // Debug extra para o mobile
+                        if (elHora.value === "") {
+                            console.error("❌ Falha ao injetar hora: valor não existe nas opções.");
+                        }
                     }
-                }, 150); // Aumentei um pouquinho para garantir
+                }, 400); // Timeout ligeiramente maior para estabilidade mobile
             }
         }
-   
 
         if (typeof restaurarEstadoBotoesPagamento === 'function') {
             restaurarEstadoBotoesPagamento();
@@ -492,3 +508,4 @@ window.selecionarPorcentagem = function(valor) {
         atualizarResumoFinal();
     }
 };
+
