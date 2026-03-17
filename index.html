@@ -407,23 +407,19 @@
 
 <!-- TOTAL -->
 <section class="fundo-final">
-
     <div class="secao-total">
-        
-            <div class="total-info">
-                <img src="assets/coins.png" alt="Moedas">
-                <span>Total <strong id="valorTotalPedido">R$ 0,00</strong></span>
-                
-            </div>
-
-            <p id="avisoBloqueio" style="color: #d9534f; font-size: 13px; margin-bottom: 10px; font-weight: bold; display: none;">
-                ⚠️ Por favor, aceite os termos de variação de peso para continuar.
-            </p>
-
-            <button class="btn-fechar" id="btnConfirmarPedido">
-                Fechar pedido
-            </button>
+        <div class="total-info">
+            <img src="assets/coins.png" alt="Moedas">
+            <span>Total <strong id="valorTotalPedido">R$ 0,00</strong></span>
         </div>
+
+        <p id="avisoBloqueio" style="color: #d9534f; font-size: 13px; margin-bottom: 10px; font-weight: bold; display: none;">
+            ⚠️ Por favor, aceite os termos de variação de peso para continuar.
+        </p>
+
+        <button class="btn-fechar" id="btnConfirmarPedido">
+            Fechar pedido
+        </button>
     </div>
 
     <footer class="rodape">
@@ -432,7 +428,7 @@
                 <img src="assets/MARCA DAGUA.png" class="logo-rodape" alt="Logo">
 
                 <nav class="rodape-menu">
-                    <a href="sobre.html">Sobre</a>                                    
+                    <a href="sobre.html">Sobre</a>
                     <span class="divisor">|</span> 
 
                     <div class="dropdown">
@@ -448,26 +444,29 @@
 
                     <a href="https://maps.app.goo.gl/gTp6KAYNjbFVxqoR9" target="_blank" rel="noopener noreferrer">Endereço</a>
                     <span class="divisor">|</span>
-                    <a href="privacidade.html">Política de Privacidade</a>
+                    <a href="termos.html">Termos</a>
+                    <span class="divisor">|</span>
+                    <a href="privacidade.html">Privacidade</a>
                 </nav>
 
                 <div class="rodape-icones">
-                  <a href="https://www.instagram.com/dayane.teodoro.confeitaria?igsh=a3d2d2tzcDJ0cm9w&utm_source=qr" target="_blank" rel="noopener noreferrer">
-                    <img src="assets/instagram.svg" alt="Instagram">
-                  </a>
-                  
-                  <a href="https://wa.me/5534996360443?text=Olá%20Dayane%2C%20estou%20no%20site%20e%20gostaria%20de%20tirar%20uma%20dúvida%20sobre%20meu%20bolo!" target="_blank" rel="noopener noreferrer">
-                    <img src="assets/whatsapp.svg" alt="WhatsApp">
-                  </a>  
-
+                    <a href="https://www.instagram.com/dayane.teodoro.confeitaria" target="_blank" rel="noopener noreferrer">
+                        <img src="assets/instagram.svg" alt="Instagram">
+                    </a>
+                    <a href="https://wa.me/5534996360443" target="_blank" rel="noopener noreferrer">
+                        <img src="assets/whatsapp.svg" alt="WhatsApp">
+                    </a>
                     <img src="assets/6.png" alt="Ícone">
                 </div>
             </div>
+        </div>
 
-            
+        <div style="text-align: center; padding: 20px; font-size: 12px; color: #783606; border-top: 1px solid rgba(120, 54, 6, 0.1);">
+            <p>© 2026 Dayane Teodoro Confeitaria - Todos os direitos reservados.</p>
+            <p><strong>CNPJ: 19.889.873/0001-25</strong> | Uberlândia - MG</p>
+            <p>Contato: dayaneteodorob@outlook.com</p>
         </div>
     </footer>
-
 </section>
 
 <div id="caixa-cookies" class="cookies-flutuante">
@@ -591,6 +590,10 @@
           <label for="telefoneCliente">Telefone / Celular *</label>
         </div>
         <div class="form-bloco floating">
+          <input type="text" id="cpfCliente" name="cpfCliente" placeholder=" " inputmode="numeric" maxlength="14" required>
+          <label for="cpfCliente">CPF (Obrigatório para PIX) *</label>
+        </div>
+        <div class="form-bloco floating">
             <input type="email" id="emailCliente" name="emailCliente" placeholder=" " autocomplete="email" required>
             <label for="emailCliente">E-mail * (Para receber o comprovante)</label>
         </div>
@@ -636,15 +639,28 @@
           <span class="btn-falso-titulo">Forma de Pagamento</span>
         </div>
 
-        <div class="opcoes-pagamento">
-          <div id="btnMetodoPix" class="btn-pagamento" onclick="escolherMetodo('pix')">
-            <img src="assets/pix.png" alt="Pix">
-            <span>Pix</span>
-          </div>
-          <div id="btnMetodoCartao" class="btn-pagamento" onclick="escolherMetodo('credit_card')">
-            <img src="assets/cartao.png" alt="Cartão">
-            <span>Cartão</span>
-          </div>
+        <div class="opcoes-pagamento" style="display: flex; gap: 10px; margin-bottom: 30px;">
+            <div id="btnMetodoPix" class="btn-pagamento" onclick="escolherMetodo('pix')">
+                <img src="assets/pix.png" alt="Pix">
+                <span>Pix</span>
+            </div>
+            <div id="btnMetodoCartao" class="btn-pagamento" onclick="escolherMetodo('credit_card')">
+                <img src="assets/cartao.png" alt="Cartão">
+                <span>Cartão</span>
+            </div>
+        </div>
+
+        <div style="clear: both; height: 30px; width: 100%;"></div>
+
+        <div class="aceite-termos-container" style="padding: 15px; background: #fff5f7; border-radius: 10px; border: 1px solid #fce4ec;">
+            <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 13px; color: #783606; text-align: left;">
+                <input type="checkbox" id="concordo-termos" style="width: 18px; height: 18px; margin-top: 2px; accent-color: #783606;">
+                <span>
+                    Li e concordo com os 
+                    <a href="termos.html" target="_blank" style="color: #783606; font-weight: bold; text-decoration: underline;">Termos de Uso</a> e a 
+                    <a href="privacidade.html" target="_blank" style="color: #783606; font-weight: bold; text-decoration: underline;">Política de Privacidade</a> da Confeitaria.
+                </span>
+            </label>
         </div>
 
         <div id="avisoPagamento" style="margin-top: 20px; text-align: center; color: #666; font-size: 14px;">
@@ -713,7 +729,7 @@
             <div id="paymentBrick_container"></div> 
         </div>
 
-        <div id="pix-container" style="text-align: center; margin-top: 20px; padding: 20px; border: 2px dashed rgb(120, 54, 6); border-radius: 10px; background: rgb(253, 245, 230);">
+        <div id="pix-container" style="text-align: center; margin-top: 20px; padding: 20px; border: 2px dashed rgb(120, 54, 6); border-radius: 10px; background: #FAD5DC;">
             <h4 style="color: #783606; margin-bottom: 15px;">Escaneie o QR Code:</h4>
             
             <img id="pix-qr-img" src="" alt="QR Code Pix" style="width: 220px; height: 220px; display: block; margin: 15px auto;" />

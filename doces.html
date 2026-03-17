@@ -314,7 +314,7 @@
                 <img src="assets/MARCA DAGUA.png" class="logo-rodape" alt="Logo">
 
                 <nav class="rodape-menu">
-                    <a href="sobre.html">Sobre</a>                                    
+                    <a href="sobre.html">Sobre</a>
                     <span class="divisor">|</span> 
 
                     <div class="dropdown">
@@ -330,23 +330,27 @@
 
                     <a href="https://maps.app.goo.gl/gTp6KAYNjbFVxqoR9" target="_blank" rel="noopener noreferrer">Endereço</a>
                     <span class="divisor">|</span>
-                    <a href="privacidade.html">Política de Privacidade</a>
+                    <a href="termos.html">Termos</a>
+                    <span class="divisor">|</span>
+                    <a href="privacidade.html">Privacidade</a>
                 </nav>
 
                 <div class="rodape-icones">
-                  <a href="https://www.instagram.com/dayane.teodoro.confeitaria?igsh=a3d2d2tzcDJ0cm9w&utm_source=qr" target="_blank" rel="noopener noreferrer">
-                    <img src="assets/instagram.svg" alt="Instagram">
-                  </a>
-                  
-                  <a href="https://wa.me/5534996360443?text=Olá%20Dayane%2C%20estou%20no%20site%20e%20gostaria%20de%20tirar%20uma%20dúvida%20sobre%20meu%20bolo!" target="_blank" rel="noopener noreferrer">
-                    <img src="assets/whatsapp.svg" alt="WhatsApp">
-                  </a>  
-
+                    <a href="https://www.instagram.com/dayane.teodoro.confeitaria" target="_blank" rel="noopener noreferrer">
+                        <img src="assets/instagram.svg" alt="Instagram">
+                    </a>
+                    <a href="https://wa.me/5534996360443" target="_blank" rel="noopener noreferrer">
+                        <img src="assets/whatsapp.svg" alt="WhatsApp">
+                    </a>
                     <img src="assets/6.png" alt="Ícone">
                 </div>
             </div>
+        </div>
 
-            
+        <div style="text-align: center; padding: 20px; font-size: 12px; color: #783606; border-top: 1px solid rgba(120, 54, 6, 0.1);">
+            <p>© 2026 Dayane Teodoro Confeitaria - Todos os direitos reservados.</p>
+            <p><strong>CNPJ: 19.889.873/0001-25</strong> | Uberlândia - MG</p>
+            <p>Contato: dayaneteodorob@outlook.com</p>
         </div>
     </footer>
 
@@ -464,6 +468,10 @@
         <div class="form-bloco floating">
           <input type="tel" id="telefoneCliente" placeholder=" " maxlength="15" required>
           <label for="telefoneCliente">Telefone / Celular *</label>
+        </div>
+        <div class="form-bloco floating">
+          <input type="text" id="cpfCliente" name="cpfCliente" placeholder=" " inputmode="numeric" maxlength="14" required>
+          <label for="cpfCliente">CPF (Obrigatório para PIX) *</label>
         </div>
         <div class="form-bloco floating">
             <input type="email" id="emailCliente" name="emailCliente" placeholder=" " autocomplete="email" required>
@@ -586,7 +594,7 @@
             <div id="paymentBrick_container"></div> 
         </div>
 
-        <div id="pix-container" style="text-align: center; margin-top: 20px; padding: 20px; border: 2px dashed rgb(120, 54, 6); border-radius: 10px; background: rgb(253, 245, 230);">
+        <div id="pix-container" style="text-align: center; margin-top: 20px; padding: 20px; border: 2px dashed rgb(120, 54, 6); border-radius: 10px; background: #FAD5DC;">
             <h4 style="color: #783606; margin-bottom: 15px;">Escaneie o QR Code:</h4>
             
             <img id="pix-qr-img" src="" alt="QR Code Pix" style="width: 220px; height: 220px; display: block; margin: 15px auto;" />

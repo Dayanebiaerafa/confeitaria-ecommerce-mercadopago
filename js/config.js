@@ -13,7 +13,7 @@ export const feriadosFixos = [
 // config.js
 export const CONFIG = {
     URL_PLANILHA: "https://script.google.com/macros/s/AKfycbwm2PMkt2qSnRTH9bScAOXxauAbi3sv3WmfmJ7yQN2ut66oYTvP_W5x8jhXUDu8A5Eh/exec",
-    // Não coloque a chave da IA aqui se o código for pro GitHub!
+    API_URL: "https://site-backend-mrgq.onrender.com"
 };
 // ====== 1. CONSTANTES DE PREÇO (Mantidas exatamente como as suas) ======
 

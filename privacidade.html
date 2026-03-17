@@ -35,6 +35,8 @@
             z-index: 1000; 
         }
 
+        .logo-privacidade-grande { height: 60px; width: auto; }
+
         .header {
             min-height: 140px;
             padding: 30px 0;
@@ -112,47 +114,19 @@
 
 
         .icons-header img { width: 30px; }
-        /* Rodapé Ajustado */
-        .rodape {
-            background-color: #FAD5DC;
-            padding: 20px 40px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-top: 1px solid #783606;
-        }
 
-        .logo-rodape {
-            height: 50px; /* Logo menor no rodapé conforme pedido */
-            width: auto;
-            min-width: 120px;
-        }
-
-        .menu-rodape-marrom {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
-
-        .menu-rodape-marrom a {
-            color: #783606; /* Cor marrom conforme pedido */
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .icons-rodape { 
+        /* --- CONTEÚDO --- */
+        .container-privacidade { 
             display: flex; 
-            align-items: center; 
-            justify-content: flex-end; 
-            min-width: 120px; 
+            justify-content: center; 
+            padding: 60px 20px; 
         }
-        .icons-rodape img {
-            width: 30px; /* Ícones menores no rodapé conforme pedido */
-            height: auto;
-            margin-left: 10px;
+
+        .bloco-conteudo { 
+            width: 85%; 
+            max-width: 1000px; 
         }
+
 
         .container-privacidade { 
             display: flex; 
@@ -161,11 +135,6 @@
             background-color: #ffffff;
         }
 
-        .bloco-conteudo { 
-            width: 85%; 
-            max-width: 1000px; 
-            background-color: #ffffff;
-        }
 
         /* Título centralizado e em negrito */
         h1 { 
@@ -211,24 +180,210 @@
             margin: 0;
         }
 
+
+        .rodape {
+            background-color: #FAD5DC;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            border-top: 1px solid #783606;
+        }
+
+        .rodape-topo-alinhado {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 40px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .logo-rodape { height: 60px; width: auto; }
+
+        .menu-rodape-marrom {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .menu-rodape-marrom a {
+            color: #783606;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .icons-rodape {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .icons-rodape img { width: 30px; }
+
+        .rodape-dados-fiscais {
+            background-color: #ffffff; 
+            text-align: center;
+            padding: 10px 20px; /* Reduzi um pouco o padding para acompanhar a letra menor */
+            border-top: 1px solid rgba(120, 54, 6, 0.1);
+        }
+
+        .rodape-dados-fiscais p { 
+            margin: 0; 
+            color: #783606; 
+            text-align: center;
+            line-height: 1.4; /* Um pouco de respiro para a letra pequena não embolar */
+            
+            /* ALTERE AQUI: 11px deixa a letra bem pequena e elegante */
+            font-size: 11px; 
+        }
+
+        /* Garante que o link do e-mail também diminua */
+        .rodape-dados-fiscais a {
+            color: #783606;
+            text-decoration: none;
+            font-size: 11px;
+        }
+
+        /* --- ASSISTENTE VIRTUAL (BOTÃO FLUTUANTE) --- */
+        .assistente-flutuante {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-image: url('assets/dayane-foto.png');
+            background-size: cover;
+            border-radius: 50%;
+            border: 2px solid #783606;
+            z-index: 10001; /* Garante que fique acima de tudo */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            cursor: pointer;
+        }
+
+        #assistant-box {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 300px;
+            z-index: 10000;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .assistente-flutuante:hover { transform: scale(1.1); }
+        
+
         /* Ajuste responsivo para celular */
         @media (max-width: 768px) {
-            .header-privacidade, .rodape {
-                flex-direction: column; /* Empilha no mobile para não amassar */
+            .header-privacidade, .rodape-topo-alinhado {
                 height: auto !important;
                 padding: 20px;
+                flex-direction: column;
                 gap: 15px;
+                align-items: center;
+            }
+            
+
+            /* 2. Menu Lado a Lado: Evita que os links fiquem um embaixo do outro */
+            .menu-privacidade {
+                display: flex;
+                flex-direction: row; /* Mantém lado a lado */
+                flex-wrap: wrap;     /* Se a tela for muito pequena, ele quebra a linha suavemente */
+                justify-content: center;
+                align-items: center;
+                gap: 8px;           /* Espaço reduzido para caber o divisor */
+                width: 100%;
             }
 
-            .menu-privacidade, .menu-rodape-marrom {
-                flex-direction: column;
+
+            .menu-privacidade a {
+                font-size: 13px;    /* Diminuímos um pouco a fonte para caber na linha */
+                white-space: nowrap; /* Impede que o nome do menu quebre sozinho */
+            }
+
+            .divisor {
+                display: inline;    /* Garante que o | apareça */
+                color: #783606;
+                opacity: 0.5;       /* Deixa o divisor mais sutil no mobile */
+                font-size: 12px; /* Esconde o pipe "|" no mobile para ganhar espaço */
+            }
+
+            .icons-header {
+                justify-content: center; /* Centraliza os ícones no final do cabeçalho */
+                width: 100%;
+                margin-top: 5px;
+            }
+
+            /* 3. Texto e Conteúdo: Centraliza e remove cortes */
+            .container-privacidade {
+                padding: 20px 25px; /* Menos recuo lateral para o texto respirar */
+            }
+
+            .header-right {
+                width: 100%;
+            }
+
+            /* Texto do conteúdo centralizado */
+            .bloco-conteudo {
+                width: 100%;
+                text-align: left;
+            }
+
+            p, li {
+                text-align: center; /* Alinha parágrafos ao centro no mobile */
+                font-size: 15px;    /* Ajusta levemente o tamanho para telas pequenas */
+            }
+
+            h1 {
+                font-size: 24px;
+                margin-top: 20px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            /* 4. Rodapé */
+            .rodape {
+                padding: 00px;
+                
+            }
+
+            .menu-rodape-marrom {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
                 gap: 10px;
+            }
+
+            .rodape-topo-alinhado {
+                padding: 20px; /* Mantém o respiro apenas na parte rosa */
+            }
+
+            .rodape-dados-fiscais {
+                width: 100%;
+                padding: 15px 10px;
+                box-sizing: border-box; /* Garante que o padding não aumente a largura */
+            }
+
+            /* Assistente no Mobile - Garantir que não saia da tela */
+            #assistant-button {
+                bottom: 15px;
+                right: 15px;
+                width: 55px; /* Um pouco menor no mobile */
+                height: 55px;
+            }
+
+            #assistant-box {
+                width: 85%; /* Ocupa quase a tela toda na largura */
+                right: 7.5%; /* Centraliza um pouco mais */
+                bottom: 80px;
             }
 
             .logo-privacidade-grande { height: 60px; } /* Ajuste para não ocupar a tela toda */
             .icons-privacidade { justify-content: center; }
-            .bloco-conteudo { width: 100%; }
-            h1 { font-size: 26px; }
+            
+           
         }
     </style>
 </head>
@@ -307,46 +462,64 @@
 
     <div class="separador-sobre"></div>
 
-    <section class="fundo-final">
-        <footer class="rodape">
-            
-                    <img src="assets/MARCA DAGUA.png" class="logo-rodape" alt="Logo">
-
-                    <nav class="menu-rodape-marrom">
-                        <a href="sobre.html">Sobre</a>                                     
-                        <span class="divisor">|</span> 
-
-                        <div class="dropdown">
-                            <a href="javascript:void(0)" class="dropbtn">Produtos</a>
-                            <div class="dropdown-content">
-                                <a href="#">Bolos Personalizados</a>
-                                <a href="#">Bolos de Corte</a>
-                                <a href="#">Doces Tradicionais</a>
-                            </div>
-                        </div>
-                        <span class="divisor">|</span>
-
-                        <a href="https://maps.app.goo.gl/gTp6KAYNjbFVxqoR9" target="_blank" rel="noopener noreferrer">Endereço</a>
-                        <span class="divisor">|</span>
-                        <a href="privacidade.html">Política de Privacidade</a>
-                    </nav>
-
-                    <div class="icons-rodape">
-                        <a href="https://www.instagram.com/dayane.teodoro.confeitaria?igsh=a3d2d2tzcDJ0cm9w&utm_source=qr" target="_blank" rel="noopener noreferrer">
-                            <img src="assets/instagram.svg" alt="Instagram">
-                        </a>
-                        
-                        <a href="https://wa.me/5534996360443?text=Olá%20Dayane%2C%20estou%20no%20site%20e%20gostaria%20de%20tirar%20uma%20dúvida%20sobre%20meu%20bolo!" target="_blank" rel="noopener noreferrer">
-                            <img src="assets/whatsapp.svg" alt="WhatsApp">
-                        </a>  
-
-                        <img src="assets/6.png" alt="Ícone">
-                    </div>
-                </div>
-
-                
+    <footer class="rodape">
+        <div class="rodape-topo-alinhado"> 
+            <img src="assets/MARCA DAGUA.png" class="logo-rodape" alt="Logo">
+            <nav class="menu-rodape-marrom">
+                <a href="sobre.html">Sobre</a>
+                <span class="divisor">|</span> 
+                <a href="index.html">Produtos</a>
+                <span class="divisor">|</span>
+                <a href="https://maps.app.goo.gl/gTp6KAYNjbFVxqoR9" target="_blank">Endereço</a>
+                <span class="divisor">|</span>
+                <a href="termos.html">Termos</a>
+                <span class="divisor">|</span>
+                <a href="privacidade.html">Privacidade</a>
+            </nav>
+            <div class="icons-rodape">
+                <img src="assets/instagram.svg" alt="Instagram">
+                <img src="assets/whatsapp.svg" alt="WhatsApp">
+                <img src="assets/6.png" alt="Ícone">
             </div>
-        </footer>
-    </section>
+        </div>
+
+        <div class="rodape-dados-fiscais">
+            <p>© 2026 Dayane Teodoro Confeitaria - Todos os direitos reservados.</p>
+            <p><strong>CNPJ: 19.889.873/0001-25</strong> | Uberlândia - MG</p>
+            <p>Contato: dayaneteodorob@outlook.com</p>
+        </div>
+    </footer>
+
+<div id="assistant-button"></div>
+
+<div id="assistant-box" class="hidden">
+    <div id="assistant-header">
+        <span>Assistente Dayane 🍰</span>
+        <button id="close-assistant" style="background:none; border:none; color:white; cursor:pointer;">X</button>
+    </div>
+    <div id="assistant-content">
+        <div id="assistant-content">
+        <p style="font-size: 13px; color: #666;">Olá! Como posso te ajudar hoje? ✨</p>
+        
+        <button class="btn-opcao btn-destaque" onclick="verCardapio()">📖 Ver Cardápio & Sugestões</button>
+        <button class="btn-opcao" onclick="baixarRegras()">📜 Regras de Pedidos (PDF)</button>
+        
+        <button class="btn-opcao" onclick="responder('prazo')">🚗 Fazem entrega?</button>
+        <button class="btn-opcao" onclick="responder('pagamento')">💳 Formas de pagamento</button>
+        <button class="btn-opcao btn-whatsapp" onclick="abrirWhatsAssistente()">🟢 Falar com a Dayane</button>
+
+        <div id="assistant-response"></div>
+
+        <div style="margin-top: 10px; display: flex;">
+            <input type="text" id="perguntaIA" placeholder="Dúvida..." style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 5px 0 0 5px;">
+            <button onclick="perguntarIA()" style="width: 40px; border-radius: 0 5px 5px 0; background: #783606; color: white;">></button>
+        </div>
+  
+</div>
+
+<link rel="stylesheet" href="./css/styleassistente.css">  
+
+<script type="module" src="./js/main.js"></script><script type="module" src="./js/payment.js"></script>
+<script type="module" src="./js/assistant.js"></script>
 </body>
 </html>

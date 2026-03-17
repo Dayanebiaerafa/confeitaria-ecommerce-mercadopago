@@ -351,48 +351,64 @@
     <div class="secao-total">
         <div class="total-info">
             <img src="assets/coins.png" alt="Moedas">
-            <span>Total <strong id="valorTotalCorte">R$ 0,00</strong></span>
+            <span>Total <strong id="valorTotalPedido">R$ 0,00</strong></span>
         </div>
+
+        <p id="avisoBloqueio" style="color: #d9534f; font-size: 13px; margin-bottom: 10px; font-weight: bold; display: none;">
+            ⚠️ Por favor, aceite os termos de variação de peso para continuar.
+        </p>
 
         <button class="btn-fechar" id="btnConfirmarPedido">
             Fechar pedido
         </button>
     </div>
-    
-    <p id="avisoBloqueio" style="color: #d9534f; font-size: 13px; margin-bottom: 10px; font-weight: bold; display: none; text-align: center;">
-        ⚠️ Por favor, aceite os termos de variação de peso para continuar.
-    </p>
-</section> <footer class="rodape">
-    <div class="rodape-card">
-        <div class="rodape-topo">
-            <img src="assets/MARCA DAGUA.png" class="logo-rodape" alt="Logo">
 
-            <nav class="rodape-menu">
-                <a href="sobre.html">Sobre</a>
-                <span class="divisor">|</span> 
-                <div class="dropdown">
-                    <a href="#" class="dropbtn" id="btnProdutosRodape">Produtos</a>
-                    <div class="dropdown-content" id="menuProdutosRodape">
-                        <a href="bolopersonalizado.html">Bolos Personalizados</a>
-                        <a href="bolodecorte.html">Bolo de Corte</a>
-                        <a href="doces.html">Doces Tradicionais</a>
-                        <a href="index.html">Bolos Clássicos</a>
+    <footer class="rodape">
+        <div class="rodape-card">
+            <div class="rodape-topo">
+                <img src="assets/MARCA DAGUA.png" class="logo-rodape" alt="Logo">
+
+                <nav class="rodape-menu">
+                    <a href="sobre.html">Sobre</a>
+                    <span class="divisor">|</span> 
+
+                    <div class="dropdown">
+                        <a href="#" class="dropbtn" id="btnProdutosRodape">Produtos</a>
+                        <div class="dropdown-content" id="menuProdutosRodape">
+                            <a href="bolopersonalizado.html">Bolos Personalizados</a>
+                            <a href="bolodecorte.html">Bolo de Corte</a>
+                            <a href="doces.html">Doces Tradicionais</a>
+                            <a href="index.html">Bolos Clássicos</a>
+                        </div>
                     </div>
-                </div>
-                <span class="divisor">|</span>
-                <a href="https://maps.app.goo.gl/gTp6KAYNjbFVxqoR9" target="_blank">Endereço</a>
-                <span class="divisor">|</span>
-                <a href="privacidade.html">Política de Privacidade</a>
-            </nav>
+                    <span class="divisor">|</span>
 
-            <div class="rodape-icones">
-                <a href="https://www.instagram.com/dayane.teodoro.confeitaria" target="_blank"><img src="assets/instagram.svg" alt="Instagram"></a>
-                <a href="https://wa.me/5534996360443" target="_blank"><img src="assets/whatsapp.svg" alt="WhatsApp"></a>
-                <img src="assets/6.png" alt="Ícone">
+                    <a href="https://maps.app.goo.gl/gTp6KAYNjbFVxqoR9" target="_blank" rel="noopener noreferrer">Endereço</a>
+                    <span class="divisor">|</span>
+                    <a href="termos.html">Termos</a>
+                    <span class="divisor">|</span>
+                    <a href="privacidade.html">Privacidade</a>
+                </nav>
+
+                <div class="rodape-icones">
+                    <a href="https://www.instagram.com/dayane.teodoro.confeitaria" target="_blank" rel="noopener noreferrer">
+                        <img src="assets/instagram.svg" alt="Instagram">
+                    </a>
+                    <a href="https://wa.me/5534996360443" target="_blank" rel="noopener noreferrer">
+                        <img src="assets/whatsapp.svg" alt="WhatsApp">
+                    </a>
+                    <img src="assets/6.png" alt="Ícone">
+                </div>
             </div>
         </div>
-    </div>
-</footer>
+
+        <div style="text-align: center; padding: 20px; font-size: 12px; color: #783606; border-top: 1px solid rgba(120, 54, 6, 0.1);">
+            <p>© 2026 Dayane Teodoro Confeitaria - Todos os direitos reservados.</p>
+            <p><strong>CNPJ: 19.889.873/0001-25</strong> | Uberlândia - MG</p>
+            <p>Contato: dayaneteodorob@outlook.com</p>
+        </div>
+    </footer>
+</section>
 
 
 
@@ -519,6 +535,10 @@
         <div class="form-bloco floating">
           <input type="tel" id="telefoneCliente" name="telefoneCliente" placeholder=" " maxlength="15" autocomplete="tel" required>
           <label for="telefoneCliente">Telefone / Celular *</label>
+        </div>
+        <div class="form-bloco floating">
+          <input type="text" id="cpfCliente" name="cpfCliente" placeholder=" " inputmode="numeric" maxlength="14" required>
+          <label for="cpfCliente">CPF (Obrigatório para PIX) *</label>
         </div>
 
         <div class="form-bloco floating">

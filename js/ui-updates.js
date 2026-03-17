@@ -1111,27 +1111,74 @@ export const abrirModalTermos = () => { if(modalTermos) modalTermos.style.displa
 
 
 // --- FUNÇÃO 2: Escolher o Método (Pix ou Cartão) ---
+export function validarTermos() {
+    const checkbox = document.getElementById('concordo-termos');
+    if (!checkbox.checked) {
+        alert("Dayane informa: Para prosseguir com o seu pedido, por favor aceite os termos e condições. 🍰");
+        return false;
+    }
+    return true;
+}
+
 export function escolherMetodo(metodo) {
+    // --- NOVO AJUSTE: VERIFICAÇÃO DO TERMO ANTES DE TUDO ---
+    const checkboxTermos = document.getElementById('concordo-termos');
+    const containerTermos = document.querySelector('.aceite-termos-container');
+
+    if (!checkboxTermos || !checkboxTermos.checked) {
+        alert("Dayane informa: Para prosseguir com o seu pedido, por favor aceite os termos e condições. 🍰");
+        
+        // Efeito visual para ajudar o cliente a achar onde clicar
+        if (containerTermos) {
+            containerTermos.style.border = "2px solid #e74c3c"; 
+            containerTermos.style.backgroundColor = "#fff0f0";
+            containerTermos.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return; // PARA A EXECUÇÃO AQUI
+    }
+
+    // Se passou pela verificação, volta o visual ao normal e segue sua lógica sênior
+    containerTermos.style.border = "1px solid #fce4ec";
+    containerTermos.style.backgroundColor = "#fff5f7";
+
+    console.log("Sênior Log: Método escolhido ->", metodo);
+    
+    // 1. Atualiza as variáveis globais
     window.metodoSelecionado = metodo; 
     
+    // 2. SALVA NO STORAGE
+    localStorage.setItem('metodo_pagamento', metodo);
+
+    // 3. Atualiza o objeto pedido
     if (!pedido.pagamento) pedido.pagamento = {};
     pedido.pagamento.metodo = metodo;
     
-    // SÊNIOR: Removemos o IF que forçava 1.0 aqui. 
-    // Se o valor já for 0.5, ele vai continuar sendo 0.5.
-    // Se não existir nada, a variável global (que já inicia em 1.0 no state) resolve.
-
-    // Feedback visual
+    // 4. Feedback visual
     atualizarVisualMetodo(metodo);
 
-    // Limpa o Mercado Pago
+    // 5. Limpa o Mercado Pago (Prevenção de Bug Sênior)
     const container = document.getElementById("paymentBrick_container");
-    if (container) container.innerHTML = "";
+    if (container) {
+        container.innerHTML = "";
+    }
     window.mpInstanciado = false; 
 
+    // 6. Persistência e Resumo
     salvarNoLocalStorage(); 
     atualizarResumoFinal();
+
+    // 7. Dispara a abertura do checkout conforme o método
+    if (metodo === 'pix') {
+        if (typeof gerarPixMercadoPago === "function") gerarPixMercadoPago();
+    } else if (metodo === 'credit_card') {
+        if (typeof abrirCheckoutCartao === "function") abrirCheckoutCartao();
+    }
 }
+
+// EXPOSIÇÃO GLOBAL
+window.escolherMetodo = escolherMetodo;
+
+
 
 export function restaurarEstadoBotoesPagamento() {
     // SÊNIOR: Prioridade para a Global, depois Objeto, depois Padrão 1.0
