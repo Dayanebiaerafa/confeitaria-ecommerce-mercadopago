@@ -56,11 +56,16 @@ export function gerarMensagemWhatsCompleta(pedido) {
 // whatsapp.js
 
 export function abrirWhatsApp(telefone, mensagem) {
-  const numero = telefone.replace(/\D/g, '');
-  // REMOVIDO: const texto = encodeURIComponent(mensagem); 
-  // Sênior: A mensagem já vem codificada de 'gerarMensagemWhatsCompleta'
-  const url = `https://wa.me/55${numero}?text=${mensagem}`;
+  // Remove tudo que não for número
+  let numeroLimpo = telefone.replace(/\D/g, '');
 
+  // Se o número não começar com 55 e tiver 10 ou 11 dígitos (DDD + Número)
+  // nós adicionamos o 55 do Brasil automaticamente
+  if (numeroLimpo.length <= 11 && !numeroLimpo.startsWith('55')) {
+    numeroLimpo = '55' + numeroLimpo;
+  }
+
+  const url = `https://wa.me/${numeroLimpo}?text=${mensagem}`;
   window.open(url, '_blank');
 }
 

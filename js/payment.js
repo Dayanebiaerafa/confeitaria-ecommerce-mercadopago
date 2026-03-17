@@ -100,7 +100,8 @@ export async function inicializarCheckoutTransparente() {
 
 
 export async function enviarPagamentoAoBackend(formData, totalCalculado) {
-    console.log("🚀 Iniciando envio ao Backend...", formData);
+    console.log("🚀 DEBUG SÊNIOR: Dados que estou enviando:", formData);
+    
     const containerMP = document.getElementById("container-pagamento-mp");
 
     // Feedback visual imediato
@@ -135,7 +136,8 @@ export async function enviarPagamentoAoBackend(formData, totalCalculado) {
             localStorage.removeItem('carrinho_dayane');
             localStorage.removeItem('ultimo_pedido_id');
             localStorage.removeItem('dados_pix_resultado');
-            window.location.href = "sucesso.html";
+            const msgDayane = "Oi! Meu pagamento foi aprovado. Pode conferir?";
+            window.location.href = `sucesso.html?whatsapp=https://wa.me/5534996360443?text=${encodeURIComponent(msgDayane)}`;
         } else {
             // Se for 'pending' (Pix gerado), NÃO LIMPAMOS. 
             // Assim o banner continua funcionando com os dados salvos.
@@ -249,12 +251,16 @@ export function verificarStatusPagamento(paymentId, dadosDoPedido) {
                 const dadosFinais = dadosDoPedido || JSON.parse(localStorage.getItem('dados_ultimo_pedido'));
 
                 try {
-                    // 1. Enviar para Planilha
+                    // 1. Enviar para Planilha (O seu Backend já faz isso também, mas aqui é um reforço)
                     fetch(CONFIG.URL_PLANILHA, { method: 'POST', mode: 'no-cors', body: JSON.stringify(dadosFinais) });
 
-                    // 2. Disparar WhatsApp
+                    // 2. Disparar WhatsApp detalhado PARA A DAYANE
+                    // Aqui usamos a sua função de mensagem completa
                     const msg = gerarMensagemWhatsCompleta(dadosFinais);
-                    abrirWhatsApp(dadosFinais.cliente.telefone, msg);
+                    
+                    // IMPORTANTE: Trocamos 'dadosFinais.cliente.telefone' pelo SEU número fixo
+                    // No momento de enviar para VOCÊ (Dayane):
+                    abrirWhatsApp("34996360443", msg); 
                     
                 } catch (msgError) {
                     console.error("Erro na automação:", msgError);
@@ -265,7 +271,7 @@ export function verificarStatusPagamento(paymentId, dadosDoPedido) {
                 
                 setTimeout(() => {
                     window.location.href = "sucesso.html";
-                }, 1500); // 1.5s para dar tempo do WhatsApp abrir
+                }, 2000); // Aumentei para 2s para garantir que o Zap abra antes de mudar a página
             }
         } catch (err) {
             console.error("Erro na consulta do status:", err);
