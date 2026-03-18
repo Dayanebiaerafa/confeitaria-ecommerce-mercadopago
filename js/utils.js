@@ -10,59 +10,54 @@ export function configurarCalendario() {
     if (!dataInput) return;
 
     const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0); // Garante que o cálculo comece do início do dia
+    hoje.setHours(0, 0, 0, 0); // Zera a hora para comparação justa
 
     const temPersonalizado = pedido.itens?.some(item => item.tipo === 'personalizado');
     const temDoces = (pedido.doces && pedido.doces.length > 0) || 
                      (pedido.itens?.some(item => item.tipo === 'doces')) ||
                      (document.body.getAttribute('data-pagina') === 'doces');
     
-    // Define se pula 1 ou 2 dias
     const diasAntecedencia = (temPersonalizado || temDoces) ? 2 : 1;
 
     let dataMinima = new Date(hoje);
     dataMinima.setDate(hoje.getDate() + diasAntecedencia);
     
-    // FORMATAÇÃO MANUAL (Evita o erro de fuso horário do ISOString)
-    const ano = dataMinima.getFullYear();
-    const mes = String(dataMinima.getMonth() + 1).padStart(2, '0');
-    const dia = String(dataMinima.getDate()).padStart(2, '0');
-    const dataFormatada = `${ano}-${mes}-${dia}`;
-
-    // AQUI ESTAVA O ERRO: Use apenas a dataFormatada
+    // Formata YYYY-MM-DD para o atributo 'min'
+    const dataFormatada = dataMinima.toISOString().split('T')[0];
     dataInput.setAttribute("min", dataFormatada);
 
+    // No Mobile, usamos um pequeno delay para não fechar o calendário no rosto do cliente
     dataInput.addEventListener("change", function() {
         if (!this.value) return;
 
-        const hoje = new Date();
-        hoje.setHours(0, 0, 0, 0);
-
-        // Corrigindo o erro de fuso horário e declarando a variável
+        // "T00:00:00" é vital para evitar que o fuso horário mude o dia
         const dataSelecionada = new Date(this.value + "T00:00:00");
+        const dataHojeCopia = new Date(hoje);
         
-        // CALCULA AQUI (A causa do seu erro era a falta desta linha ou da declaração let/const)
-        const diffDias = Math.ceil((dataSelecionada - hoje) / (1000 * 60 * 60 * 24));
+        // Cálculo exato de dias ignorando horas
+        const diffTempo = dataSelecionada.getTime() - dataHojeCopia.getTime();
+        const diffDias = Math.round(diffTempo / (1000 * 60 * 60 * 24));
         
         const diaSemana = dataSelecionada.getDay();
 
-        // Pega os dados do pedido para saber a antecedência
-        const temPersonalizado = pedido.itens?.some(item => item.tipo === 'personalizado');
-        const temDoces = (pedido.doces && pedido.doces.length > 0);
-        const diasNecessarios = (temPersonalizado || temDoces) ? 2 : 1;
-
-        if (diffDias < diasNecessarios) {
-            alert(`🧁 Ops! Para este pedido precisamos de ${diasNecessarios} dia(s) de antecedência.`);
-            this.value = "";
+        if (diffDias < diasAntecedencia) {
+            // Usamos setTimeout para o alerta não travar o fechamento do calendário nativo
+            setTimeout(() => {
+                alert(`🧁 Ops! Para este pedido precisamos de ${diasAntecedencia} dia(s) de antecedência.`);
+                this.value = "";
+            }, 100);
             return;
         }
 
-        if (diaSemana === 0) {
-            alert("🧁 Não realizamos entregas aos domingos.");
-            this.value = "";
+        if (diaSemana === 0) { // Domingo
+            setTimeout(() => {
+                alert("🧁 Não realizamos entregas aos domingos.");
+                this.value = "";
+            }, 100);
             return;
         }
 
+        // Se passou nas validações, segue o fluxo
         if (typeof window.gerarOpcoesDeHorario === 'function') {
             window.gerarOpcoesDeHorario(dataSelecionada);
         }

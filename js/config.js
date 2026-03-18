@@ -13,8 +13,19 @@ export const feriadosFixos = [
 // config.js
 export const CONFIG = {
     URL_PLANILHA: "https://script.google.com/macros/s/AKfycbwm2PMkt2qSnRTH9bScAOXxauAbi3sv3WmfmJ7yQN2ut66oYTvP_W5x8jhXUDu8A5Eh/exec",
-    API_URL: "https://site-backend-mrgq.onrender.com"
+    API_URL: "https://site-backend-mrgq.onrender.com",
+    MP_PUBLIC_KEY: "APP_USR-1af45030-78f4-4e0e-97f1-85d464b06625"
 };
+
+
+// Esta função garante que o objeto mp só seja criado se o SDK estiver presente
+export function obterMercadoPago() {
+    if (typeof MercadoPago === 'undefined') {
+        console.error("Erro: SDK do Mercado Pago não carregado!");
+        return null;
+    }
+    return new MercadoPago(CONFIG.MP_PUBLIC_KEY, { locale: 'pt-BR' });
+}
 // ====== 1. CONSTANTES DE PREÇO (Mantidas exatamente como as suas) ======
 
 // Preços Base

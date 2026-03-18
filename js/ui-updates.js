@@ -52,30 +52,29 @@ export function atualizarContadorSacola() {
 
 
 export function abrirDrawer() {
-    // ID CORRETO conforme seu console: 'drawerCarrinho'
     const drawer = document.getElementById('drawerCarrinho'); 
     const overlay = document.getElementById('overlay');
 
-    console.log("Tentando abrir drawer...", drawer); // Se aparecer null aqui, o ID no HTML mudou
-
     if (drawer && overlay) {
-        // 1. Sincroniza os dados antes de mostrar
         const dadosSalvos = localStorage.getItem('carrinho_dayane');
         if (dadosSalvos) {
             Object.assign(pedido, JSON.parse(dadosSalvos));
         }
 
-        // 2. Abre visualmente
         drawer.classList.add("ativo");
         overlay.classList.add("ativo");
         
-        // 3. Força a renderização
         mostrarEtapa(0); 
         atualizarDadosCarrinho();
+
+        // --- AQUI ESTÁ O SEGREDO SÊNIOR ---
+        // Se a etapa 0 já for a de pagamento, ou se você quiser pré-carregar:
+        inicializarCheckoutTransparente(); 
     } else {
-        console.error("Erro: Elementos do drawer não encontrados no DOM!");
+        console.error("Erro: Elementos do drawer não encontrados!");
     }
 }
+
 export function fecharDrawer() {
     if (drawer && overlay) {
         drawer.classList.remove("ativo");
@@ -84,42 +83,42 @@ export function fecharDrawer() {
 }
 
 export function mostrarEtapa(index) {
-    console.trace("Abrindo etapa: " + index)
+    console.trace("📍 Navegando para etapa: " + index);
 
+    // --- SUA LÓGICA DE REDIRECIONAMENTO (MANTIDA) ---
     if (index === 1 && window.bloquearEtapa1) {
-        console.warn("🚫 Redirecionando clique do banner para Etapa 3...");
-        window.bloquearEtapa1 = false; // Libera para as próximas interações
-        mostrarEtapa(3); // Força o destino correto
+        console.warn("🚫 Redirecionando para Etapa 3...");
+        window.bloquearEtapa1 = false;
+        mostrarEtapa(3);
         return; 
     }
 
     window.scrollTo(0, 0); 
 
-    // 2. RESET DO SCROLL INTERNO (A solução para o seu problema)
-    // Procuramos a div que tem o scroll (geralmente .drawer-content)
+    // --- SUA LÓGICA DE RESET DE SCROLL (MANTIDA) ---
     const drawerContent = document.querySelector(".drawer-content");
     if (drawerContent) {
-        drawerContent.scrollTop = 0; // Isso joga o scroll para o topo do formulário
+        drawerContent.scrollTop = 0;
     }
 
-    // --- RESET DE SEGURANÇA (ETAPA 2) ---
+    // --- SUA LÓGICA DE SEGURANÇA NO INDEX 2 (MANTIDA E REFORÇADA) ---
+    // Por que manter? Porque se o usuário volta para escolher o método, 
+    // precisamos limpar os vestígios do Mercado Pago anterior.
     if (index === 2) {
-        restaurarEstadoBotoesPagamento();
+        if (typeof restaurarEstadoBotoesPagamento === 'function') restaurarEstadoBotoesPagamento();
         if (typeof intervaloPix !== 'undefined') clearInterval(intervaloPix);
         
         window.mpInstanciado = false; 
         const brickContainer = document.getElementById("paymentBrick_container");
         if (brickContainer) brickContainer.innerHTML = ""; 
 
-        
         const containerMP = document.getElementById("container-pagamento-mp");
         const pixContainer = document.getElementById("pix-container");
         if (containerMP) containerMP.style.display = "block";
         if (pixContainer) pixContainer.style.display = "none";
     }
 
-    // 1. Alterna as etapas (Melhorado para garantir que o navegador veja a largura)
-    // Usamos um array fixo para garantir que nenhuma etapa fique esquecida
+    // --- GERENCIAMENTO DE DIVS (OTIMIZADO) ---
     const listaEtapas = [
         document.getElementById("etapaCarrinho"),
         document.getElementById("etapaIdentificacao"),
@@ -131,7 +130,7 @@ export function mostrarEtapa(index) {
         if (etapa) {
             if (i === index) {
                 etapa.classList.remove("hidden");
-                etapa.style.display = "block"; // FORÇA o block para o Mercado Pago ler a largura
+                etapa.style.display = "block"; // Essencial para o Mercado Pago ler a largura
             } else {
                 etapa.classList.add("hidden");
                 etapa.style.display = "none";
@@ -139,10 +138,9 @@ export function mostrarEtapa(index) {
         }
     });
 
-    // 2. Lógica para a Etapa de Pagamento (Index 3)
+    // --- LÓGICA DA ETAPA DE PAGAMENTO (INDEX 3) - O AJUSTE SÊNIOR ---
     if (index === 3) {
         window.mpInstanciado = false; 
-
         const pixContainer = document.getElementById("pix-container");
         const containerMP = document.getElementById("container-pagamento-mp");
         const brickC = document.getElementById("paymentBrick_container");
@@ -150,18 +148,15 @@ export function mostrarEtapa(index) {
         const dadosPixRaw = localStorage.getItem('dados_pix_resultado');
         const temPixPendente = localStorage.getItem('ultimo_pedido_id');
 
-        // --- 1. LÓGICA DE EXIBIÇÃO ---
         if (temPixPendente && dadosPixRaw) {
+            // --- SUA LÓGICA DE EXIBIÇÃO DE PIX (MANTIDA) ---
             const pixDados = JSON.parse(dadosPixRaw);
-            
             if (containerMP) containerMP.style.display = "none";
             if (pixContainer) {
                 pixContainer.style.display = "flex";
                 pixContainer.style.flexDirection = "column";
                 pixContainer.style.alignItems = "center";
 
-                // SÊNIOR: Se a imagem estiver vazia (o que aconteceu com você), 
-                // nós forçamos o preenchimento aqui também como garantia extra!
                 const qrImg = document.getElementById("pix-qr-img");
                 const copiaCola = document.getElementById("pix-copia-e-cola");
                 
@@ -173,76 +168,68 @@ export function mostrarEtapa(index) {
                 }
             }
         } else {
-            // Fluxo normal Mercado Pago
+            // --- FLUXO MERCADO PAGO COM TÉCNICA SÊNIOR ---
             if (pixContainer) pixContainer.style.display = "none";
             if (containerMP) {
                 containerMP.style.display = "block";
-                // Só limpa o brick se for um novo pagamento real
                 if (brickC) brickC.innerHTML = ""; 
                 
-                setTimeout(() => {
-                    if (typeof inicializarCheckoutTransparente === 'function') {
-                        inicializarCheckoutTransparente();
-                    }
-                }, 500);
+                // TÉCNICA SÊNIOR: Espera o navegador confirmar que a div está na tela
+                if (typeof MercadoPago !== 'undefined') {
+                    requestAnimationFrame(() => {
+                        // O timeout de 100ms é o "doce" perfeito: rápido o suficiente para não notar, 
+                        // lento o suficiente para o DOM estar pronto.
+                        setTimeout(() => {
+                            if (typeof inicializarCheckoutTransparente === 'function') {
+                                inicializarCheckoutTransparente();
+                            }
+                        }, 100);
+                    });
+                }
             }
         }
 
-        // --- 2. O BOTÃO DE ALTERAR (Sempre no final da etapa) ---
-        // Removemos se já existir para não duplicar, e criamos de novo no final
-        const btnAntigo = document.getElementById("btn-alterar-pagamento");
-        if (btnAntigo) btnAntigo.remove();
-
-        const btnTroca = document.createElement("button");
-        btnTroca.id = "btn-alterar-pagamento";
-        btnTroca.innerText = "🔄 Alterar forma de pagamento";
-        btnTroca.className = "btn-link-pequeno"; 
-        btnTroca.style.display = "block";
-        btnTroca.style.margin = "20px auto";
+        // --- GESTÃO INTELIGENTE DO BOTÃO ALTERAR ---
+        let btnTroca = document.getElementById("btn-alterar-pagamento");
+        if (!btnTroca) {
+            btnTroca = document.createElement("button");
+            btnTroca.id = "btn-alterar-pagamento";
+            btnTroca.className = "btn-link-pequeno"; 
+            btnTroca.innerText = "🔄 Alterar forma de pagamento";
+            btnTroca.style.display = "block";
+            btnTroca.style.margin = "20px auto";
+            document.getElementById("etapaFinalizar").appendChild(btnTroca);
+        }
         
         btnTroca.onclick = () => {
             localStorage.removeItem('ultimo_pedido_id');
             localStorage.removeItem('dados_pix_resultado');
             if (window.intervaloPix) clearInterval(window.intervaloPix);
             if (brickC) brickC.innerHTML = ""; 
-            mostrarEtapa(2); // Volta para a escolha Pix/Cartão
+            mostrarEtapa(2); 
         };
-
-        document.getElementById("etapaFinalizar").appendChild(btnTroca);
     }
 
-    // --- CONTROLE DOS BOTÕES (Sua lógica original mantida e protegida) ---
+    // --- CONTROLE DOS BOTÕES E RODAPÉ (MANTIDO) ---
     const btnVoltar = document.getElementById("btnVoltar");
     const btnAvancar = document.getElementById("btnAvancar");
     const rodape = document.querySelector(".drawer-footer"); 
 
-    if (btnVoltar) {
-        btnVoltar.style.display = (index === 0) ? "none" : "block";
-        btnVoltar.style.marginRight = "auto";
-    }
+    if (btnVoltar) btnVoltar.style.display = (index === 0) ? "none" : "block";
+    if (btnAvancar) btnAvancar.style.display = (index >= 3) ? "none" : "block";
 
-    if (btnAvancar) {
-        // O botão avançar some na etapa 3 e 4 pois o Mercado Pago assume o controle
-        btnAvancar.style.display = (index >= 3) ? "none" : "block";
-        btnAvancar.style.marginLeft = "auto";
-    }
-
-    // AQUI ESTÁ O QUE ESTAVA FALTANDO: Reativando seu rodapé
     if (rodape) {
         rodape.style.display = "flex";
         rodape.style.justifyContent = "space-between";
     }
 
-    // Atualiza estados visuais (Suas funções originais)
-    setEtapaAtual(index); 
-    atualizarStepper(index);
-    if (typeof atualizarRodape === "function") {
-        atualizarRodape(index); // Mantém a sincronização do rodapé
-    }
+    // Atualiza estados visuais (Suas funções originais mantidas)
+    if (typeof setEtapaAtual === "function") setEtapaAtual(index); 
+    if (typeof atualizarStepper === "function") atualizarStepper(index);
+    if (typeof atualizarRodape === "function") atualizarRodape(index);
 }
 
 window.mostrarEtapa = mostrarEtapa;
-
         
 
 function atualizarStepper(index) {

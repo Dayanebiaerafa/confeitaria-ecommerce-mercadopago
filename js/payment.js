@@ -1,6 +1,6 @@
 import { pedido, metodoSelecionado, porcentagemPagamento } from './state.js';
 import { calcularTotal } from './calculate.js';
-import { CONFIG } from './config.js';
+import { obterMercadoPago, CONFIG } from './config.js';
 import { gerarMensagemWhatsCompleta, abrirWhatsApp } from './whatsapp.js';
 
 // Variáveis de controle
@@ -13,29 +13,41 @@ export function limparCPF(cpf) {
     return cpf.replace(/\D/g, '');
 }
 
+export async function iniciarCheckout() {
+    const mp = obterMercadoPago();
+    if (!mp) return;
+
+    // Agora você usa o 'mp' para criar os Bricks ou processar
+    const bricksBuilder = mp.bricks();
+    
+    // Exemplo: Renderizar o botão de pagamento
+    // bricksBuilder.create('payment', 'id-do-container', { ... });
+}
+
 export async function inicializarCheckoutTransparente() {
     const container = document.getElementById('paymentBrick_container');
-    // ... trava do container ...
+    if (!container) return;
 
+    // 1. Pega o Mercado Pago uma única vez
+    const mp = obterMercadoPago(); 
+    if (!mp) return;
+
+    const bricksBuilder = mp.bricks();
     const tipoPagina = document.body.getAttribute('data-pagina');
     
-    // DEBUG SÊNIOR: Vamos ver o que tem no pedido antes de calcular
     console.log("Estado do pedido no checkout:", pedido);
 
     const valorBolo = calcularTotal(pedido, tipoPagina) || 0;
     const valorDoces = (pedido.doces || []).reduce((acc, d) => acc + (parseFloat(d.valor) || 0), 0);
-    
     const valorTotalReal = valorBolo + valorDoces;
-
-    // Aplica a porcentagem (sinal de 50% ou 100%)
     const totalCalculado = parseFloat((valorTotalReal * porcentagemPagamento).toFixed(2));
 
     if (!totalCalculado || totalCalculado <= 0) {
-        console.error("Erro: Valor total zerado. Checkout interrompido. Verifique se o item foi adicionado corretamente.");
-        // Opcional: alert("Seu carrinho parece estar vazio. Adicione um produto antes de finalizar.");
+        console.error("Erro: Valor total zerado.");
         return;
     }
 
+    // 2. Limpa o Brick anterior se existir
     if (window.paymentBrickController) {
         try {
             await window.paymentBrickController.unmount();
@@ -44,8 +56,6 @@ export async function inicializarCheckoutTransparente() {
     
     container.innerHTML = "";
 
-    const mp = new MercadoPago('APP_USR-1af45030-78f4-4e0e-97f1-85d464b06625');
-    const bricksBuilder = mp.bricks();
     const metodoReal = localStorage.getItem('metodo_pagamento') || metodoSelecionado;
 
     const settings = {
@@ -53,29 +63,37 @@ export async function inicializarCheckoutTransparente() {
             amount: totalCalculado,
             payer: {
                 email: pedido.cliente.email,
-                entityType: 'individual' 
             },
         },
         customization: {
             paymentMethods: {
-                // SÊNIOR: Forçamos a lógica baseada na escolha real do usuário
-                bankTransfer: (localStorage.getItem('metodo_pagamento') === 'pix' || metodoSelecionado === 'pix') ? ['pix'] : [],
-                creditCard: metodoReal === 'credit_card' ? 'all' : [],
+                // AQUI ESTÁ O SEGREDO:
+                ticket: "none", // <--- Bloqueia o Boleto explicitamente (Adeus Boleto!)
+                bankTransfer: (metodoReal === 'pix') ? ['pix'] : [],
+                creditCard: (metodoReal === 'credit_card') ? 'all' : [],
+                debitCard: (metodoReal === 'credit_card') ? 'all' : [], // Cartão de débito é seguro também
                 maxInstallments: 1
             },
-            visual: { style: { theme: 'default' } }
+            visual: { 
+                style: { theme: 'default' },
+                hidePaymentButton: false // Garante que o botão do MP apareça
+            }
         },
         callbacks: {
-            onReady: () => console.log("Brick pronto!"),
+            onReady: () => console.log("✅ Secure Fields (PCI) carregados com sucesso!"),
             onError: (error) => console.error("Erro no Brick:", error),
-            onSubmit: ({ formData }) => {
+            onSubmit: ({ selectedPaymentMethod, formData }) => {
+                // Adicionamos o selectedPaymentMethod para saber se foi Pix ou Cartão no log
+                console.log("Método selecionado:", selectedPaymentMethod);
                 return enviarPagamentoAoBackend(formData, totalCalculado);
             },
         },
     };
 
+    // 3. Renderiza
     window.paymentBrickController = await bricksBuilder.create("payment", "paymentBrick_container", settings);
 }
+
 
 export async function enviarPagamentoAoBackend(formData, totalCalculado) {
     const cpfLimpo = limparCPF(document.getElementById('cpfCliente').value);
@@ -88,6 +106,9 @@ export async function enviarPagamentoAoBackend(formData, totalCalculado) {
     const containerMP = document.getElementById("container-pagamento-mp");
     if (containerMP) containerMP.innerHTML = "<h3>⏳ Processando pagamento seguro...</h3>";
 
+    const pedidoIdInterno = "PED-" + Date.now();
+
+
     try {
         const response = await fetch(`${CONFIG.API_URL}/processar-pagamento`, {
             method: 'POST',
@@ -99,6 +120,8 @@ export async function enviarPagamentoAoBackend(formData, totalCalculado) {
                 transaction_amount: totalCalculado,
                 installments: formData.installments,
                 description: "Pedido de Bolo - Dayane Bolos",
+                // AQUI ESTÁ O SEGREDO: Envie o ID gerado para o Flask
+                external_reference: pedidoIdInterno, 
                 cliente: {
                     nome: document.getElementById('nomeCliente').value,
                     email: document.getElementById('emailCliente').value,
