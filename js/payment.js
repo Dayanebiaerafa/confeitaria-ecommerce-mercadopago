@@ -40,13 +40,14 @@ export async function inicializarCheckoutTransparente() {
     const valorBolo = calcularTotal(pedido, tipoPagina) || 0;
     const valorDoces = (pedido.doces || []).reduce((acc, d) => acc + (parseFloat(d.valor) || 0), 0);
     const valorTotalReal = valorBolo + valorDoces;
-    const totalCalculado = parseFloat((valorTotalReal * porcentagemPagamento).toFixed(2));
+    const totalCalculado = parseFloat(localStorage.getItem('valor_final_pagamento')) || 0;
+    console.log("🚀 Valor recuperado para o MP:", totalCalculado);
 
-    if (!totalCalculado || totalCalculado <= 0) {
-        console.error("Erro: Valor total zerado.");
+    if (totalCalculado <= 0) {
+        console.error("Erro: Valor total zerado no storage.");
+        // DICA SÊNIOR: Se falhar, tente recalcular aqui como fallback
         return;
     }
-
     // 2. Limpa o Brick anterior se existir
     if (window.paymentBrickController) {
         try {
@@ -60,15 +61,15 @@ export async function inicializarCheckoutTransparente() {
 
     const settings = {
         initialization: {
-            amount: totalCalculado,
+            amount: totalCalculado, // <--- Aqui entra o valor final
             payer: {
-                email: pedido.cliente.email,
+                email: pedido.cliente.email || "cliente@exemplo.com",
             },
         },
         customization: {
             paymentMethods: {
                 // AQUI ESTÁ O SEGREDO:
-                ticket: "none", // <--- Bloqueia o Boleto explicitamente (Adeus Boleto!)
+                ticket: [], 
                 bankTransfer: (metodoReal === 'pix') ? ['pix'] : [],
                 creditCard: (metodoReal === 'credit_card') ? 'all' : [],
                 debitCard: (metodoReal === 'credit_card') ? 'all' : [], // Cartão de débito é seguro também

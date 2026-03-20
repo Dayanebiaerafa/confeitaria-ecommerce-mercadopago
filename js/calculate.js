@@ -133,6 +133,9 @@ export function atualizarTudo() {
   const porc = window.porcentagemPagamento || 1.0;
   pedido.valorPago = pedido.valorTotal * porc;
 
+  localStorage.setItem('valor_final_pagamento', pedido.valorPago.toFixed(2));
+  console.log("💾 Storage Atualizado via atualizarTudo:", pedido.valorPago.toFixed(2));
+
   // Garante que o objeto pagamento esteja sincronizado
   if (!pedido.pagamento) pedido.pagamento = {};
   pedido.pagamento.porcentagem = porc;

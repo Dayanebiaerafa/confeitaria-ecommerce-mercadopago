@@ -20,11 +20,13 @@ export const CONFIG = {
 
 // Esta função garante que o objeto mp só seja criado se o SDK estiver presente
 export function obterMercadoPago() {
-    if (typeof MercadoPago === 'undefined') {
-        console.error("Erro: SDK do Mercado Pago não carregado!");
+    // Verificamos na window e o tipo para evitar erros de referência
+    if (typeof window.MercadoPago === 'undefined') {
+        console.error("Erro: SDK do Mercado Pago ainda não carregado no navegador.");
         return null;
     }
-    return new MercadoPago(CONFIG.MP_PUBLIC_KEY, { locale: 'pt-BR' });
+    // Usamos a constante centralizada e definimos o locale para evitar bugs de moeda
+    return new window.MercadoPago(CONFIG.MP_PUBLIC_KEY, { locale: 'pt-BR' });
 }
 // ====== 1. CONSTANTES DE PREÇO (Mantidas exatamente como as suas) ======
 

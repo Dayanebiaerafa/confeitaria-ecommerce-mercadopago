@@ -6,8 +6,9 @@ export function gerarMensagemWhatsCompleta(pedido) {
     const pag = p.pagamento || { valorPago: 0 }; // Evita o erro de 'undefined'
     const temBolo = p.massa && p.massa !== "Não informada" && p.pesoKg > 0;
     // 2. CÁLCULO SEGURO
-    const valorTotal = p.valorTotal || p.subtotal || 0;
-    const valorPago = pag.valorPago || 0;
+    const valorTotal = p.valorTotal || 0;
+    const porc = p.pagamento?.porcentagem || 1.0;
+    const valorPago = valorTotal * porc; 
     const restante = valorTotal - valorPago;
 
     // 3. MONTAGEM DA MENSAGEM
@@ -43,16 +44,22 @@ export function gerarMensagemWhatsCompleta(pedido) {
     msg += `💬 *OBS GERAL:* ${p.observacao || 'Nenhuma'}\n\n`;
 
     msg += `💰 *FINANCEIRO:*\n`;
-    msg += `• Valor Total: R$ ${valorTotal.toFixed(2)}\n`;
-    msg += `• Sinal Pago: R$ ${valorPago.toFixed(2)}\n`;
-    msg += `• *RESTANTE NA RETIRADA: R$ ${restante.toFixed(2)}*\n\n`;
+    msg += `• Valor Total: R$ ${valorTotal.toFixed(2).replace('.', ',')}\n`;
+    msg += `• Sinal Pago: R$ ${valorPago.toFixed(2).replace('.', ',')}\n`;
+    
+    if (restante > 0) {
+        msg += `• *FALTA PAGAR NA ENTREGA: R$ ${restante.toFixed(2).replace('.', ',')}*\n\n`;
+    } else {
+        msg += `• *STATUS: PEDIDO 100% PAGO* ✅\n\n`;
+    }
     
     msg += `*Pedido confirmado e enviado para produção!* 💗`;
+
 
     return encodeURIComponent(msg);
 }
 
-
+window.gerarMensagemWhatsCompleta = gerarMensagemWhatsCompleta;
 // whatsapp.js
 
 export function abrirWhatsApp(telefone, mensagem) {

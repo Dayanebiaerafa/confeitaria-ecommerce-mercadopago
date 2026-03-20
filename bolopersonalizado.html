@@ -575,11 +575,11 @@
         </div>
 
         <div class="opcoes-valor" style="display: flex; gap: 10px; margin-bottom: 20px;">
-          <div id="btnPagar50" class="btn-valor" onclick="selecionarPorcentagem(0.5)">
+          <div id="btnPagar50" class="btn-valor">
             <strong>50%</strong>
             <span>Pagar entrada</span>
           </div>
-          <div id="btnPagar100" class="btn-valor active" onclick="selecionarPorcentagem(1.0)">
+          <div id="btnPagar100" class="btn-valor active">
             <strong>100%</strong>
             <span>Pagar total</span>
           </div>
@@ -589,15 +589,28 @@
           <span class="btn-falso-titulo">Forma de Pagamento</span>
         </div>
 
-        <div class="opcoes-pagamento">
-          <div id="btnMetodoPix" class="btn-pagamento" onclick="escolherMetodo('pix')">
-            <img src="assets/pix.png" alt="Pix">
-            <span>Pix</span>
-          </div>
-          <div id="btnMetodoCartao" class="btn-pagamento" onclick="escolherMetodo('credit_card')">
-            <img src="assets/cartao.png" alt="Cartão">
-            <span>Cartão</span>
-          </div>
+        <div class="opcoes-pagamento" style="display: flex; gap: 10px; margin-bottom: 30px;">
+            <div id="btnMetodoPix" class="btn-pagamento">
+                <img src="assets/pix.png" alt="Pix">
+                <span>Pix</span>
+            </div>
+            <div id="btnMetodoCartao" class="btn-pagamento">
+                <img src="assets/cartao.png" alt="Cartão">
+                <span>Cartão</span>
+            </div>
+        </div>
+
+        <div style="clear: both; height: 30px; width: 100%;"></div>
+
+        <div class="aceite-termos-container" style="padding: 15px; background: #fff5f7; border-radius: 10px; border: 1px solid #fce4ec;">
+            <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 13px; color: #783606; text-align: left;">
+                <input type="checkbox" id="concordo-termos" style="width: 18px; height: 18px; margin-top: 2px; accent-color: #783606;">
+                <span>
+                    Li e concordo com os 
+                    <a href="termos.html" target="_blank" style="color: #783606; font-weight: bold; text-decoration: underline;">Termos de Uso</a> e a 
+                    <a href="privacidade.html" target="_blank" style="color: #783606; font-weight: bold; text-decoration: underline;">Política de Privacidade</a> da Confeitaria.
+                </span>
+            </label>
         </div>
 
         <div id="avisoPagamento" style="margin-top: 20px; text-align: center; color: #666; font-size: 14px;">

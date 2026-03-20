@@ -412,7 +412,18 @@ export function inicializarFluxoCarrinho() {
 
     const btnPix = document.getElementById("btnMetodoPix");
     const btnCartao = document.getElementById("btnMetodoCartao");
+    const btnPagar50 = document.getElementById("btnPagar50");
+    const btnPagar100 = document.getElementById("btnPagar100");
 
+    // --- 1. Listeners de Porcentagem ---
+    if (btnPagar50) {
+        btnPagar50.addEventListener("click", () => selecionarPorcentagem(0.5));
+    }
+    if (btnPagar100) {
+        btnPagar100.addEventListener("click", () => selecionarPorcentagem(1.0));
+    }
+
+    // --- 2. Listeners de Métodos (AGORA VAI FUNCIONAR) ---
     if (btnPix) {
         btnPix.addEventListener("click", () => escolherMetodo('pix'));
     }

@@ -482,30 +482,6 @@ window.copiarPix = function() {
     }, 2000);
 };
 
-// ... código existente
-// No main.js
-window.selecionarPorcentagem = function(valor) {
-    console.log("🎯 Selecionando Porcentagem:", valor);
-    
-    // 1. Sincroniza Global e Objeto
-    window.porcentagemPagamento = valor; 
-    if (!pedido.pagamento) pedido.pagamento = {};
-    pedido.pagamento.porcentagem = valor;
-    
-    // 2. Recalcula o valor pago imediatamente
-    pedido.valorPago = (pedido.valorTotal || 0) * valor;
 
-    // 3. Atualiza Visual dos Botões
-    document.querySelectorAll('.btn-valor').forEach(btn => btn.classList.remove('active'));
-    const idBotao = valor === 0.5 ? 'btnPagar50' : 'btnPagar100';
-    document.getElementById(idBotao)?.classList.add('active');
 
-    // 4. Salva o estado atualizado
-    localStorage.setItem('carrinho_dayane', JSON.stringify(pedido));
-
-    // 5. Renderiza o texto no resumo (Ex: "Pagar agora: R$ 50,00")
-    if (typeof atualizarResumoFinal === 'function') {
-        atualizarResumoFinal();
-    }
-};
 

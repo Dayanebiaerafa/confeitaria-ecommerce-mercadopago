@@ -213,14 +213,25 @@ export function mostrarEtapa(index) {
     // --- CONTROLE DOS BOTÕES E RODAPÉ (MANTIDO) ---
     const btnVoltar = document.getElementById("btnVoltar");
     const btnAvancar = document.getElementById("btnAvancar");
-    const rodape = document.querySelector(".drawer-footer"); 
+    const rodape = document.querySelector(".rodape-acoes"); // Nome corrigido conforme seu print
 
-    if (btnVoltar) btnVoltar.style.display = (index === 0) ? "none" : "block";
-    if (btnAvancar) btnAvancar.style.display = (index >= 3) ? "none" : "block";
+    if (btnVoltar) {
+        btnVoltar.style.display = (index === 0) ? "none" : "block";
+    }
+
+    if (btnAvancar) {
+        btnAvancar.style.display = (index >= 3) ? "none" : "block";
+    }
 
     if (rodape) {
         rodape.style.display = "flex";
-        rodape.style.justifyContent = "space-between";
+        // TÉCNICA SÊNIOR: flex-end joga tudo para a direita quando o Voltar some.
+        // space-between mantém um em cada ponta quando ambos aparecem.
+        if (index === 0) {
+            rodape.style.justifyContent = "flex-end";
+        } else {
+            rodape.style.justifyContent = "space-between";
+        }
     }
 
     // Atualiza estados visuais (Suas funções originais mantidas)
@@ -1229,11 +1240,34 @@ export function mostrarNotificacao(mensagem) {
 
 
 // Em ui-updates.js
+// No seu arquivo de eventos/main
+// main.js ou o arquivo onde ela reside
 export function selecionarPorcentagem(valor) {
-    // SÊNIOR: Em vez de ter lógica aqui, apenas chamamos a função global
-    // que definimos no main.js para evitar duplicidade.
-    if (typeof window.selecionarPorcentagem === 'function') {
-        window.selecionarPorcentagem(valor);
+    console.log("🎯 Iniciando seleção de porcentagem:", valor);
+    
+    try {
+        window.porcentagemPagamento = valor;
+
+        if (typeof atualizarTudo === 'function') {
+            atualizarTudo();
+        }
+
+        const totalBase = (typeof pedido !== 'undefined' && pedido.valorTotal) ? pedido.valorTotal : 0;
+        const valorParaCobrar = parseFloat((totalBase * valor).toFixed(2));
+
+        localStorage.setItem('valor_final_pagamento', valorParaCobrar.toString());
+        
+        console.log("🚀 SUCESSO: Gravado no Storage ->", valorParaCobrar);
+
+        // --- CORREÇÃO AQUI ---
+        // Em vez de atualizarVisualMetodo (que é para Pix/Cartão), 
+        // use a que restaura o visual dos botões de valor/porcentagem.
+        if (typeof restaurarEstadoBotoesPagamento === 'function') {
+            restaurarEstadoBotoesPagamento();
+        }
+
+    } catch (erro) {
+        console.error("🔥 Erro na selecionarPorcentagem:", erro.message);
     }
 }
 
