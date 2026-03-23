@@ -22,6 +22,8 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="manifest" href="/site.webmanifest">
 
+  <script src="https://sdk.mercadopago.com/js/v2"></script>
+
 </head>
 
 
@@ -619,6 +621,57 @@
       </div>  
             
 
+      <div id="etapaPagamento" class="etapa hidden">
+
+        <div class="titulo-pagamento-container">
+          <span class="btn-falso-titulo">Quanto deseja pagar agora?</span>
+        </div>
+
+        <div class="opcoes-valor" style="display: flex; gap: 10px; margin-bottom: 20px;">
+          <div id="btnPagar50" class="btn-valor">
+            <strong>50%</strong>
+            <span>Pagar entrada</span>
+          </div>
+          <div id="btnPagar100" class="btn-valor active">
+            <strong>100%</strong>
+            <span>Pagar total</span>
+          </div>
+        </div>
+
+        <div class="titulo-pagamento-container">
+          <span class="btn-falso-titulo">Forma de Pagamento</span>
+        </div>
+
+        <div class="opcoes-pagamento" style="display: flex; gap: 10px; margin-bottom: 30px;">
+            <div id="btnMetodoPix" class="btn-pagamento">
+                <img src="assets/pix.png" alt="Pix">
+                <span>Pix</span>
+            </div>
+            <div id="btnMetodoCartao" class="btn-pagamento">
+                <img src="assets/cartao.png" alt="Cartão">
+                <span>Cartão</span>
+            </div>
+        </div>
+
+        <div style="clear: both; height: 30px; width: 100%;"></div>
+
+        <div class="aceite-termos-container" style="padding: 15px; background: #fff5f7; border-radius: 10px; border: 1px solid #fce4ec;">
+            <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 13px; color: #783606; text-align: left;">
+                <input type="checkbox" id="concordo-termos" style="width: 18px; height: 18px; margin-top: 2px; accent-color: #783606;">
+                <span>
+                    Li e concordo com os 
+                    <a href="termos.html" target="_blank" style="color: #783606; font-weight: bold; text-decoration: underline;">Termos de Uso</a> e a 
+                    <a href="privacidade.html" target="_blank" style="color: #783606; font-weight: bold; text-decoration: underline;">Política de Privacidade</a> da Confeitaria.
+                </span>
+            </label>
+        </div>
+
+        <div id="avisoPagamento" style="margin-top: 20px; text-align: center; color: #666; font-size: 14px;">
+          <p></p>
+        </div>
+      </div>  
+            
+
       <div id="etapaFinalizar" class="etapa hidden">
         <h3 class="titulo-etapa"></h3>
 
@@ -647,53 +700,64 @@
               <span class="label-resumo"><i class="fas fa-calendar-alt"></i> Data da retirada</span>
               <div id="resumoData" class="conteudo-resumo" style="font-size: 20px; font-weight: bold; margin-top: 5px;">---</div>
             </div>
+            
             <div class="bloco-resumo" style="flex: 1;">
               <span class="label-resumo"><i class="fas fa-clock"></i> Horário da retirada</span>
               <div id="resumoHorario" class="conteudo-resumo" style="font-size: 20px; font-weight: bold; margin-top: 5px;">---</div>
             </div>
-          </div>
-          <div class="bloco-resumo">
+          </div> <div class="bloco-resumo">
             <span class="label-resumo"> Informações da Encomenda</span>
             <div style="border-top: 1px dashed #C5DADB; margin: 10px 0;"></div>
             <div id="resumoDescricao" class="conteudo-resumo">
             </div>
             <div style="border-top: 1px solid #eee; margin: 15px 0;"></div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;"></div>
             <span style="color: #666;">Subtotal</span>
             <span id="resumoSubtotal" style="color: #666;">R$ 0,00</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 18px;">
-            <span>Total</span>
-            <span id="resumoTotal" style="color: var(--marrom);">R$ 0,00</span>
-          </div>
-
-          <div id="blocoFaltaPagar" style="display: none; justify-content: space-between; color: #e91e63; font-size: 14px; margin-top: 5px;">
-              <span>Falta pagar (na retirada):</span>
-              <span id="resumoRestante">R$ 0,00</span>
-          </div>
-          </div>
-
-        <div id="container-pagamento-mp" style="margin-top: 20px;">
+          
+         
+            <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 18px;">
+              <span>Total</span>
+              <span id="resumoTotal" style="color: var(--marrom);">R$ 0,00</span>
+            </div>
+            
+          
+            <div id="blocoFaltaPagar" style="display: none; justify-content: space-between; color: #e91e63; font-size: 14px; margin-top: 5px;">
+                <span>Falta pagar (na retirada):</span>
+                <span id="resumoRestante">R$ 0,00</span>
+            </div> 
+          </div>                   
+        
+        <div id="container-pagamento-mp" style="margin-top: 30px;">
             <h3 style="text-align: center;">Finalize o pagamento abaixo:</h3>
             <div id="paymentBrick_container"></div> 
         </div>
 
-        <div id="pix-container" style="text-align: center; margin-top: 20px; padding: 20px; border: 2px dashed rgb(120, 54, 6); border-radius: 10px; background: #FAD5DC;">
+        <div id="pix-container" style="text-align: center; margin-top: 25px; padding: 20px; border: 2px dashed rgb(120, 54, 6); border-radius: 10px; background: #FAD5DC;">
             <h4 style="color: #783606; margin-bottom: 15px;">Escaneie o QR Code:</h4>
-            
+                  
             <img id="pix-qr-img" src="" alt="QR Code Pix" style="width: 220px; height: 220px; display: block; margin: 15px auto;" />
-            
+                  
             <p style="font-size: 12px; color: #666;">Ou copie o código abaixo:</p>
-            
+                  
             <textarea id="pix-copia-e-cola" readonly style="width: 100%; height: 70px; padding: 5px; font-size: 12px; border: 1px solid #ccc; border-radius: 5px; margin-top: 5px; resize: none;"></textarea>
-            
+                  
             <button onclick="copiarPix()" style="background: #783606; color: white; padding: 10px; border: none; border-radius: 5px; margin-top: 10px; cursor: pointer; width: 100%;">
                 Copiar Código Pix
             </button>
         </div>
-        </div>  
-      </div>
+
+        <button id="btn-alterar-pagamento" 
+            style="display: block; margin: 25px auto; padding: 10px 20px; 
+                  background-color: #fff5f7; color: #783606; 
+                  border: 2px solid #e91e63; border-radius: 8px; 
+                  font-weight: bold; cursor: pointer; width: 80%;">
+            Alterar forma de pagamento
+        </button>
+
+      </div> </div>   
     </div>
+    
 
     </div> <div class="rodape-acoes">
       <button id="btnVoltar" class="btn-secundario">Voltar</button>

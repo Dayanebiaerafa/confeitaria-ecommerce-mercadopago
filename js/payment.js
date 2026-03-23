@@ -26,72 +26,72 @@ export async function iniciarCheckout() {
 
 export async function inicializarCheckoutTransparente() {
     const container = document.getElementById('paymentBrick_container');
-    if (!container) return;
-
-    // 1. Pega o Mercado Pago uma única vez
-    const mp = obterMercadoPago(); 
-    if (!mp) return;
-
-    const bricksBuilder = mp.bricks();
-    const tipoPagina = document.body.getAttribute('data-pagina');
     
-    console.log("Estado do pedido no checkout:", pedido);
-
-    const valorBolo = calcularTotal(pedido, tipoPagina) || 0;
-    const valorDoces = (pedido.doces || []).reduce((acc, d) => acc + (parseFloat(d.valor) || 0), 0);
-    const valorTotalReal = valorBolo + valorDoces;
-    const totalCalculado = parseFloat(localStorage.getItem('valor_final_pagamento')) || 0;
-    console.log("🚀 Valor recuperado para o MP:", totalCalculado);
-
-    if (totalCalculado <= 0) {
-        console.error("Erro: Valor total zerado no storage.");
-        // DICA SÊNIOR: Se falhar, tente recalcular aqui como fallback
+    // 1. Verificação de visibilidade (Essencial para o SDK não travar)
+    if (!container || container.offsetParent === null) {
+        console.warn("⏳ Container invisível. Abortando renderização.");
         return;
     }
-    // 2. Limpa o Brick anterior se existir
+
+    // 2. Instanciação Direta (Garante que a KEY seja usada)
+    // Se a função obterMercadoPago() falhar, usamos a instância direta
+    let mp;
+    try {
+        mp = new MercadoPago('APP_USR-1af45030-78f4-4e0e-97f1-85d464b06625');
+    } catch (e) {
+        console.error("❌ Falha crítica ao iniciar SDK do Mercado Pago:", e);
+        return;
+    }
+
+    // 3. Limpeza de instâncias mortas
     if (window.paymentBrickController) {
         try {
             await window.paymentBrickController.unmount();
-        } catch(e) { console.log("Aviso: Nada para desmontar"); }
+        } catch(e) {}
     }
-    
     container.innerHTML = "";
 
-    const metodoReal = localStorage.getItem('metodo_pagamento') || metodoSelecionado;
+    // 4. Recuperação de valores com fallback
+    const valorSalvo = localStorage.getItem('valor_final_pagamento');
+    const totalCalculado = valorSalvo ? parseFloat(valorSalvo) : 0;
 
+    if (totalCalculado < 1.0) {
+        console.error("❌ Valor inválido:", totalCalculado);
+        return;
+    }
+
+    // Garante que o método seja lido corretamente (minúsculo)
+    const metodoReal = (localStorage.getItem('metodo_pagamento') || 'pix').toLowerCase();
+
+    console.log("🚀 Renderizando Brick:", { valor: totalCalculado, metodo: metodoReal });
+
+    const bricksBuilder = mp.bricks();
     const settings = {
         initialization: {
-            amount: totalCalculado, // <--- Aqui entra o valor final
-            payer: {
-                email: pedido.cliente.email || "cliente@exemplo.com",
+            amount: totalCalculado,
+            payer: { 
+                email: (typeof pedido !== 'undefined' ? pedido.cliente?.email : "cliente@exemplo.com"),
+                // ADICIONE ESTA LINHA ABAIXO:
+                entityType: 'individual' 
             },
         },
         customization: {
             paymentMethods: {
-                // AQUI ESTÁ O SEGREDO:
-                ticket: [], 
-                bankTransfer: (metodoReal === 'pix') ? ['pix'] : [],
-                creditCard: (metodoReal === 'credit_card') ? 'all' : [],
-                debitCard: (metodoReal === 'credit_card') ? 'all' : [], // Cartão de débito é seguro também
+                // Filtro sênior: se não for um, é o outro. Nunca os dois vazios.
+                bankTransfer: (metodoReal.includes('pix')) ? ['pix'] : [],
+                creditCard: (metodoReal.includes('card')) ? 'all' : [],
+                debitCard: (metodoReal.includes('card')) ? 'all' : [],
                 maxInstallments: 1
             },
-            visual: { 
-                style: { theme: 'default' },
-                hidePaymentButton: false // Garante que o botão do MP apareça
-            }
+            visual: { style: { theme: 'default' } }
         },
         callbacks: {
-            onReady: () => console.log("✅ Secure Fields (PCI) carregados com sucesso!"),
-            onError: (error) => console.error("Erro no Brick:", error),
-            onSubmit: ({ selectedPaymentMethod, formData }) => {
-                // Adicionamos o selectedPaymentMethod para saber se foi Pix ou Cartão no log
-                console.log("Método selecionado:", selectedPaymentMethod);
-                return enviarPagamentoAoBackend(formData, totalCalculado);
-            },
+            onReady: () => console.log("✅ Brick visível na tela!"),
+            onError: (error) => console.error("❌ Erro do SDK:", error),
+            onSubmit: ({ formData }) => enviarPagamentoAoBackend(formData, totalCalculado),
         },
     };
 
-    // 3. Renderiza
     window.paymentBrickController = await bricksBuilder.create("payment", "paymentBrick_container", settings);
 }
 
@@ -173,8 +173,13 @@ export function verificarStatusPagamento(paymentId, dadosDoPedido) {
 
             if (statusData.status === 'approved') {
                 clearInterval(window.intervaloPix);
-                const msg = gerarMensagemWhatsCompleta(dadosDoPedido);
-                abrirWhatsApp("34996360443", msg); 
+                
+                // SÊNIOR: Em vez de confiar apenas na variável da memória, 
+                // pegamos o pedido completo que salvamos no storage
+                const pedidoRecuperado = JSON.parse(localStorage.getItem('pedido_salvo_para_automacao')) || dadosDoPedido;
+                
+                const msg = gerarMensagemWhatsCompleta(pedidoRecuperado);
+                abrirWhatsApp("34996360443", msg);
                 
                 // Limpa e finaliza
                 localStorage.clear();

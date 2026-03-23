@@ -115,12 +115,12 @@ export function excluirItemPedido(tipo) {
 // Função para adicionar doce sem duplicar o item (apenas soma se já existir)
 export function adicionarDoceAoPedido(novoDoce) {
     const index = pedido.doces.findIndex(d => d.nome === novoDoce.nome);
+    
     if (index > -1) {
-        // Se o doce já existe, apenas atualiza a quantidade e o valor
-        pedido.doces[index].qtd = novoDoce.quantidade;
-        pedido.doces[index].valor = novoDoce.valor;
+        // SOMAR em vez de substituir para não perder a contagem anterior
+        pedido.doces[index].qtd += (novoDoce.quantidade || 25); 
+        pedido.doces[index].valor = pedido.doces[index].qtd * pedido.doces[index].precoUnit;
     } else {
-        // Se não existe, adiciona o novo
         pedido.doces.push({
             nome: novoDoce.nome,
             qtd: novoDoce.quantidade,

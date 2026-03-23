@@ -67,9 +67,6 @@ export function abrirDrawer() {
         mostrarEtapa(0); 
         atualizarDadosCarrinho();
 
-        // --- AQUI ESTÁ O SEGREDO SÊNIOR ---
-        // Se a etapa 0 já for a de pagamento, ou se você quiser pré-carregar:
-        inicializarCheckoutTransparente(); 
     } else {
         console.error("Erro: Elementos do drawer não encontrados!");
     }
@@ -147,8 +144,10 @@ export function mostrarEtapa(index) {
         
         const dadosPixRaw = localStorage.getItem('dados_pix_resultado');
         const temPixPendente = localStorage.getItem('ultimo_pedido_id');
+        const metodoReal = localStorage.getItem('metodo_pagamento'); // Mantendo sua constante
 
-        if (temPixPendente && dadosPixRaw) {
+        // AJUSTE SÊNIOR: Verificação refinada para não dar conflito
+        if (metodoReal === 'pix' && temPixPendente && dadosPixRaw) {
             // --- SUA LÓGICA DE EXIBIÇÃO DE PIX (MANTIDA) ---
             const pixDados = JSON.parse(dadosPixRaw);
             if (containerMP) containerMP.style.display = "none";
@@ -168,17 +167,14 @@ export function mostrarEtapa(index) {
                 }
             }
         } else {
-            // --- FLUXO MERCADO PAGO COM TÉCNICA SÊNIOR ---
+            // Fluxo para Cartão OU para gerar um novo Pix via Mercado Pago
             if (pixContainer) pixContainer.style.display = "none";
             if (containerMP) {
                 containerMP.style.display = "block";
                 if (brickC) brickC.innerHTML = ""; 
                 
-                // TÉCNICA SÊNIOR: Espera o navegador confirmar que a div está na tela
                 if (typeof MercadoPago !== 'undefined') {
                     requestAnimationFrame(() => {
-                        // O timeout de 100ms é o "doce" perfeito: rápido o suficiente para não notar, 
-                        // lento o suficiente para o DOM estar pronto.
                         setTimeout(() => {
                             if (typeof inicializarCheckoutTransparente === 'function') {
                                 inicializarCheckoutTransparente();
@@ -190,22 +186,54 @@ export function mostrarEtapa(index) {
         }
 
         // --- GESTÃO INTELIGENTE DO BOTÃO ALTERAR ---
+        // 1. Tenta achar o botão ou cria ele se não existir
         let btnTroca = document.getElementById("btn-alterar-pagamento");
+
         if (!btnTroca) {
             btnTroca = document.createElement("button");
             btnTroca.id = "btn-alterar-pagamento";
-            btnTroca.className = "btn-link-pequeno"; 
-            btnTroca.innerText = "🔄 Alterar forma de pagamento";
+            btnTroca.className = "btn-pagamento"; 
+            btnTroca.innerHTML = "<span>🔄 Alterar Pagamento</span>";
             btnTroca.style.display = "block";
             btnTroca.style.margin = "20px auto";
-            document.getElementById("etapaFinalizar").appendChild(btnTroca);
+            btnTroca.style.padding = "10px 20px";
+            btnTroca.style.backgroundColor = "#FFE4E1"; // Rosa Claro (MistyRose)
+            btnTroca.style.border = "2px solid #FF69B4"; // Rosa Escuro (HotPink)
+            btnTroca.style.borderRadius = "8px";
+            btnTroca.style.color = "#D02090"; // Cor do texto (Violeta Escuro para leitura)
+            btnTroca.style.fontWeight = "bold";
+            btnTroca.style.cursor = "pointer";
+
+            const etapaFinal = document.getElementById("etapaFinalizar");
+            if (etapaFinal) etapaFinal.appendChild(btnTroca);
         }
-        
+
+        // 2. Aplica a lógica de limpeza profunda no clique
         btnTroca.onclick = () => {
+            console.log("🧹 Resetando estados de pagamento...");
+
+            // Limpa o Banco (LocalStorage)
             localStorage.removeItem('ultimo_pedido_id');
             localStorage.removeItem('dados_pix_resultado');
-            if (window.intervaloPix) clearInterval(window.intervaloPix);
+            localStorage.removeItem('metodo_pagamento');
+
+            // Limpa a Memória Ativa (Objeto Pedido) - ISSO É VITAL!
+            if (window.pedido && window.pedido.pagamento) {
+                window.pedido.pagamento.metodo = null;
+                window.pedido.pagamento.pixPendente = false;
+            }
+
+            // Para cronômetros de verificação de Pix
+            if (window.intervaloPix) {
+                clearInterval(window.intervaloPix);
+                window.intervaloPix = null;
+            }
+
+            // Limpa visualmente o Mercado Pago para ele poder recarregar do zero depois
+            const brickC = document.getElementById('paymentBrick_container');
             if (brickC) brickC.innerHTML = ""; 
+
+            // Volta para a etapa de seleção (50%/100% e Pix/Cartão)
             mostrarEtapa(2); 
         };
     }
@@ -1057,8 +1085,9 @@ export function atualizarResumoFinal() {
     // Lógica do "Falta Pagar"
     const blocoFalta = document.getElementById("blocoFaltaPagar");
     const elRestante = document.getElementById("resumoRestante");
-    
-    if (porcentagemPagamento < 1 && valorRestante > 0) {
+
+    // USE 'porcentagem' (variável local que você definiu no início da função)
+    if (porcentagem < 1 && valorRestante > 0) {
         if (blocoFalta) blocoFalta.style.display = "flex";
         if (elRestante) elRestante.innerText = formatador.format(valorRestante);
     } else {
@@ -1398,9 +1427,18 @@ export function limparDescricoesCarrinho() {
 }
 
 export function atualizarInterfaceDoces(botao, nomeDoce) {
-    // --- TRECHO NOVO: INVESTIGAÇÃO SÊNIOR ---
-    // Se a função for chamada sem nomeDoce, ela apenas tenta encontrar o container
-    if (!nomeDoce) {
+    // --- SEUS CONTADORES (MANTIDOS) ---
+    const totalUnidadesGeral = (pedido.doces || []).reduce((acc, d) => acc + (d.qtd || 0), 0);
+    const boxFixo = document.getElementById('contador-fixo-doces');
+    const txtTotalFixo = document.getElementById('total-unidades-doces');
+
+    if (boxFixo && txtTotalFixo) {
+        txtTotalFixo.innerText = totalUnidadesGeral;
+        boxFixo.style.display = totalUnidadesGeral > 0 ? 'flex' : 'none';
+    }
+
+    atualizarContadorSacola(); // Atualiza o ícone da sacola geral
+     if (!nomeDoce) {
         console.log("🔍 Investigação: Função chamada no carregamento inicial.");
         // Tente encontrar o container onde os cards ficam. 
         // Se você souber o ID, substitua 'container-doces' pelo ID real abaixo:
@@ -1415,6 +1453,7 @@ export function atualizarInterfaceDoces(botao, nomeDoce) {
     
     // Proteção: Se não tem nome de doce e nem botão, para aqui para não dar erro de undefined
     if (!nomeDoce) return;
+    
 
     const doce = pedido.doces.find(d => d.nome === nomeDoce);
     const qtdTotal = doce ? doce.qtd : 0;
@@ -1453,18 +1492,6 @@ export function atualizarInterfaceDoces(botao, nomeDoce) {
             if (btnRetirar) btnRetirar.remove();
         }
     }
-
-    // --- SEUS CONTADORES (MANTIDOS) ---
-    const totalUnidadesGeral = (pedido.doces || []).reduce((acc, d) => acc + (d.qtd || 0), 0);
-    const boxFixo = document.getElementById('contador-fixo-doces');
-    const txtTotalFixo = document.getElementById('total-unidades-doces');
-
-    if (boxFixo && txtTotalFixo) {
-        txtTotalFixo.innerText = totalUnidadesGeral;
-        boxFixo.style.display = totalUnidadesGeral > 0 ? 'flex' : 'none';
-    }
-
-    atualizarContadorSacola();
     atualizarTudo(); 
 }
 
@@ -1474,20 +1501,22 @@ export function removerLote(nomeDoce, botaoOriginal) {
     let index = pedido.doces.findIndex(d => d.nome === nomeDoce);
     
     if (index !== -1) {
-        pedido.doces[index].qtd -= 25;
+        pedido.doces[index].qtd -= 25; // Remove um lote
         
-        // --- ACRESCENTAR AQUI: Remove também da sacola visual ---
-        let idxSacola = pedido.itens.findIndex(i => i.tipo === 'doces' && i.nome === nomeDoce);
-        if (idxSacola !== -1) pedido.itens.splice(idxSacola, 1);
-        // -------------------------------------------------------
-
+        // Se a quantidade zerou ou ficou negativa, removemos de vez
         if (pedido.doces[index].qtd <= 0) {
             pedido.doces.splice(index, 1);
+            
+            // SOMENTE AQUI removemos da sacola visual (pedido.itens)
+            let idxSacola = pedido.itens.findIndex(i => i.tipo === 'doces' && i.nome === nomeDoce);
+            if (idxSacola !== -1) pedido.itens.splice(idxSacola, 1);
         } else {
-            pedido.doces[index].valor = pedido.doces[index].qtd * pedido.doces[index].precoUnit;
+            // Se ainda tem doces, apenas atualiza o valor desse item
+            pedido.doces[index].valor = pedido.doces[index].qtd * (pedido.doces[index].precoUnit || 0);
         }
     }
     
+    // Busca o elemento do botão para atualizar o visual (rosa ou padrão)
     const btnElement = (typeof botaoOriginal === 'string') 
         ? document.querySelector(`[data-nome="${nomeDoce}"]`) 
         : botaoOriginal;
@@ -1498,27 +1527,24 @@ export function removerLote(nomeDoce, botaoOriginal) {
 }
 
 export function calcularTotalGeral() {
-    // 1. Soma todos os BOLOS já salvos na sacola
     const totalBolosConfirmados = pedido.itens.reduce((acc, item) => acc + (item.valorIndividual || 0), 0);
-
-    // 2. Soma todos os DOCES salvos
     const totalDoces = pedido.doces.reduce((acc, doce) => acc + (doce.valor || 0), 0);
 
-    // 3. Soma o rascunho ATUAL (se ele tiver peso, significa que está sendo editado)
     let temRascunho = 0;
     if (pedido.pesoKg > 0) {
-        temRascunho = calcularValorApenasDesteBolo(); // sua função de cálculo unitário
+        temRascunho = calcularValorApenasDesteBolo(); 
     }
 
-    // 4. Soma Adicionais Globais (Se você os cobrar fora do bolo)
     const adicionais = (pedido.valorTopo || 0) + (pedido.valorEmbalagem || 0);
-
     const totalFinal = totalBolosConfirmados + totalDoces + temRascunho + adicionais;
 
-    // Atualiza no HTML (procure o ID correto do seu campo de total)
+    // IMPORTANTE: Salve o resultado no objeto global para o Checkout usar
+    pedido.valorTotal = totalFinal; 
+
     const campoTotal = document.getElementById('valor-total-sacola');
     if (campoTotal) {
-        campoTotal.innerText = `R$ ${totalFinal.toFixed(2).replace('.', ',')}`;
+        // Use toLocaleString para um visual mais profissional (R$ 1.200,00)
+        campoTotal.innerText = totalFinal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
 
     return totalFinal;

@@ -700,57 +700,64 @@
               <span class="label-resumo"><i class="fas fa-calendar-alt"></i> Data da retirada</span>
               <div id="resumoData" class="conteudo-resumo" style="font-size: 20px; font-weight: bold; margin-top: 5px;">---</div>
             </div>
+            
             <div class="bloco-resumo" style="flex: 1;">
               <span class="label-resumo"><i class="fas fa-clock"></i> Horário da retirada</span>
               <div id="resumoHorario" class="conteudo-resumo" style="font-size: 20px; font-weight: bold; margin-top: 5px;">---</div>
             </div>
-          </div>
-          <div class="bloco-resumo">
+          </div> <div class="bloco-resumo">
             <span class="label-resumo"> Informações da Encomenda</span>
             <div style="border-top: 1px dashed #C5DADB; margin: 10px 0;"></div>
             <div id="resumoDescricao" class="conteudo-resumo">
             </div>
             <div style="border-top: 1px solid #eee; margin: 15px 0;"></div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;"></div>
             <span style="color: #666;">Subtotal</span>
             <span id="resumoSubtotal" style="color: #666;">R$ 0,00</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 18px;">
-            <span>Total</span>
-            <span id="resumoTotal" style="color: var(--marrom);">R$ 0,00</span>
-          </div>
-
-          <div id="blocoFaltaPagar" style="display: none; justify-content: space-between; color: #e91e63; font-size: 14px; margin-top: 5px;">
-              <span>Falta pagar (na retirada):</span>
-              <span id="resumoRestante">R$ 0,00</span>
-          </div>
-          </div>
-
-        <!-- pagamento -->
-        <div id="container-pagamento-mp" style="margin-top: 20px;">
+          
+         
+            <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 18px;">
+              <span>Total</span>
+              <span id="resumoTotal" style="color: var(--marrom);">R$ 0,00</span>
+            </div>
+            
+          
+            <div id="blocoFaltaPagar" style="display: none; justify-content: space-between; color: #e91e63; font-size: 14px; margin-top: 5px;">
+                <span>Falta pagar (na retirada):</span>
+                <span id="resumoRestante">R$ 0,00</span>
+            </div> 
+          </div>                   
+        
+        <div id="container-pagamento-mp" style="margin-top: 30px;">
             <h3 style="text-align: center;">Finalize o pagamento abaixo:</h3>
             <div id="paymentBrick_container"></div> 
         </div>
 
-        <div id="pix-container" style="text-align: center; margin-top: 20px; padding: 20px; border: 2px dashed rgb(120, 54, 6); border-radius: 10px; background: #FAD5DC;">
+        <div id="pix-container" style="text-align: center; margin-top: 25px; padding: 20px; border: 2px dashed rgb(120, 54, 6); border-radius: 10px; background: #FAD5DC;">
             <h4 style="color: #783606; margin-bottom: 15px;">Escaneie o QR Code:</h4>
-            
+                  
             <img id="pix-qr-img" src="" alt="QR Code Pix" style="width: 220px; height: 220px; display: block; margin: 15px auto;" />
-            
+                  
             <p style="font-size: 12px; color: #666;">Ou copie o código abaixo:</p>
-            
+                  
             <textarea id="pix-copia-e-cola" readonly style="width: 100%; height: 70px; padding: 5px; font-size: 12px; border: 1px solid #ccc; border-radius: 5px; margin-top: 5px; resize: none;"></textarea>
-            
+                  
             <button onclick="copiarPix()" style="background: #783606; color: white; padding: 10px; border: none; border-radius: 5px; margin-top: 10px; cursor: pointer; width: 100%;">
                 Copiar Código Pix
             </button>
         </div>
 
-          
-        </div>
-          
-      </div>
+        <button id="btn-alterar-pagamento" 
+            style="display: block; margin: 25px auto; padding: 10px 20px; 
+                  background-color: #fff5f7; color: #783606; 
+                  border: 2px solid #e91e63; border-radius: 8px; 
+                  font-weight: bold; cursor: pointer; width: 80%;">
+            Alterar forma de pagamento
+        </button>
+
+      </div> </div>  
     </div>
+    
 
     </div> <div class="rodape-acoes">
       <button id="btnVoltar" class="btn-secundario">Voltar</button>

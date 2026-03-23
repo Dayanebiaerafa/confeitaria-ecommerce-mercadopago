@@ -14,7 +14,8 @@ export const feriadosFixos = [
 export const CONFIG = {
     URL_PLANILHA: "https://script.google.com/macros/s/AKfycbwm2PMkt2qSnRTH9bScAOXxauAbi3sv3WmfmJ7yQN2ut66oYTvP_W5x8jhXUDu8A5Eh/exec",
     API_URL: "https://site-backend-mrgq.onrender.com",
-    MP_PUBLIC_KEY: "APP_USR-1af45030-78f4-4e0e-97f1-85d464b06625"
+    MP_PUBLIC_KEY: "APP_USR-1af45030-78f4-4e0e-97f1-85d464b06625",
+    IMGBB_API_KEY: "68ce59021d803460d105410a9456ef94",
 };
 
 

@@ -1,4 +1,4 @@
-import { feriadosFixos } from './config.js';
+import { feriadosFixos, CONFIG } from './config.js';
 import { pedido } from './state.js';
 import { atualizarTudo } from './calculate.js';
 
@@ -151,7 +151,7 @@ export function obterRecheiosSelecionados() {
 /* ===============================
     IMAGENS E MÍDIA
 =============================== */
-export function previewImagem(event) {
+/* export function previewImagem(event) {
     const file = event.target.files[0];
     const reader = new FileReader();
 
@@ -179,6 +179,79 @@ export function previewImagem(event) {
     };
     
     if (file) reader.readAsDataURL(file);
+}*/
+
+// 1. A função do ImgBB (Coloque no final do seu arquivo ou junto com as outras de upload)
+export async function uploadFoto(arquivo) {
+    try {
+        const formData = new FormData();
+        formData.append("image", arquivo);
+
+        // Usando a chave que vem do arquivo de configuração
+        const url = `https://api.imgbb.com/1/upload?key=${CONFIG.IMGBB_API_KEY}`;
+
+        const response = await fetch(url, {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log("✅ Upload feito com sucesso!");
+            return data.data.url; // Retorna o link direto
+        } else {
+            console.error("❌ Erro no ImgBB:", data.error.message);
+            return null;
+        }
+    } catch (error) {
+        console.error("❌ Erro na rede:", error);
+        return null;
+    }
+}
+
+// 2. Sua função previewImagem ATUALIZADA
+export async function previewImagem(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // --- VERIFICAÇÃO DE TAMANHO (Opcional mas bom) ---
+    if (file.size > 10 * 1024 * 1024) { // 10MB
+        alert("A imagem é muito pesada! Escolha uma foto menor que 10MB.");
+        event.target.value = "";
+        return;
+    }
+
+    const reader = new FileReader();
+
+    // Mostra o preview INSTANTÂNEO para a cliente não ter que esperar o upload
+    reader.onload = async function() {
+        const output = document.getElementById('preview-img');
+        if(output) {
+            output.src = reader.result;
+            output.style.display = "block";
+        }
+
+        // Avisa que está processando (opcional)
+        console.log("Subindo imagem para o servidor...");
+
+        // AGORA SIM: Faz o upload real para o ImgBB
+        const linkOficial = await uploadFoto(file);
+
+        if (linkOficial) {
+            // Salva o link oficial (curto e leve) no pedido
+            pedido.modeloImagem = linkOficial; 
+            window.imagemReferenciaCliente = linkOficial;
+            
+            console.log("✅ Imagem pronta:", linkOficial);
+            salvarNoLocalStorage();
+            atualizarDadosCarrinho();
+        } else {
+            alert("Erro ao processar imagem. Tente novamente.");
+        }
+    };
+    
+    reader.readAsDataURL(file);
 }
 
 /* ===============================

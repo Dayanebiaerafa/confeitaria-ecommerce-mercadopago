@@ -1,5 +1,5 @@
 // 1. IMPORTAÇÕES DE UTILITÁRIOS E CÁLCULOS
-import { configurarCalendario, aplicarMascaraTelefone, previewImagem, removerLoteDoce } from './utils.js';
+import { configurarCalendario, aplicarMascaraTelefone, previewImagem, removerLoteDoce, gerarOpcoesDeHorario } from './utils.js';
 import { atualizarTudo, calcularValorApenasDesteBolo } from './calculate.js';
 
 // 2. IMPORTAÇÕES DE INTERFACE (UI)
@@ -258,9 +258,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // SINCRONIZAÇÃO INICIAL (O pulo do gato)
-    // Primeiro rodamos o atualizarTudo para processar o que veio do localStorage
-    atualizarTudo(); 
 
     // 2. Criamos uma função de inicialização de UI para garantir a ordem
     const inicializarUIConfirmacao = () => {
@@ -334,6 +331,8 @@ function verificarPedidoPendente() {
     const pixDados = localStorage.getItem('dados_pix_resultado');
     const carrinhoRaw = localStorage.getItem('carrinho_dayane');
     
+    console.log("DEBUG CHECKOUT:", { ultimoId, pixDados });
+
     if (!ultimoId || !pixDados || !carrinhoRaw) {
         console.log("ℹ️ Banner: Faltam dados no Storage para exibir.");
         return;
