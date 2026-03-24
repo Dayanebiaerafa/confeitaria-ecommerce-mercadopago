@@ -1,6 +1,7 @@
 import { pedido, etapaAtual, setEtapaAtual, porcentagemPagamento, setMetodoSelecionado, metodoSelecionado, setPorcentagemPagamento, removerDoceDoPedido, salvarNoLocalStorage, excluirItemSacola } from './state.js';
 import { formatarDataBR, removerLoteDoce } from './utils.js';
 import { calcularTotal, atualizarTudo, calcularValorApenasDesteBolo } from './calculate.js';
+import { destruirInstanciasAnteriores } from './payment.js';
 
 
 // --- ELEMENTOS PRINCIPAIS ---
@@ -203,31 +204,20 @@ export function mostrarEtapa(index) {
         }
 
         // 2. Aplica a lógica de limpeza profunda no clique
-        btnTroca.onclick = () => {
-            console.log("🧹 Resetando estados de pagamento...");
+        btnTroca.onclick = async () => {
+            console.log("🧹 Acionando limpeza profunda via botão de troca...");
 
-            // Limpa o Banco (LocalStorage)
-            localStorage.removeItem('ultimo_pedido_id');
-            localStorage.removeItem('dados_pix_resultado');
-            localStorage.removeItem('metodo_pagamento');
+            // 1. Chama a função que já sabe limpar tudo (o cérebro da limpeza)
+            // Se destruirInstanciasAnteriores já chama prepararTrocaDeMetodo, use ela!
+            await destruirInstanciasAnteriores(); 
 
-            // Limpa a Memória Ativa (Objeto Pedido) - ISSO É VITAL!
+            // 2. Limpa apenas o que é exclusivo da "memória viva" do pedido (Estado da App)
             if (window.pedido && window.pedido.pagamento) {
                 window.pedido.pagamento.metodo = null;
                 window.pedido.pagamento.pixPendente = false;
             }
 
-            // Para cronômetros de verificação de Pix
-            if (window.intervaloPix) {
-                clearInterval(window.intervaloPix);
-                window.intervaloPix = null;
-            }
-
-            // Limpa visualmente o Mercado Pago para ele poder recarregar do zero depois
-            const brickC = document.getElementById('paymentBrick_container');
-            if (brickC) brickC.innerHTML = ""; 
-
-            // Volta para a etapa de seleção (50%/100% e Pix/Cartão)
+            // 3. Volta para a etapa de seleção
             mostrarEtapa(2); 
         };
     }
@@ -913,12 +903,16 @@ export function atualizarResumoFinal() {
     const tel = pedido.cliente?.telefone || document.getElementById("telefoneCliente")?.value || "---";
     const email = pedido.cliente?.email || document.getElementById("emailCliente")?.value || "---";
 
+    const tipoDoc = pedido.cliente?.tipoDocumento || document.querySelector('input[name="tipoDocumento"]:checked')?.value || "DOC";
+    const docValue = pedido.cliente?.documento || document.getElementById('cpfCliente')?.value || "---";
+
     const elNome = document.getElementById("resumoNome");
     if (elNome) {
         elNome.innerHTML = `
             <b>Nome:</b> ${nome}<br>
             <b>Tel:</b> ${tel}<br>
             <b>E-mail:</b> ${email}<br>
+            <b>${tipoDoc}:</b> ${docValue}<br>
         `;
     }
 
@@ -1171,57 +1165,50 @@ export function validarTermos() {
 }
 
 export function escolherMetodo(metodo) {
-    // --- NOVO AJUSTE: VERIFICAÇÃO DO TERMO ANTES DE TUDO ---
+    // --- 1. VALIDAÇÃO (Fail Fast) ---
     const checkboxTermos = document.getElementById('concordo-termos');
     const containerTermos = document.querySelector('.aceite-termos-container');
 
     if (!checkboxTermos || !checkboxTermos.checked) {
         alert("Dayane informa: Para prosseguir com o seu pedido, por favor aceite os termos e condições. 🍰");
-        
-        // Efeito visual para ajudar o cliente a achar onde clicar
         if (containerTermos) {
             containerTermos.style.border = "2px solid #e74c3c"; 
             containerTermos.style.backgroundColor = "#fff0f0";
             containerTermos.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-        return; // PARA A EXECUÇÃO AQUI
+        return; 
     }
 
-    // Se passou pela verificação, volta o visual ao normal e segue sua lógica sênior
-    containerTermos.style.border = "1px solid #fce4ec";
-    containerTermos.style.backgroundColor = "#fff5f7";
+    // Limpeza visual dos termos se estiver tudo OK
+    if (containerTermos) {
+        containerTermos.style.border = "1px solid #fce4ec";
+        containerTermos.style.backgroundColor = "#fff5f7";
+    }
 
-    console.log("Sênior Log: Método escolhido ->", metodo);
-    
-    // 1. Atualiza as variáveis globais
-    window.metodoSelecionado = metodo; 
-    
-    // 2. SALVA NO STORAGE
-    localStorage.setItem('metodo_pagamento', metodo);
+    console.log("🎯 Sênior Log: Iniciando fluxo para ->", metodo);
 
-    // 3. Atualiza o objeto pedido
-    if (!pedido.pagamento) pedido.pagamento = {};
-    pedido.pagamento.metodo = metodo;
-    
-    // 4. Feedback visual
-    atualizarVisualMetodo(metodo);
+    // --- 2. GESTÃO DE ESTADO CENTRALIZADA ---
+    // Esta função do state.js cuida do LocalStorage, Window e Objeto Pedido de uma vez.
+    setMetodoSelecionado(metodo);
 
-    // 5. Limpa o Mercado Pago (Prevenção de Bug Sênior)
-    const container = document.getElementById("paymentBrick_container");
-    if (container) {
-        container.innerHTML = "";
+    // --- 3. LIMPEZA TÉCNICA E SEGURANÇA ---
+    if (typeof destruirInstanciasAnteriores === "function") {
+        destruirInstanciasAnteriores();
     }
     window.mpInstanciado = false; 
 
-    // 6. Persistência e Resumo
+    // --- 4. ATUALIZAÇÃO DA UI E PERSISTÊNCIA ---
+    atualizarVisualMetodo(metodo);
     salvarNoLocalStorage(); 
     atualizarResumoFinal();
 
-    // 7. Dispara a abertura do checkout conforme o método
-    if (metodo === 'pix') {
-        if (typeof gerarPixMercadoPago === "function") gerarPixMercadoPago();
-    } else if (metodo === 'credit_card') {
-        if (typeof abrirCheckoutCartao === "function") abrirCheckoutCartao();
+    // --- 5. DISPARO DO CHECKOUT (Execução Única) ---
+    console.log("🚀 Disparando checkout...");
+    
+    if (metodo === 'pix' && typeof gerarPixMercadoPago === "function") {
+        gerarPixMercadoPago();
+    } else if (metodo === 'credit_card' && typeof abrirCheckoutCartao === "function") {
+        abrirCheckoutCartao();
     }
 }
 

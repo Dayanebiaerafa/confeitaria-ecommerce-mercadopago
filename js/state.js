@@ -2,7 +2,7 @@ const Salvo = localStorage.getItem('carrinho_dayane');
 const pedidoRecuperado = Salvo ? JSON.parse(Salvo) : null;
 export let etapaAtual = 0;
 // SÊNIOR: Se existe algo no storage, usamos o que está lá. Se não, usamos o padrão.
-export let metodoSelecionado = pedidoRecuperado?.pagamento?.metodo || null;  
+export let metodoSelecionado = pedidoRecuperado?.pagamento?.metodo || localStorage.getItem('metodo_pagamento') || null;
 export let porcentagemPagamento = pedidoRecuperado?.pagamento?.porcentagem || 1.0; 
 
 // ====== OBJETO PRINCIPAL DO PEDIDO ======
@@ -174,9 +174,19 @@ export function excluirItemSacola(index) {
 
 // ====== FUNÇÕES DE ATUALIZAÇÃO DO PAGAMENTO ======
 
+// state.js
 export function setMetodoSelecionado(valor) {
-    metodoSelecionado = valor;
-    pedido.metodoPagamento = valor; // Também salva dentro do objeto pedido
+    window.metodoSelecionado = valor; // Garante a global
+    localStorage.setItem('metodo_pagamento', valor); // Garante a chave isolada
+    
+    if (typeof pedido !== 'undefined') {
+        if (!pedido.pagamento) pedido.pagamento = {};
+        pedido.pagamento.metodo = valor;
+        
+        // Salva o objeto pedido completo também
+        salvarNoLocalStorage(); 
+    }
+    console.log(`✅ ESTADO SINCRONIZADO: ${valor}`);
 }
 
 export function setPorcentagemPagamento(valor) {

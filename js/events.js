@@ -543,7 +543,7 @@ export function inicializarFluxoCarrinho() {
 
             // --- MANTER REGRA EXISTENTE: ETAPA 2 (Pagamento) ---
             if (etapaAtual === 2) {
-                const metodoReal = window.metodoSelecionado || metodoSelecionado;
+                const metodoReal = window.metodoSelecionado || localStorage.getItem('metodo_pagamento');
                 if (!metodoReal) {
                     processandoClique = false; 
                     novoBtnAvancar.style.pointerEvents = 'auto';

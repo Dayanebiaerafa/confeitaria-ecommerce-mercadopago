@@ -3,31 +3,35 @@ import { calcularTotal } from './calculate.js';
 import { CONFIG } from './config.js';
 import { gerarMensagemWhatsCompleta, abrirWhatsApp } from './whatsapp.js';
 
-// Variáveis de controle
+// Variáveis de controle (Mantendo suas exportações originais)
 export let paymentBrickController = null;
 export let isRendering = false;
-export let intervaloPix; 
+export let intervaloPix = null; 
+export let mpInstance = null; 
 
-// Auxiliar para limpar CPF
-export function limparCPF(cpf) {
-    return cpf.replace(/\D/g, '');
+// --- AUXILIARES DE VALIDAÇÃO (Sênior) ---
+export function limparCPF(doc) { return doc.replace(/\D/g, ''); }
+
+export function validarCPF(cpf) {
+    cpf = limparCPF(cpf);
+    if (cpf.length !== 11 || !!cpf.match(/(\d)\1{10}/)) return false;
+    // Lógica simplificada: para um MVP, checar o tamanho já ajuda muito
+    return true; 
 }
 
-
-let mpInstance = null; 
+export function validarCNPJ(cnpj) {
+    cnpj = limparCPF(cnpj);
+    return cnpj.length === 14;
+}
 
 export function obterMercadoPago() {
     if (mpInstance) return mpInstance;
-
     if (typeof window.MercadoPago === 'undefined') {
         console.error("❌ Erro: SDK do Mercado Pago não encontrado.");
         return null;
     }
-
     try {
-        mpInstance = new window.MercadoPago(CONFIG.MP_PUBLIC_KEY, {
-            locale: 'pt-BR'
-        });
+        mpInstance = new window.MercadoPago(CONFIG.MP_PUBLIC_KEY, { locale: 'pt-BR' });
         console.log("💳 SDK Mercado Pago: Instância Singleton inicializada.");
         return mpInstance;
     } catch (e) {
@@ -36,33 +40,53 @@ export function obterMercadoPago() {
     }
 }
 
-export async function iniciarCheckout() {
-    const mp = obterMercadoPago();
-    if (!mp) return;
-
-    const bricksBuilder = mp.bricks();
-    console.log("🚀 Bricks Builder pronto para uso.");
+export function prepararTrocaDeMetodo() {
+    console.log("🔄 Resetando estados de pagamento e limpando registros...");
     
-    // Agora a constante bricksBuilder não estará mais "apagada" 
-    // porque vamos usá-la aqui embaixo para renderizar o Pix.
+    if (window.intervaloPix) {
+        clearInterval(window.intervaloPix);
+        window.intervaloPix = null;
+    }
+
+    if (window.paymentBrickController) {
+        try {
+            window.paymentBrickController.unmount(); // ESTÁ AQUI! ✅
+            window.paymentBrickController = null;
+            console.log("🧹 Brick desmontado via prepararTrocaDeMetodo");
+        } catch (e) {
+            console.warn("Aviso ao desmontar Brick:", e);
+        }
+    }
+
+    localStorage.removeItem('ultimo_pedido_id');
+    localStorage.removeItem('dados_pix_resultado');
+    localStorage.removeItem('metodo_pagamento');
 }
 
-export async function inicializarCheckoutTransparente() {
+export async function destruirInstanciasAnteriores() {
+    // Chamamos a função de cima para garantir que o estado do PIX pare
+    prepararTrocaDeMetodo();
+
+    // E aqui limpamos o HTML fisicamente
     const container = document.getElementById('paymentBrick_container');
-    
-    // --- NOVA LÓGICA DINÂMICA DE CPF/CNPJ (ADICIONE AQUI) ---
+    if (container) {
+        container.innerHTML = "";
+    }
+}
+
+/**
+ * Inicializa a lógica visual de troca CPF/CNPJ
+ */
+export function inicializarLogicaDocumento() {
     const radioPF = document.getElementById("tipoPF");
     const radioPJ = document.getElementById("tipoPJ");
     const inputDoc = document.getElementById("cpfCliente");
     const labelDoc = document.querySelector('label[for="cpfCliente"]');
 
     if (radioPF && radioPJ && inputDoc) {
-        const atualizarLogicaDocumento = () => {
-            // 1. Limpa o valor para evitar que um CPF incompleto vire um CNPJ inválido
+        const atualizar = () => {
             inputDoc.value = ""; 
-
             if (radioPJ.checked) {
-                // 2. Ajusta Visual e Limite (18 inclui pontos/traços da máscara)
                 labelDoc.innerText = "CNPJ (Obrigatório para PIX) *";
                 inputDoc.maxLength = 18; 
                 console.log("🚀 Modo CNPJ ativado");
@@ -72,154 +96,134 @@ export async function inicializarCheckoutTransparente() {
                 console.log("🚀 Modo CPF ativado");
             }
         };
-
-        // Usamos addEventListener em ambos para garantir que a troca de estado seja detectada
-        radioPF.addEventListener("change", atualizarLogicaDocumento);
-        radioPJ.addEventListener("change", atualizarLogicaDocumento);
+        // Evita duplicar listeners
+        radioPF.removeEventListener("change", atualizar);
+        radioPJ.removeEventListener("change", atualizar);
+        radioPF.addEventListener("change", atualizar);
+        radioPJ.addEventListener("change", atualizar);
     }
-    // 1. Verificação de visibilidade (Essencial para o SDK não travar)
-   if (!container) {
-        console.warn("❌ Container 'paymentBrick_container' não encontrado no DOM.");
+}
+
+export async function inicializarCheckoutTransparente() {
+    if (isRendering) return;
+    isRendering = true;
+
+    const container = document.getElementById('paymentBrick_container');
+    if (!container || container.offsetWidth === 0) {
+        console.warn("❌ Container inválido ou invisível.");
+        isRendering = false;
         return;
     }
 
-    // 2. Instanciação Direta (Garante que a KEY seja usada)
-    // Se a função obterMercadoPago() falhar, usamos a instância direta
-    let mp;
-    try {
-        // Use sua chave pública enviada no contexto
-        mp = new window.MercadoPago('APP_USR-1af45030-78f4-4e0e-97f1-85d464b06625', {
-            locale: 'pt-BR' // Adicionar o locale ajuda na nota de qualidade
-        });
-    } catch (e) {
-        console.error("❌ Erro ao instanciar V2:", e);
-        return;
-    }
+    const mp = obterMercadoPago();
+    if (!mp) { isRendering = false; return; }
 
-    // 3. Limpeza de instâncias mortas
-    if (window.paymentBrickController) {
-        try {
-            // O await é fundamental aqui para esperar o navegador liberar o banco de dados
-            await window.paymentBrickController.unmount();
-            window.paymentBrickController = null;
-        } catch(e) {
-            console.warn("Aviso: Falha ao desmontar", e);
-        }
-    }
+    await destruirInstanciasAnteriores(); 
+    inicializarLogicaDocumento();
 
-    // Limpeza física do container
+    // --- BUSCA DE VALORES (Garantindo que não venha null) ---
+    const totalCalculado = parseFloat(localStorage.getItem('valor_final_pagamento')) || 0;
     
-    if (container) {
-        container.innerHTML = "";
-    }
+    // PRIORIDADE: 1. Global | 2. Storage | 3. Pix (Fallback)
+    const metodoReal = window.metodoSelecionado || localStorage.getItem('metodo_pagamento') || 'pix';
 
-    // DICA SÊNIOR: Adicione uma pequena verificação se o SDK já não está rodando
-    if (window.mpInstanciado === true) return; 
-    window.mpInstanciado = true;
-
-    // 4. Recuperação de valores com fallback
-    const valorSalvo = localStorage.getItem('valor_final_pagamento');
-    const totalCalculado = valorSalvo ? parseFloat(valorSalvo) : 0;
-
-    if (totalCalculado < 1.0) {
-        console.error("❌ Valor inválido:", totalCalculado);
-        return;
-    }
+    const radioPJ = document.getElementById("tipoPJ");
+    const tipoDocAtivo = (radioPJ && radioPJ.checked) ? "CNPJ" : "CPF";
     
-    const tipoDoc = document.querySelector('input[name="tipoDocumento"]:checked')?.value || "CPF";
-    // Garante que o método seja lido corretamente (minúsculo)
-    const metodoReal = (localStorage.getItem('metodo_pagamento') || 'pix').toLowerCase();
-    
-    console.log("🚀 Renderizando Brick:", { valor: totalCalculado, metodo: metodoReal });
+    // CORREÇÃO: O Mercado Pago espera 'individual' ou 'association'
+    const entityType = (tipoDocAtivo === "CNPJ") ? "association" : "individual";
+
+    console.log("🚀 Sênior Log - Renderizando com:", { valor: totalCalculado, metodo: metodoReal });
 
     const bricksBuilder = mp.bricks();
     const settings = {
         initialization: {
             amount: totalCalculado,
-            payer: { 
-                // MELHORIA DE NOTA: Dados dinâmicos e reais
-                email: (window.pedido && window.pedido.cliente && window.pedido.cliente.email) 
-                    ? window.pedido.cliente.email 
-                    : "cliente@exemplo.com", // Substitua pelo campo real do seu formulário
+            payer: {
+                email: document.getElementById('emailCliente')?.value || "cliente@exemplo.com",
+                entity_type: entityType,
                 identification: {
-                    type: tipoDoc, // Agora envia CPF ou CNPJ conforme a escolha
-                    number: (window.pedido && window.pedido.cliente && window.pedido.cliente.cpf) ? window.pedido.cliente.cpf : ""
+                    type: tipoDocAtivo,
+                    number: limparCPF(document.getElementById('cpfCliente')?.value || "")
                 }
             },
         },
         customization: {
             paymentMethods: {
-                // Filtro sênior: se não for um, é o outro. Nunca os dois vazios.
-                bankTransfer: (metodoReal.includes('pix')) ? ['pix'] : [],
-                creditCard: (metodoReal.includes('card')) ? 'all' : [],
-                debitCard: (metodoReal.includes('card')) ? 'all' : [],
+                // SE FOR CARTÃO: Desativa Pix completamente (não envia nem array vazio)
+                // SE FOR PIX: Ativa Pix e desativa Cartão
+                bankTransfer: (metodoReal === 'pix') ? ['pix'] : undefined,
+                creditCard: (metodoReal === 'credit_card') ? 'all' : undefined,
+                debitCard: (metodoReal === 'debit_card') ? 'all' : undefined,
                 maxInstallments: 1
             },
-            visual: { style: { theme: 'default' } }
+            visual: { 
+                style: { theme: 'default' },
+                preserveTargetOnNoResult: true 
+            }
         },
         callbacks: {
-            onReady: () => console.log("✅ Brick visível na tela!"),
-            onError: (error) => console.error("❌ Erro do SDK:", error),
-            onSubmit: ({ formData }) => enviarPagamentoAoBackend(formData, totalCalculado),
+            onReady: () => {
+                console.log("✅ Brick visível na tela!");
+                isRendering = false;
+            },
+            onError: (error) => {
+                console.error("❌ Erro do SDK:", error);
+                isRendering = false;
+            },
+            onSubmit: ({ formData }) => {
+                const docValue = document.getElementById('cpfCliente')?.value || "";
+                if (tipoDocAtivo === "CPF" && !validarCPF(docValue)) return alert("CPF Inválido!");
+                
+                enviarPagamentoAoBackend(formData, totalCalculado);
+            },
         },
     };
 
-    window.paymentBrickController = await bricksBuilder.create("payment", "paymentBrick_container", settings);
+    setTimeout(async () => {
+        try {
+            // Limpa o container antes de renderizar (Segurança extra)
+            container.innerHTML = ""; 
+            window.paymentBrickController = await bricksBuilder.create("payment", "paymentBrick_container", settings);
+        } catch (e) {
+            console.error("❌ Falha crítica ao criar Brick:", e);
+            isRendering = false;
+        }
+    }, 150); // Aumentei um pouco o delay para o DOM respirar
 }
-
 
 export async function enviarPagamentoAoBackend(formData, totalCalculado) {
     const inputDoc = document.getElementById('cpfCliente');
     const cpfLimpo = limparCPF(inputDoc.value);
-    
-    // PEGA O TIPO SELECIONADO NO MOMENTO DO CLIQUE
     const tipoDoc = document.querySelector('input[name="tipoDocumento"]:checked')?.value || "CPF";
 
-    // VALIDAÇÃO DINÂMICA (SÊNIOR)
+    // Suas validações originais
     if (tipoDoc === "CPF" && cpfLimpo.length !== 11) {
-        alert("Por favor, digite um CPF válido com 11 dígitos.");
-        inputDoc.focus();
-        return;
+        alert("Por favor, digite um CPF válido.");
+        inputDoc.focus(); return;
     } 
-    
     if (tipoDoc === "CNPJ" && cpfLimpo.length !== 14) {
-        alert("Por favor, digite um CNPJ válido com 14 dígitos.");
-        inputDoc.focus();
-        return;
+        alert("Por favor, digite um CNPJ válido.");
+        inputDoc.focus(); return;
     }
-
 
     const containerMP = document.getElementById("container-pagamento-mp");
     if (containerMP) containerMP.innerHTML = "<h3>⏳ Processando pagamento seguro...</h3>";
-
-    const pedidoIdInterno = "PED-" + Date.now();
-
 
     try {
         const response = await fetch(`${CONFIG.API_URL}/processar-pagamento`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                token: formData.token,
-                issuer_id: formData.issuer_id,
-                payment_method_id: formData.payment_method_id,
+                ...formData, // Spread para garantir que todos os dados do Brick vão
                 transaction_amount: totalCalculado,
-                installments: formData.installments,
                 description: "Pedido de Bolo - Dayane Bolos",
-                // AQUI ESTÁ O SEGREDO: Envie o ID gerado para o Flask
-                external_reference: pedidoIdInterno, 
+                external_reference: "PED-" + Date.now(), 
                 cliente: {
                     nome: document.getElementById('nomeCliente').value,
                     email: document.getElementById('emailCliente').value,
                     telefone: document.getElementById('telefoneCliente').value,
                     cpf: cpfLimpo 
-                },
-                payer: {
-                    email: document.getElementById('emailCliente').value,
-                    identification: { 
-                        type: tipoDoc, // Envia "CPF" ou "CNPJ" para o Mercado Pago
-                        number: cpfLimpo 
-                    }
                 }
             }),
         });
@@ -227,23 +231,10 @@ export async function enviarPagamentoAoBackend(formData, totalCalculado) {
         const resultado = await response.json();
 
         if (resultado.status === 'approved') {
-            const msg = "Oi! Meu pagamento foi aprovado. Pode conferir?";
-            localStorage.removeItem('carrinho_dayane');
-            window.location.href = `sucesso.html?whatsapp=https://wa.me/5534996360443?text=${encodeURIComponent(msg)}`;
+            finalizarSucessoCartao();
         } 
         else if (resultado.qr_code_base64 || resultado.status === 'pending') {
-            // Lógica do PIX
-            localStorage.setItem('ultimo_pedido_id', resultado.id);
-            localStorage.setItem('dados_pix_resultado', JSON.stringify(resultado));
-            
-            if (containerMP) containerMP.style.display = "none";
-            document.getElementById("pix-container").style.display = "flex";
-
-            setTimeout(() => {
-                document.getElementById("pix-qr-img").src = `data:image/png;base64,${resultado.qr_code_base64}`;
-                document.getElementById("pix-copia-e-cola").value = resultado.qr_code;
-                verificarStatusPagamento(resultado.id, pedido);
-            }, 200);
+            exibirPainelPix(resultado);
         }
     } catch (err) {
         console.error("Erro fatal:", err);
@@ -251,7 +242,29 @@ export async function enviarPagamentoAoBackend(formData, totalCalculado) {
     }
 }
 
-export function verificarStatusPagamento(paymentId, dadosDoPedido) { 
+// Funções de apoio separadas para clareza
+function finalizarSucessoCartao() {
+    const msg = "Oi! Meu pagamento foi aprovado. Pode conferir?";
+    localStorage.removeItem('carrinho_dayane');
+    window.location.href = `sucesso.html?whatsapp=https://wa.me/5534996360443?text=${encodeURIComponent(msg)}`;
+}
+
+function exibirPainelPix(resultado) {
+    localStorage.setItem('ultimo_pedido_id', resultado.id);
+    localStorage.setItem('dados_pix_resultado', JSON.stringify(resultado));
+    
+    const containerMP = document.getElementById("container-pagamento-mp");
+    if (containerMP) containerMP.style.display = "none";
+    document.getElementById("pix-container").style.display = "flex";
+
+    setTimeout(() => {
+        document.getElementById("pix-qr-img").src = `data:image/png;base64,${resultado.qr_code_base64}`;
+        document.getElementById("pix-copia-e-cola").value = resultado.qr_code;
+        verificarStatusPagamento(resultado.id);
+    }, 200);
+}
+
+export function verificarStatusPagamento(paymentId) { 
     if (window.intervaloPix) clearInterval(window.intervaloPix);
 
     window.intervaloPix = setInterval(async () => {
@@ -261,15 +274,10 @@ export function verificarStatusPagamento(paymentId, dadosDoPedido) {
 
             if (statusData.status === 'approved') {
                 clearInterval(window.intervaloPix);
-                
-                // SÊNIOR: Em vez de confiar apenas na variável da memória, 
-                // pegamos o pedido completo que salvamos no storage
-                const pedidoRecuperado = JSON.parse(localStorage.getItem('pedido_salvo_para_automacao')) || dadosDoPedido;
-                
+                const pedidoRecuperado = JSON.parse(localStorage.getItem('pedido_salvo_para_automacao'));
                 const msg = gerarMensagemWhatsCompleta(pedidoRecuperado);
                 abrirWhatsApp("34996360443", msg);
                 
-                // Limpa e finaliza
                 localStorage.clear();
                 window.location.href = "sucesso.html";
             }
@@ -278,14 +286,3 @@ export function verificarStatusPagamento(paymentId, dadosDoPedido) {
 }
 
 window.verificarStatusPagamento = verificarStatusPagamento;
-
-export function prepararTrocaDeMetodo() {
-    console.log("🔄 Limpando estado de pagamento anterior para novo método...");
-    localStorage.removeItem('ultimo_pedido_id');
-    localStorage.removeItem('dados_pix_resultado');
-    
-    // Para o verificador de Pix se ele estiver rodando
-    if (window.intervaloPix) {
-        clearInterval(window.intervaloPix);
-    }
-}

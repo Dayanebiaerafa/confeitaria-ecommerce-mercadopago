@@ -1451,3 +1451,42 @@ body.checkout-ativo #contador-fixo-doces {
   cursor: pointer;
   accent-color: #e91e63; /* Usa a cor rosa do seu tema nos botões */
 }
+
+/* ... código existente */
+@media (max-width: 768px) {
+    .opcoes-doc {
+        justify-content: flex-start;
+        flex-wrap: wrap; /* Impede que os radios esmaguem o texto */
+    }
+
+    /* Garante que o input de documento ocupe a largura correta */
+    .form-bloco.floating input {
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    /* Força o ícone da data a aparecer no mobile */
+    input[type="date"] {
+        min-height: 45px; /* Altura confortável para o dedo */
+        display: flex;
+        align-items: center;
+    }
+}
+
+/* ... código existente */
+@media (max-width: 768px) {
+    input[type="date"] {
+        appearance: none; /* Remove estilos nativos que bugam */
+        -webkit-appearance: none;
+        min-height: 45px;
+        width: 100% !important;
+        background-color: #fff;
+        position: relative;
+    }
+    
+    /* Força o texto a aparecer preto e legível */
+    input[type="date"]::before {
+        content: attr(placeholder);
+        width: 100%;
+    }
+}
