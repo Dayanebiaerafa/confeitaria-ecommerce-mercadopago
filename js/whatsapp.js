@@ -16,6 +16,7 @@ export function gerarMensagemWhatsCompleta(pedido) {
 
   msg += ` 👤 *DADOS DO CLIENTE*\n`;
   msg += `• CLIENTE: ${c.nome || "Não informado"}\n`;
+  msg += `• DOCUMENTO: ${c.cpf || "Não informado"}\n`; // ADICIONE ESTA LINHA
   msg += `• WHATSAPP: ${c.telefone || "Não informado"}\n\n`;
 
   if (p.itens && p.itens.length > 0) {

@@ -73,6 +73,7 @@ img {
     justify-content: space-between;
     padding: 0 15px;
     margin: 40px;
+    
 }
 
 /* Controle rígido do tamanho da Logo */
@@ -122,11 +123,13 @@ img {
 .dropdown {
     position: relative;
     display: inline-block;
+    overflow: visible !important;
 }
 
 .dropbtn {
-    cursor: pointer;
+    position: relative;
     display: inline-block;
+    cursor: pointer;
     padding: 10px 0;
 }
 
@@ -190,51 +193,80 @@ img {
 }
 
 /* 3. Ajuste de segurança para o Mobile */
+/* --- AJUSTE ESPECÍFICO: HEADER (Menu Desce) --- */
+/* UNIFIQUE TUDO NESTE BLOCO ABAIXO */
 @media (max-width: 768px) {
-    /* Ajuste para o menu do Cabeçalho (abre para baixo) */
-    .header .dropdown-content.show {
-        position: fixed !important; 
-        top: 80px !important; 
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        width: 85% !important;
-        display: block !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        background-color: #FAD5DC !important;
+    /* 1. LIBERAR O CAMINHO: Garante que os pais não cortem o menu */
+    .header, .header-content, .nav, .menu, .dropdown {
+        overflow: visible !important;
+        clip-path: none !important;
+        position: relative; /* Base para o menu absoluto */
     }
-    
+
+    /* 2. O MENU DO TOPO (Header) */
+    .header .dropdown-content.show {
+        display: block !important;
+        visibility: visible !important;
+        position: absolute !important;
+        
+        /* Ajuste fino: Se 100% ficar longe, use 45px */
+        top: 45px !important; 
+        left: 0 !important;
+        
+        width: max-content !important;
+        min-width: 180px !important;
+        max-width: 90vw !important;
+        
+        background-color: #FAD5DC !important;
+        
+        border-radius: 8px !important;
+        z-index: 999999 !important;
+        box-shadow: 0px 8px 20px rgba(0,0,0,0.2) !important;
+        padding: 5px 0 !important;
+    }
+
+    /* 3. O MENU DO RODAPÉ (Sobe) */
     .rodape .dropdown-content.show {
+        display: block !important;
         position: absolute !important;
         bottom: 100% !important; 
         top: auto !important;
         left: 50% !important;
         transform: translateX(-50%) !important;
         margin-bottom: 10px;
-        display: block !important;
+        
+        /* Mantém o estilo visual */
         background-color: #FAD5DC !important;
+        
+        border-radius: 8px !important;
+        z-index: 999999 !important;
     }
 
+    /* 4. OS LINKS (Para ambos) */
     .dropdown-content.show a {
+        display: block !important;
+        padding: 12px 20px !important;
+        color: #783606 !important;
+        text-decoration: none !important;
+        
+        /* A LINHA BRANCA AQUI */
+        border-bottom: 2px solid #FFFFFF !important; 
+        
         background-color: #FAD5DC !important;
-        display: block !important;
-        width: 100% !important;
-        padding: 15px 20px !important;
-        color: #783606 !important;
-        border-bottom: 1px solid #f0f0f0;
-    }
-    /* Garante que os links dentro sejam visíveis */
-    .header {
-        display: block !important;
-        padding: 15px 20px !important;
-        color: #783606 !important;
-        border-bottom: 1px solid #f0f0f0;
+        transition: background 0.2s;
+        font-size: 15px !important;
     }
 
-   
-  
+    /* Efeito ao passar o dedo/mouse */
+    .dropdown-content.show a:active, 
+    .dropdown-content.show a:hover {
+        background-color: #fce4ec !important; /* Um rosa um pouco mais claro */
+    }
+    
+    .dropdown-content.show a:last-child {
+        border-bottom: none !important;
+    }
 }
-
 
 
 
@@ -616,6 +648,8 @@ img {
         padding: 15px 10px !important;
         gap: 15px !important;
         height: auto !important; /* Permite que o cabeçalho cresça para baixo */
+        overflow: visible !important;
+    
     }
 
     /* 2. LOGO: Centralizada e com tamanho bom */

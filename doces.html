@@ -470,14 +470,30 @@
           <input type="tel" id="telefoneCliente" placeholder=" " maxlength="15" required>
           <label for="telefoneCliente">Telefone / Celular *</label>
         </div>
-        <div class="form-bloco floating">
-          <input type="text" id="cpfCliente" name="cpfCliente" placeholder=" " inputmode="numeric" maxlength="14" required>
-          <label for="cpfCliente">CPF (Obrigatório para PIX) *</label>
+        
+        <div class="form-bloco"> 
+          <div class="opcoes-doc" style="display: flex; gap: 15px; margin-bottom: 5px; align-items: center;">
+              <label class="radio-item" style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                  <input type="radio" id="tipoPF" name="tipoDocumento" value="CPF" checked>
+                  <span>CPF</span>
+              </label>
+              <label class="radio-item" style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                  <input type="radio" id="tipoPJ" name="tipoDocumento" value="CNPJ">
+                  <span>CNPJ</span>
+              </label>
+          </div>
+
+          <div class="form-bloco floating">
+              <input type="text" id="cpfCliente" name="cpfCliente" placeholder=" " inputmode="numeric" maxlength="14" required>
+              <label for="cpfCliente" id="labelDoc"></label>
+          </div>
         </div>
+
         <div class="form-bloco floating">
             <input type="email" id="emailCliente" name="emailCliente" placeholder=" " autocomplete="email" required>
             <label for="emailCliente">E-mail * (Para receber o comprovante)</label>
         </div>
+
         <div class="form-linha">
           <div class="form-bloco">
             <label for="dataPedido">Data de retirada</label> 

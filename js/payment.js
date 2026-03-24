@@ -1,6 +1,6 @@
 import { pedido, metodoSelecionado, porcentagemPagamento } from './state.js';
 import { calcularTotal } from './calculate.js';
-import { obterMercadoPago, CONFIG } from './config.js';
+import { CONFIG } from './config.js';
 import { gerarMensagemWhatsCompleta, abrirWhatsApp } from './whatsapp.js';
 
 // Variáveis de controle
@@ -13,23 +13,73 @@ export function limparCPF(cpf) {
     return cpf.replace(/\D/g, '');
 }
 
+
+let mpInstance = null; 
+
+export function obterMercadoPago() {
+    if (mpInstance) return mpInstance;
+
+    if (typeof window.MercadoPago === 'undefined') {
+        console.error("❌ Erro: SDK do Mercado Pago não encontrado.");
+        return null;
+    }
+
+    try {
+        mpInstance = new window.MercadoPago(CONFIG.MP_PUBLIC_KEY, {
+            locale: 'pt-BR'
+        });
+        console.log("💳 SDK Mercado Pago: Instância Singleton inicializada.");
+        return mpInstance;
+    } catch (e) {
+        console.error("❌ Erro ao instanciar MP:", e);
+        return null;
+    }
+}
+
 export async function iniciarCheckout() {
     const mp = obterMercadoPago();
     if (!mp) return;
 
-    // Agora você usa o 'mp' para criar os Bricks ou processar
     const bricksBuilder = mp.bricks();
+    console.log("🚀 Bricks Builder pronto para uso.");
     
-    // Exemplo: Renderizar o botão de pagamento
-    // bricksBuilder.create('payment', 'id-do-container', { ... });
+    // Agora a constante bricksBuilder não estará mais "apagada" 
+    // porque vamos usá-la aqui embaixo para renderizar o Pix.
 }
 
 export async function inicializarCheckoutTransparente() {
     const container = document.getElementById('paymentBrick_container');
     
+    // --- NOVA LÓGICA DINÂMICA DE CPF/CNPJ (ADICIONE AQUI) ---
+    const radioPF = document.getElementById("tipoPF");
+    const radioPJ = document.getElementById("tipoPJ");
+    const inputDoc = document.getElementById("cpfCliente");
+    const labelDoc = document.querySelector('label[for="cpfCliente"]');
+
+    if (radioPF && radioPJ && inputDoc) {
+        const atualizarLogicaDocumento = () => {
+            // 1. Limpa o valor para evitar que um CPF incompleto vire um CNPJ inválido
+            inputDoc.value = ""; 
+
+            if (radioPJ.checked) {
+                // 2. Ajusta Visual e Limite (18 inclui pontos/traços da máscara)
+                labelDoc.innerText = "CNPJ (Obrigatório para PIX) *";
+                inputDoc.maxLength = 18; 
+                console.log("🚀 Modo CNPJ ativado");
+            } else {
+                labelDoc.innerText = "CPF (Obrigatório para PIX) *";
+                inputDoc.maxLength = 14; 
+                console.log("🚀 Modo CPF ativado");
+            }
+        };
+
+        // Usamos addEventListener em ambos para garantir que a troca de estado seja detectada
+        radioPF.addEventListener("change", atualizarLogicaDocumento);
+        radioPJ.addEventListener("change", atualizarLogicaDocumento);
+    }
     // 1. Verificação de visibilidade (Essencial para o SDK não travar)
-    if (!container || container.offsetParent === null) {
-        console.warn("⏳ Container invisível. Abortando renderização.");
+   if (!container) {
+        console.warn("❌ Container 'paymentBrick_container' não encontrado no DOM.");
         return;
     }
 
@@ -37,19 +87,35 @@ export async function inicializarCheckoutTransparente() {
     // Se a função obterMercadoPago() falhar, usamos a instância direta
     let mp;
     try {
-        mp = new MercadoPago('APP_USR-1af45030-78f4-4e0e-97f1-85d464b06625');
+        // Use sua chave pública enviada no contexto
+        mp = new window.MercadoPago('APP_USR-1af45030-78f4-4e0e-97f1-85d464b06625', {
+            locale: 'pt-BR' // Adicionar o locale ajuda na nota de qualidade
+        });
     } catch (e) {
-        console.error("❌ Falha crítica ao iniciar SDK do Mercado Pago:", e);
+        console.error("❌ Erro ao instanciar V2:", e);
         return;
     }
 
     // 3. Limpeza de instâncias mortas
     if (window.paymentBrickController) {
         try {
+            // O await é fundamental aqui para esperar o navegador liberar o banco de dados
             await window.paymentBrickController.unmount();
-        } catch(e) {}
+            window.paymentBrickController = null;
+        } catch(e) {
+            console.warn("Aviso: Falha ao desmontar", e);
+        }
     }
-    container.innerHTML = "";
+
+    // Limpeza física do container
+    
+    if (container) {
+        container.innerHTML = "";
+    }
+
+    // DICA SÊNIOR: Adicione uma pequena verificação se o SDK já não está rodando
+    if (window.mpInstanciado === true) return; 
+    window.mpInstanciado = true;
 
     // 4. Recuperação de valores com fallback
     const valorSalvo = localStorage.getItem('valor_final_pagamento');
@@ -59,10 +125,11 @@ export async function inicializarCheckoutTransparente() {
         console.error("❌ Valor inválido:", totalCalculado);
         return;
     }
-
+    
+    const tipoDoc = document.querySelector('input[name="tipoDocumento"]:checked')?.value || "CPF";
     // Garante que o método seja lido corretamente (minúsculo)
     const metodoReal = (localStorage.getItem('metodo_pagamento') || 'pix').toLowerCase();
-
+    
     console.log("🚀 Renderizando Brick:", { valor: totalCalculado, metodo: metodoReal });
 
     const bricksBuilder = mp.bricks();
@@ -70,9 +137,14 @@ export async function inicializarCheckoutTransparente() {
         initialization: {
             amount: totalCalculado,
             payer: { 
-                email: (typeof pedido !== 'undefined' ? pedido.cliente?.email : "cliente@exemplo.com"),
-                // ADICIONE ESTA LINHA ABAIXO:
-                entityType: 'individual' 
+                // MELHORIA DE NOTA: Dados dinâmicos e reais
+                email: (window.pedido && window.pedido.cliente && window.pedido.cliente.email) 
+                    ? window.pedido.cliente.email 
+                    : "cliente@exemplo.com", // Substitua pelo campo real do seu formulário
+                identification: {
+                    type: tipoDoc, // Agora envia CPF ou CNPJ conforme a escolha
+                    number: (window.pedido && window.pedido.cliente && window.pedido.cliente.cpf) ? window.pedido.cliente.cpf : ""
+                }
             },
         },
         customization: {
@@ -97,12 +169,25 @@ export async function inicializarCheckoutTransparente() {
 
 
 export async function enviarPagamentoAoBackend(formData, totalCalculado) {
-    const cpfLimpo = limparCPF(document.getElementById('cpfCliente').value);
+    const inputDoc = document.getElementById('cpfCliente');
+    const cpfLimpo = limparCPF(inputDoc.value);
+    
+    // PEGA O TIPO SELECIONADO NO MOMENTO DO CLIQUE
+    const tipoDoc = document.querySelector('input[name="tipoDocumento"]:checked')?.value || "CPF";
 
-    if (cpfLimpo.length !== 11) {
-        alert("Por favor, digite um CPF válido.");
+    // VALIDAÇÃO DINÂMICA (SÊNIOR)
+    if (tipoDoc === "CPF" && cpfLimpo.length !== 11) {
+        alert("Por favor, digite um CPF válido com 11 dígitos.");
+        inputDoc.focus();
+        return;
+    } 
+    
+    if (tipoDoc === "CNPJ" && cpfLimpo.length !== 14) {
+        alert("Por favor, digite um CNPJ válido com 14 dígitos.");
+        inputDoc.focus();
         return;
     }
+
 
     const containerMP = document.getElementById("container-pagamento-mp");
     if (containerMP) containerMP.innerHTML = "<h3>⏳ Processando pagamento seguro...</h3>";
@@ -131,7 +216,10 @@ export async function enviarPagamentoAoBackend(formData, totalCalculado) {
                 },
                 payer: {
                     email: document.getElementById('emailCliente').value,
-                    identification: { type: "CPF", number: cpfLimpo }
+                    identification: { 
+                        type: tipoDoc, // Envia "CPF" ou "CNPJ" para o Mercado Pago
+                        number: cpfLimpo 
+                    }
                 }
             }),
         });

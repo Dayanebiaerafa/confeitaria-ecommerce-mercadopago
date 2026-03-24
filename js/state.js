@@ -11,6 +11,7 @@ export let pedido = pedidoRecuperado || {
         nome: "",
         telefone: "",
         email: "",
+        cpf: "",
         data: "",
         horario: "",
         entrega: "retirada",

@@ -27,44 +27,51 @@ export function configurarCalendario() {
     dataInput.setAttribute("min", dataFormatada);
 
     // No Mobile, usamos um pequeno delay para não fechar o calendário no rosto do cliente
-    dataInput.addEventListener("change", function() {
-        if (!this.value) return;
+    let validando = false;
 
-        // "T00:00:00" é vital para evitar que o fuso horário mude o dia
-        const dataSelecionada = new Date(this.value + "T00:00:00");
-        const dataHojeCopia = new Date(hoje);
+    dataInput.addEventListener("blur", function() {// Usamos 'input' para mobile responder melhor
+        if (validando) return;
         
-        // Cálculo exato de dias ignorando horas
-        const diffTempo = dataSelecionada.getTime() - dataHojeCopia.getTime();
+        const valor = this.value;
+        if (!valor || valor.length < 10) return; // Só valida se a data estiver completa (YYYY-MM-DD)
+
+        validando = true;
+
+        // "T00:00:00" evita erro de fuso horário
+        const dataSelecionada = new Date(valor + "T00:00:00");
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+
+        const diffTempo = dataSelecionada.getTime() - hoje.getTime();
         const diffDias = Math.round(diffTempo / (1000 * 60 * 60 * 24));
-        
         const diaSemana = dataSelecionada.getDay();
 
-        if (diffDias < diasAntecedencia) {
-            // Usamos setTimeout para o alerta não travar o fechamento do calendário nativo
+        // VALIDAÇÃO CERTEIRA
+        if (diffDias < diasAntecedencia || diaSemana === 0) {
             setTimeout(() => {
-                alert(`🧁 Ops! Para este pedido precisamos de ${diasAntecedencia} dia(s) de antecedência.`);
+                const msg = diaSemana === 0 ? 
+                    "🧁 Não realizamos entregas aos domingos." : 
+                    `🧁 Ops! Para este pedido precisamos de ${diasAntecedencia} dia(s) de antecedência.`;
+                
+                alert(msg);
                 this.value = "";
-            }, 100);
+                validando = false;
+            }, 500); // Delay maior para o teclado mobile fechar antes do alerta
             return;
         }
 
-        if (diaSemana === 0) { // Domingo
-            setTimeout(() => {
-                alert("🧁 Não realizamos entregas aos domingos.");
-                this.value = "";
-            }, 100);
-            return;
-        }
-
-        // Se passou nas validações, segue o fluxo
+        // Se passou, salva e gera horários
         if (typeof window.gerarOpcoesDeHorario === 'function') {
             window.gerarOpcoesDeHorario(dataSelecionada);
         }
         
         if (!pedido.cliente) pedido.cliente = {};
-        pedido.cliente.data = this.value;
+        pedido.cliente.data = valor;
         localStorage.setItem('carrinho_dayane', JSON.stringify(pedido));
+        
+
+        setTimeout(() => { validando = false; }, 1000); // Destrava após 1s
+        
     });
 }
 

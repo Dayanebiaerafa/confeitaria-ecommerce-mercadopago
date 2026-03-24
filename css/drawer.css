@@ -277,7 +277,7 @@
    PILLS
 ===================================================== */
 .pill {
-  display: inline-block !important;
+  display: inline-block;
   background: var(--marrom);
   color: #fff;
   font-size: 15px;
@@ -518,32 +518,37 @@
 /* 2. Ajusta o input para empurrar o ícone para a direita */
 #dataPedido {
     width: 100% !important;
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    
-    /* Estilo do bloco */
     padding: 10px 12px !important;
     border: 1px solid #ccc !important;
     border-radius: 8px !important;
     background-color: #fff !important;
     box-sizing: border-box !important;
+    position: relative !important; /* Essencial para o ícone se basear aqui */
+    display: block !important; /* No iOS, block é mais estável que flex para inputs */
+    text-align: left !important;
+    font-size: 16px !important; /* Evita o zoom automático do iPhone ao focar */
 }
 
-/* 3. Move o ícone do calendário (o "quadradinho") para a direita */
-/* Mesmo que não esteja no seu HTML, o navegador reconhece esse seletor */
+/* O texto da data */
+#dataPedido::-webkit-datetime-edit {
+    display: inline-block !important;
+    width: calc(100% - 30px) !important; /* Abre espaço para o ícone na direita */
+}
+
+/* O ícone (Estilo Sênior para iOS) */
 #dataPedido::-webkit-calendar-picker-indicator {
+    position: absolute !important;
+    right: 12px !important; /* Fixa no final do bloco */
+    top: 50% !important;
+    transform: translateY(-50%) !important;
     margin: 0 !important;
     padding: 0 !important;
+    width: 20px !important;
+    height: 20px !important;
+    filter: invert(0.5); /* Fica cinza */
+    opacity: 0.8;
     cursor: pointer;
-    /* Isso garante que ele fique no final do bloco (direita) */
-    order: 1; 
-}
-
-/* Ajuste para o texto da data não grudar no ícone */
-#dataPedido::-webkit-datetime-edit {
-    flex: 1;
-    text-align: left;
+    -webkit-appearance: none;
 }
 
 /* Bloco Azul do Endereço */
@@ -1226,7 +1231,7 @@ textarea, #observacaoPedido, .textarea-box {
         box-sizing: border-box;
         margin-top: 25px !important;
         margin-bottom: 20px !important;
-        display: inline-block !important;
+        display: inline-block;
     }
 
 
@@ -1424,3 +1429,25 @@ body.checkout-ativo #contador-fixo-doces {
     margin-bottom: 10px !important;
 }
 
+.opcoes-doc {
+  display: flex;
+  gap: 20px;       /* Espaço entre CPF e CNPJ */
+  margin-bottom: 8px;
+  padding-left: 5px;
+}
+
+.radio-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;        /* Espaço entre o círculo e o texto */
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  color: #555;
+}
+
+.radio-item input[type="radio"] {
+  margin: 0;
+  cursor: pointer;
+  accent-color: #e91e63; /* Usa a cor rosa do seu tema nos botões */
+}

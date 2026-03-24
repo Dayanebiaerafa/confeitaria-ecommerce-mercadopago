@@ -26,7 +26,8 @@ import {
     adicionarBoloAoCarrinho,
     drawer,
     overlay,
-    atualizarContadorSacola
+    atualizarContadorSacola,
+    finalizarSelecaoPagamento
 } from './ui-updates.js';
 
 
@@ -396,8 +397,45 @@ export function inicializarFluxoCarrinho() {
     const emailInput = document.getElementById("emailCliente");
 
 
-    // 1. Botão Confirmar do site (Abre o carrinho) - MANTIDO
-   
+    const radiosTipo = document.querySelectorAll('input[name="tipoDocumento"]');
+    const campoInput = document.getElementById("cpfCliente");
+
+    if (campoInput && radiosTipo.length > 0) {
+        radiosTipo.forEach(radio => {
+            radio.addEventListener('change', () => {
+                campoInput.value = ""; 
+                if (radio.value === "CPF") {
+                    campoInput.setAttribute("maxlength", "14");
+                    campoInput.placeholder = "000.000.000-00";
+                } else {
+                    campoInput.setAttribute("maxlength", "18");
+                    campoInput.placeholder = "00.000.000/0000-00";
+                }
+                console.log(`Sênior Log: Modo alterado para ${radio.value}`);
+            });
+        });
+    }
+    if (campoInput) {
+        campoInput.addEventListener('input', (e) => {
+            let v = e.target.value.replace(/\D/g, ''); // Remove tudo que não é número
+            const tipoDoc = document.querySelector('input[name="tipoDocumento"]:checked')?.value || "CPF";
+
+            if (tipoDoc === "CPF") {
+                // Máscara: 000.000.000-00
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            } else {
+                // Máscara: 00.000.000/0000-00
+                v = v.replace(/^(\d{2})(\d)/, '$1.$2');
+                v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+                v = v.replace(/\.(\d{3})(\d)/, '.$1/$2');
+                v = v.replace(/(\d{4})(\d)/, '$1-$2');
+            }
+
+            e.target.value = v; // Aplica o valor formatado de volta no campo
+        });
+    }
 
     // 2. Ícone da Sacola - MANTIDO
     
@@ -458,6 +496,12 @@ export function inicializarFluxoCarrinho() {
                 const email = document.getElementById("emailCliente")?.value.trim();
                 const data = document.getElementById("dataPedido")?.value;
                 const horario = document.getElementById("horarioPedido")?.value;
+                
+                // --- AJUSTE SÊNIOR: Validação de Documento ---
+                const inputDoc = document.getElementById("cpfCliente");
+                const docValor = inputDoc?.value.replace(/\D/g, '') || "";
+                const tipoDoc = document.querySelector('input[name="tipoDocumento"]:checked')?.value || "CPF";
+                
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
                 if (!nome || nome.length < 3) { processandoClique = false; novoBtnAvancar.style.pointerEvents = 'auto'; return alert("⚠️ Digite seu nome."); }
@@ -466,10 +510,37 @@ export function inicializarFluxoCarrinho() {
                 if (!data) { processandoClique = false; novoBtnAvancar.style.pointerEvents = 'auto'; return alert("⚠️ Por favor, selecione a data."); }
                 if (!horario) { processandoClique = false; novoBtnAvancar.style.pointerEvents = 'auto'; return alert("⚠️ Por favor, selecione o horário."); }
 
-                pedido.cliente = { nome, telefone: tel, email, data, horario };
-                localStorage.setItem('carrinho_dayane', JSON.stringify(pedido)); // <--- ADICIONE ISSO
-                console.log("Sênior Log: Dados salvos e persistidos.");
+
+                // --- BLOQUEIO REAL: CPF vs CNPJ ---
+                if (tipoDoc === "CPF" && docValor.length !== 11) {
+                    processandoClique = false; 
+                    novoBtnAvancar.style.pointerEvents = 'auto';
+                    return alert("⚠️ O CPF deve ter 11 números.");
+                }
+                if (tipoDoc === "CNPJ" && docValor.length !== 14) {
+                    processandoClique = false; 
+                    novoBtnAvancar.style.pointerEvents = 'auto';
+                    return alert("⚠️ O CNPJ deve ter 14 números.");
+                }
+
+                if (!data) { processandoClique = false; novoBtnAvancar.style.pointerEvents = 'auto'; return alert("⚠️ Por favor, selecione a data."); }
+                if (!horario) { processandoClique = false; novoBtnAvancar.style.pointerEvents = 'auto'; return alert("⚠️ Por favor, selecione o horário."); }
+
+                // Salva tudo no objeto pedido inclusive o documento correto
+                pedido.cliente = { 
+                    nome, 
+                    telefone: tel, 
+                    email, 
+                    data, 
+                    horario,
+                    documento: docValor, // Salva o número limpo
+                    tipoDocumento: tipoDoc // Salva se é CPF ou CNPJ
+                };
+                
+                localStorage.setItem('carrinho_dayane', JSON.stringify(pedido));
+                console.log("Sênior Log: Dados e Documento (" + tipoDoc + ") salvos.");
             }
+
             // --- MANTER REGRA EXISTENTE: ETAPA 2 (Pagamento) ---
             if (etapaAtual === 2) {
                 const metodoReal = window.metodoSelecionado || metodoSelecionado;
@@ -479,19 +550,27 @@ export function inicializarFluxoCarrinho() {
                     return alert("⚠️ Por favor, selecione uma forma de pagamento.");
                 }
 
-                // SÊNIOR: Captura a porcentagem da global ANTES de salvar o objeto final
                 const porcFinal = window.porcentagemPagamento || 1;
 
                 pedido.pagamento = {
                     metodo: metodoReal,
                     pixPendente: (metodoReal === 'pix'),
-                    porcentagem: porcFinal // AGORA O VALOR VAI PARA O STORAGE CORRETAMENTE
+                    porcentagem: porcFinal 
                 };
                 
-                // Sincroniza o valor pago no objeto para o resumo ler certo
                 pedido.valorPago = (pedido.valorTotal || 0) * porcFinal;
-
                 localStorage.setItem('carrinho_dayane', JSON.stringify(pedido));
+
+                // --- MUDANÇA AQUI: Em vez de apenas mostrarEtapa(3), chamamos a ponte ---
+                finalizarSelecaoPagamento(); 
+                
+                // Reset de segurança do botão
+                setTimeout(() => {
+                    processandoClique = false;
+                    novoBtnAvancar.style.pointerEvents = 'auto';
+                }, 500);
+                
+                return; // Para não executar o bloco de "mudança de tela" genérico abaixo
             }
 
             // --- MANTER REGRA EXISTENTE: MUDANÇA DE TELA ---
@@ -683,17 +762,17 @@ export function inicializarEventosSetas() {
 
 // Função de exclusão:
 export function excluirPedidoBolo() {
-    // 1. Zera os dados no objeto (Lógica)
     pedido.pesoKg = 0;
     pedido.recheios = [];
     pedido.massa = "";
     
-    // 2. Limpa a interface (Visual)
+    // NOVIDADE: Remove o bolo da lista de itens da sacola também
+    pedido.itens = (pedido.itens || []).filter(item => item.tipo !== 'bolo');
+
     resetarBotoesVisualmente('bolo');
     limparDescricoesCarrinho();
-    
-    // 3. Recalcula o valor (Financeiro)
     atualizarTudo();
+    atualizarContadorSacola(); // Atualiza a bolinha vermelha na hora
 }
 
 

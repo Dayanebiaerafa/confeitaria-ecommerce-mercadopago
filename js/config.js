@@ -18,19 +18,6 @@ export const CONFIG = {
     IMGBB_API_KEY: "68ce59021d803460d105410a9456ef94",
 };
 
-
-// Esta função garante que o objeto mp só seja criado se o SDK estiver presente
-export function obterMercadoPago() {
-    // Verificamos na window e o tipo para evitar erros de referência
-    if (typeof window.MercadoPago === 'undefined') {
-        console.error("Erro: SDK do Mercado Pago ainda não carregado no navegador.");
-        return null;
-    }
-    // Usamos a constante centralizada e definimos o locale para evitar bugs de moeda
-    return new window.MercadoPago(CONFIG.MP_PUBLIC_KEY, { locale: 'pt-BR' });
-}
-// ====== 1. CONSTANTES DE PREÇO (Mantidas exatamente como as suas) ======
-
 // Preços Base
 export const PRECO_POR_KG = 95;             // Bolo Tradicional
 export const PRECO_CORTE = 90;              // Bolo de Corte
