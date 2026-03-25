@@ -1429,41 +1429,98 @@ body.checkout-ativo #contador-fixo-doces {
     margin-bottom: 10px !important;
 }
 
-.opcoes-doc {
-  display: flex;
-  gap: 20px;       /* Espaço entre CPF e CNPJ */
-  margin-bottom: 8px;
-  padding-left: 5px;
+/* Container principal da seção */
+.secao-documento {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
 }
 
-.radio-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;        /* Espaço entre o círculo e o texto */
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: bold;
-  color: #555;
+/* Alinha CPF e CNPJ lado a lado com espaço */
+.opcoes-doc-container {
+    display: flex;
+    flex-direction: row; /* Garante que fiquem na mesma linha */
+    gap: 30px;           /* Espaço entre os blocos */
+    align-items: center;
+    padding: 5px 0;
 }
 
-.radio-item input[type="radio"] {
-  margin: 0;
-  cursor: pointer;
-  accent-color: #e91e63; /* Usa a cor rosa do seu tema nos botões */
+/* Estilo do bloco Radio + Texto */
+.radio-bloco {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    padding: 10px 0;
+   
+}
+
+.radio-bloco input[type="radio"] {
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    
+    accent-color: #e91e63; /* Rosa do seu tema */
+}
+
+
+/* Ajuste para o erro não quebrar o layout */
+.mensagem-erro {
+    color: #e91e63;
+    font-size: 12px;
+    font-weight: bold;
+    display: none;
+    margin-top: 5px;
+    padding-left: 5px;
+}
+
+/* Container do input */
+.form-bloco.floating {
+    position: relative;
+    margin-top: 20px; /* Abre espaço para o label fixo no topo */
+}
+
+/* O Label fixo no topo */
+.form-bloco.floating label {
+    position: absolute;
+    left: 12px;
+    top: -10px;        /* Move para cima da borda */
+    background: white; /* Cor do fundo para cobrir a linha da borda */
+    padding: 0 5px;    /* Espaço para o texto não encostar na borda cortada */
+    font-size: 12px;
+    font-weight: bold;
+    color: #8b4513;    /* Marrom do seu tema */
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* Ajuste do Input para não encostar no label */
+.form-bloco.floating input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+/* AJUSTE MOBILE (Onde estava bugando) */
+@media (max-width: 768px) {
+    .opcoes-doc-container {
+        gap: 40px; /* Aumenta o espaço para o dedo tocar sem errar no mobile */
+        justify-content: flex-start;
+    }
+    
+    /* Garante que o input de texto apareça com largura total */
+    .form-bloco.floating {
+        width: 100% !important;
+        display: block !important;
+    }
 }
 
 /* ... código existente */
 @media (max-width: 768px) {
-    .opcoes-doc {
-        justify-content: flex-start;
-        flex-wrap: wrap; /* Impede que os radios esmaguem o texto */
-    }
-
-    /* Garante que o input de documento ocupe a largura correta */
-    .form-bloco.floating input {
-        width: 100% !important;
-        box-sizing: border-box;
-    }
 
     /* Força o ícone da data a aparecer no mobile */
     input[type="date"] {

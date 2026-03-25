@@ -496,31 +496,31 @@ export function inicializarFluxoCarrinho() {
                 const email = document.getElementById("emailCliente")?.value.trim();
                 const data = document.getElementById("dataPedido")?.value;
                 const horario = document.getElementById("horarioPedido")?.value;
-                
-                // --- AJUSTE SÊNIOR: Validação de Documento ---
-                const inputDoc = document.getElementById("cpfCliente");
-                const docValor = inputDoc?.value.replace(/\D/g, '') || "";
-                const tipoDoc = document.querySelector('input[name="tipoDocumento"]:checked')?.value || "CPF";
-                
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+                // Validações básicas
                 if (!nome || nome.length < 3) { processandoClique = false; novoBtnAvancar.style.pointerEvents = 'auto'; return alert("⚠️ Digite seu nome."); }
                 if (!tel || tel.length < 10) { processandoClique = false; novoBtnAvancar.style.pointerEvents = 'auto'; return alert("⚠️ Por favor, digite um telefone válido."); }
                 if (!email || !emailRegex.test(email)) { processandoClique = false; novoBtnAvancar.style.pointerEvents = 'auto'; return alert("⚠️ Por favor, digite um e-mail válido."); }
                 if (!data) { processandoClique = false; novoBtnAvancar.style.pointerEvents = 'auto'; return alert("⚠️ Por favor, selecione a data."); }
                 if (!horario) { processandoClique = false; novoBtnAvancar.style.pointerEvents = 'auto'; return alert("⚠️ Por favor, selecione o horário."); }
 
+                // --- VALIDAÇÃO DE DOCUMENTO (CPF/CNPJ) ---
+                const inputDoc = document.getElementById("cpfCliente");
+                const docValor = inputDoc?.value.replace(/\D/g, '') || "";
+                const tipoDoc = document.querySelector('input[name="tipoDocumento"]:checked')?.value || "CPF";
+                
+                let docErro = false;
+                if (tipoDoc === "CPF" && docValor.length !== 11) docErro = true;
+                if (tipoDoc === "CNPJ" && docValor.length !== 14) docErro = true;
+                if (/^(\d)\1+$/.test(docValor)) docErro = true; // Bloqueia 00000000000
 
-                // --- BLOQUEIO REAL: CPF vs CNPJ ---
-                if (tipoDoc === "CPF" && docValor.length !== 11) {
+                if (docErro) {
                     processandoClique = false; 
                     novoBtnAvancar.style.pointerEvents = 'auto';
-                    return alert("⚠️ O CPF deve ter 11 números.");
-                }
-                if (tipoDoc === "CNPJ" && docValor.length !== 14) {
-                    processandoClique = false; 
-                    novoBtnAvancar.style.pointerEvents = 'auto';
-                    return alert("⚠️ O CNPJ deve ter 14 números.");
+                    alert(`⚠️ O ${tipoDoc} informado é inválido.`);
+                    inputDoc?.focus();
+                    return; 
                 }
 
                 if (!data) { processandoClique = false; novoBtnAvancar.style.pointerEvents = 'auto'; return alert("⚠️ Por favor, selecione a data."); }

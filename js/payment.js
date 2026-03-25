@@ -78,31 +78,68 @@ export async function destruirInstanciasAnteriores() {
  * Inicializa a lógica visual de troca CPF/CNPJ
  */
 export function inicializarLogicaDocumento() {
-    const radioPF = document.getElementById("tipoPF");
-    const radioPJ = document.getElementById("tipoPJ");
-    const inputDoc = document.getElementById("cpfCliente");
-    const labelDoc = document.querySelector('label[for="cpfCliente"]');
+    const inputDoc = document.getElementById('cpfCliente');
+    const labelDoc = document.getElementById('labelDoc');
+    const erroDoc = document.getElementById('erro-doc'); 
+    const radios = document.querySelectorAll('input[name="tipoDocumento"]');
 
-    if (radioPF && radioPJ && inputDoc) {
-        const atualizar = () => {
+    if (!inputDoc || !radios.length) return;
+
+    // 1. Lógica para alternar entre CPF e CNPJ
+    radios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
             inputDoc.value = ""; 
-            if (radioPJ.checked) {
-                labelDoc.innerText = "CNPJ (Obrigatório para PIX) *";
-                inputDoc.maxLength = 18; 
-                console.log("🚀 Modo CNPJ ativado");
-            } else {
+            if (erroDoc) erroDoc.style.display = "none";
+            inputDoc.style.borderBottom = "1px solid #ccc";
+
+            if (e.target.value === "CPF") {
                 labelDoc.innerText = "CPF (Obrigatório para PIX) *";
-                inputDoc.maxLength = 14; 
+                inputDoc.maxLength = 14;
                 console.log("🚀 Modo CPF ativado");
+            } else {
+                labelDoc.innerText = "CNPJ (Obrigatório para PIX) *";
+                inputDoc.maxLength = 18;
+                console.log("🚀 Modo CNPJ ativado");
             }
-        };
-        // Evita duplicar listeners
-        radioPF.removeEventListener("change", atualizar);
-        radioPJ.removeEventListener("change", atualizar);
-        radioPF.addEventListener("change", atualizar);
-        radioPJ.addEventListener("change", atualizar);
-    }
+        });
+    });
+
+    // 2. Validação de Formato ao sair do campo (Blur) - CÓDIGO SÊNIOR AQUI
+    inputDoc.addEventListener('blur', () => {
+        const tipoElement = document.querySelector('input[name="tipoDocumento"]:checked');
+        if (!tipoElement) return;
+
+        const tipo = tipoElement.value;
+        // Step: Remove tudo que não é número ANTES de validar
+        const valorLimpo = inputDoc.value.replace(/\D/g, ''); 
+        
+        let invalido = false;
+
+        // Regra 1: Tamanho
+        if (tipo === "CPF" && valorLimpo.length !== 11) invalido = true;
+        if (tipo === "CNPJ" && valorLimpo.length !== 14) invalido = true;
+
+        // Regra 2: Números Repetidos (Ex: 000.000.000-00)
+        if (/^(\d)\1+$/.test(valorLimpo)) invalido = true;
+
+        if (invalido && valorLimpo.length > 0) {
+            // 1. Esconde a mensagem de texto fixa (para não encavalar no e-mail)
+            if (erroDoc) erroDoc.style.display = "none";
+            
+            // 2. Avisa o cliente via pop-up (OK para fechar)
+            alert(`⚠️ ${tipo} Inválido!\nPor favor, verifique os números digitados.`);
+            
+            // 3. Limpa o campo e foca nele novamente para correção
+            inputDoc.value = "";
+            inputDoc.style.borderBottom = "2px solid #e91e63";
+            inputDoc.focus();
+        } else {
+            inputDoc.style.borderBottom = "1px solid #ccc";
+        }
+    });
 }
+window.inicializarLogicaDocumento = inicializarLogicaDocumento;
+
 
 export async function inicializarCheckoutTransparente() {
     if (isRendering) return;

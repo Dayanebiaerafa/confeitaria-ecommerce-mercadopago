@@ -52,11 +52,12 @@ import {
     salvarNoLocalStorage 
 } from './state.js';
 
-import { inicializarCheckoutTransparente } from './payment.js';
+import { inicializarCheckoutTransparente, inicializarLogicaDocumento } from './payment.js';
 // ================================================================
 // 4. EXPOSIÇÃO GLOBAL (Para que os 'onclick' do HTML funcionem)
 // ================================================================
 window.escolherMetodo = escolherMetodo;
+window.inicializarLogicaDocumento = inicializarLogicaDocumento;
 window.restaurarEstadoBotoesPagamento = restaurarEstadoBotoesPagamento
 window.calcularValorApenasDesteBolo = calcularValorApenasDesteBolo;
 window.adicionarBoloAoCarrinho = adicionarBoloAoCarrinho;
@@ -180,6 +181,9 @@ document.addEventListener("DOMContentLoaded", () => {
     inicializarEventosRemocaoCarrinho();
     inicializarEventosSetas();
     inicializarEventosDoces();
+    inicializarLogicaDocumento();
+
+    console.log("✅ Lógica de Documento carregada e ativa!");
 
     // Ouvinte de mudança de peso
     const pesoSelect = document.getElementById('pesoSelect');
@@ -258,6 +262,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+   
 
     // 2. Criamos uma função de inicialização de UI para garantir a ordem
     const inicializarUIConfirmacao = () => {
