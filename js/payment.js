@@ -192,7 +192,10 @@ export async function inicializarCheckoutTransparente() {
                 bankTransfer: (metodoReal === 'pix') ? ['pix'] : undefined,
                 creditCard: (metodoReal === 'credit_card') ? 'all' : undefined,
                 debitCard: (metodoReal === 'debit_card') ? 'all' : undefined,
-                maxInstallments: 1
+                maxInstallments: 4,
+                types: {
+                    excluded: ['debit_card']
+                }    
             },
             visual: { 
                 style: { theme: 'default' },
@@ -200,6 +203,9 @@ export async function inicializarCheckoutTransparente() {
             }
         },
         callbacks: {
+            onFormMounted: error => {
+                if (error) console.warn('Erro ao montar o formulário', error);
+            },
             onReady: () => {
                 console.log("✅ Brick visível na tela!");
                 isRendering = false;

@@ -151,6 +151,22 @@ export function mostrarEtapa(index) {
         const temPixPendente = localStorage.getItem('ultimo_pedido_id');
         const metodoReal = localStorage.getItem('metodo_pagamento');
 
+
+        const infoGeral = document.getElementById("info-pagamento-detalhado");
+        const txtPix = document.getElementById("alerta-pix");
+        const txtCartao = document.getElementById("texto-cartao");
+
+        if (infoGeral) {
+            infoGeral.style.display = "block"; // Mostra o container geral
+            if (metodoReal === 'pix') {
+                txtPix.style.display = "block";
+                txtCartao.style.display = "none";
+            } else {
+                txtPix.style.display = "none";
+                txtCartao.style.display = "block";
+            }
+        }
+        
         if (metodoReal === 'pix' && temPixPendente && dadosPixRaw) {
             // ... lógica de exibição de Pix (QR Code)
             if (containerMP) containerMP.style.display = "none";
