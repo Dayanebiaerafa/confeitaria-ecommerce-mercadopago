@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='assets/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='assets/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='assets/favicon-16x16.png') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='assets/site.webmanifest') }}">
+ 
+    <title>Exclusão de Dados - Confeitaria Dayane Teodoro</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #fdfbf7;
+            color: #4a4a4a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+            box-sizing: border-box;
+        }
+
+        /* Ajustada a margem para alinhar perfeitamente dentro do container */
+        .brand-logo {
+            max-width: 150px;
+            height: auto;
+            margin: 0 auto 20px auto;
+            display: block;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            border-top: 8px solid #ff85a2;
+            box-sizing: border-box;
+        }
+
+        h2 { color: #783606; margin-bottom: 20px; margin-top: 0; }
+        p { line-height: 1.6; margin-bottom: 30px; font-size: 14px; }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #ff85a2;
+            box-shadow: 0 0 8px rgba(255, 133, 162, 0.3);
+        }
+
+        input.invalid {
+            border-color: #e74c3c;
+            background-color: #fdf2f2;
+        }
+
+        button {
+            background-color: #ff85a2;
+            color: #783606;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            width: 100%;
+            font-size: 16px;
+        }
+
+        button:hover:not(:disabled) { 
+            background-color: #ff6b8d; 
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            background-color: #f5cbdf;
+            color: #a88e95;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-voltar {
+            display: inline-block; 
+            margin-top: 25px; 
+            color: #783606;
+            text-decoration: none; 
+            font-weight: bold; 
+            border: 2px solid #783606;
+            padding: 10px 20px; 
+            border-radius: 30px;
+            transition: 0.3s;
+            font-size: 14px;
+        }
+
+        .btn-voltar:hover {
+            background-color: #783606;
+            color: white;
+        }
+
+        .privacy-footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #a0a0a0;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+
+        .privacy-footer a {
+            color: #ff85a2;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .privacy-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <img src="{{ url_for('static', filename='assets/logotipo.jpg') }}" alt="Logo Confeitaria Dayane Teodoro" class="brand-logo" id="logoEmpresa">
+
+        <h2>Solicitar Exclusão de Dados</h2>
+        <p>Em conformidade com a LGPD (Lei Geral de Proteção de Dados), preencha o formulário abaixo para solicitarmos a remoção definitiva dos seus dados de nossa base de e-commerce.</p>
+        
+        <form id="exclusaoForm" action="https://formspree.io/f/xaqabzlg" method="POST">
+            <input type="text" id="nome" name="nome" placeholder="Seu Nome Completo" required autocomplete="name">
+            <input type="email" id="email" name="email" placeholder="Seu E-mail Cadastrado" required autocomplete="email">
+            <textarea name="motivo" placeholder="Motivo da exclusão (opcional)" rows="4"></textarea>
+            
+            <button type="submit" id="btnEnviar" disabled>Enviar Solicitação</button>
+            
+            <input type="hidden" name="_next" value="https://confeitariadayaneteodoro.com.br/sucesso-email.html">
+        </form>
+        
+        <a href="/" class="btn-voltar">← Voltar para a Loja</a>
+
+        <div class="privacy-footer">
+            Para saber mais sobre como tratamos seus dados, leia nossa <a href="{{ url_for('privacidade') if 'privacidade' in endpoints else '/privacidade' }}" target="_blank">Política de Privacidade</a>.
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("exclusaoForm");
+            const nomeInput = document.getElementById("nome");
+            const emailInput = document.getElementById("email");
+            const btnEnviar = document.getElementById("btnEnviar");
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            function validarFormulario() {
+                const nomeValido = nomeInput.value.trim().length >= 3;
+                const emailValido = emailRegex.test(emailInput.value.trim());
+
+                if (emailInput.value.length > 0 && !emailValido) {
+                    emailInput.classList.add("invalid");
+                } else {
+                    emailInput.classList.remove("invalid");
+                }
+
+                if (nomeValido && emailValido) {
+                    btnEnviar.disabled = false;
+                } else {
+                    btnEnviar.disabled = true;
+                }
+            }
+
+            nomeInput.addEventListener("input", validarFormulario);
+            emailInput.addEventListener("input", validarFormulario);
+        });
+    </script>
+</body>
+</html>

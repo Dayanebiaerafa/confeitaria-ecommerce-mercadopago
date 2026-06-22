@@ -2,6 +2,13 @@
 .vscode/
 *.code-workspace
 
+# Python
+_pycache_/
+*.pyc
+venv/
+.venv/
+
+
 # Sistema
 .DS_Store
 Thumbs.db
@@ -9,8 +16,9 @@ desktop.ini
 
 # Logs
 *.log
+pedidos_backup.log
 
-# Segurança (caso use variáveis de ambiente no futuro)
+# Segurança
 .env
 .env.*
 

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/assets/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/assets/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/assets/favicon-16x16.png">
+    <link rel="manifest" href="{{ url_for('static', filename='assets/site.webmanifest') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+    <title>Confirmação de Pedido - Dayane Teodoro</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9f9f9; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .header { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+        .header h1 { color: #d81b60; margin: 0; font-size: 24px; }
+        .secao { margin-bottom: 20px; padding: 15px; background: #fff5f8; border-radius: 10px; }
+        .secao h3 { margin-top: 0; color: #ad1457; border-bottom: 1px solid #f8bbd0; }
+        .item-bolo { padding: 10px 0; border-bottom: 1px dashed #ccc; }
+        .item-bolo:last-child { border-bottom: none; }
+        .status-pago { color: #2e7d32; font-weight: bold; }
+        .alerta { font-size: 0.9em; color: #666; font-style: italic; margin-top: 10px; }
+        .btn-whats { display: block; text-align: center; background: #25d366; color: white; text-decoration: none; padding: 15px; border-radius: 10px; font-weight: bold; margin-top: 20px; }
+        .produto-linha { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #f8bbd0; }
+        .produto-linha:last-child { border-bottom: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Pedido Confirmado! 🎂</h1>
+            <p>Olá, <strong>{{ pedido.nome or pedido.cliente.nome }}</strong></p>
+        </div>
+
+        <div class="secao">
+            <h3>📅 Entrega / Retirada</h3>
+            <strong>Data:</strong> {{ pedido.data_exibicao or pedido.data_pedido }}<br>
+            <strong>Horário:</strong> {{ pedido.horario_exibicao or pedido.horario_pedido }}<br>
+            
+            <strong>Tipo:</strong> {% if not pedido.endereco or pedido.endereco|lower == 'retirada' or 'cristais' in pedido.endereco|lower %} Retirada {% else %} {{ pedido.endereco }} {% endif %}<br>
+            
+            <div style="margin-top: 8px; padding: 10px; background-color: #ffffff; border-left: 4px solid #ad1457; font-size: 0.95em; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                📍 <strong>Endereço para Retirada:</strong><br>
+                Rua: Dos Cristais, 365<br>
+                Bairro: Jardim Holanda - Uberlândia/MG
+            </div>
+        </div>
+
+        <div class="secao">
+            <h3>📦 Detalhes da Encomenda</h3>
+            
+            {% if pedido.itens and pedido.itens != "N/A" %}
+                {% for item in pedido.itens if item is mapping %}
+                    <div class="item-bolo" style="margin-bottom: 15px; border-bottom: 1px solid #f8bbd0; padding-bottom: 10px;">
+                        <strong style="color: #ad1457;">Bolo {{ loop.index }}: {{ item.titulo or pedido.titulo or 'Bolo Temático' }}</strong><br>
+                        
+                        <strong>Formato:</strong> {{ item.formato or pedido.formato or 'Padrão' }}<br>
+                        <strong>Peso:</strong> {{ item.pesoKg or item.peso or pedido.peso }}kg<br>
+
+                        <strong>Preferência de peso:</strong> {{ pedido.preferencia_peso or item.preferencia_peso or item.preferenciaPeso or pedido.preferenciaPeso or 'Pode variar' }}<br>
+
+                        <strong>Massa:</strong> {{ item.massa or pedido.massa or 'Não informada' }}<br>
+
+                        <strong>Recheios:</strong> 
+                        {% if item.recheios %}
+                            {{ item.recheios if item.recheios is string else item.recheios | join(', ') }}
+                        {% else %}
+                            {{ pedido.recheios or 'Não informado' }}
+                        {% endif %}<br>
+
+                        {% if item.complemento or pedido.complementos or pedido.complemento %}
+                            <strong>Complemento:</strong> {{ item.complemento or pedido.complementos or pedido.complemento }}<br>
+                        {% endif %}
+
+                        <strong>Topo:</strong> 
+                        {% set titulo_limpo = (item.titulo or pedido.titulo or 'Bolo Sem Título') | upper %}
+                        {% if 'PERSONALIZADO' in titulo_limpo %}
+                            {% if item.topo or item.topo_status == 'Sim' or pedido.topo_status == 'Sim' or pedido.topo == 'Sim' or pedido.topo == true %}
+                                ✅ Sim 
+                                {% if item.nomeTopo or item.topo_detalhes or pedido.topo_detalhes %}
+                                    (
+                                    {{ item.nomeTopo or item.topo_detalhes or pedido.topo_detalhes }}
+                                    {%- if item.idadeTopo -%}, {{ item.idadeTopo }} anos{%- endif -%}
+                                    {# ✅ ADICIONADO: Renderiza a observação específica do topo caso venha separada #}
+                                    {%- if item.obsTopo or pedido.obsTopo or item.topo_obs or pedido.topo_obs -%}
+                                        - {{ item.obsTopo or pedido.obsTopo or item.topo_obs or pedido.topo_obs }}
+                                    {%- endif -%}
+                                    )
+                                {% endif %}
+                            {% else %}
+                                ❌ Não
+                            {% endif %}
+                        {% else %}
+                            {# Clássico ou de Corte exibe apenas Sim ou Não #}
+                            {% if item.topo or item.topo_status == 'Sim' or pedido.topo_status == 'Sim' or pedido.topo == 'Sim' or pedido.topo == true %}
+                                ✅ Sim
+                            {% else %}
+                                ❌ Não
+                            {% endif %}
+                        {% endif %}<br>
+
+                        <strong>Embalagem:</strong> {{ '✅ Sim' if item.embalagem or pedido.embalagem == 'Sim' or item.embalagem == true else '❌ Não' }}<br>
+
+                        {% if item.modeloImagem or pedido.fotos %}
+                            <div style="margin-top: 8px;">
+                                <img src="{{ item.modeloImagem or pedido.fotos }}" alt="Modelo do Bolo" style="max-width: 150px; border-radius: 8px; border: 1px solid #ddd;">
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>Nenhum detalhe de bolo estruturado encontrado.</p>
+            {% endif %}
+
+            {% if pedido.doces and pedido.doces != "N/A" and pedido.doces != "" %}
+                <div class="item-doce" style="margin-top: 10px; padding-top: 10px;">
+                    <strong style="color: #ad1457;">🍬 Doces Escolhidos:</strong><br>
+                    <span>{{ pedido.doces }}</span>
+                </div>
+            {% endif %}
+
+            {% if pedido.forminhas and pedido.forminhas != "N/A" and pedido.forminhas != "" %}
+                <div style="margin-top: 8px;">
+                    <strong>🎨 Cor das Forminhas:</strong> {{ pedido.forminhas }}
+                </div>
+            {% endif %}
+
+            {% if pedido.obs and pedido.obs != "" and pedido.obs != "N/A" %}
+                <div style="margin-top: 15px; padding: 10px; background-color: #fdfdfd; border: 1px dashed #ad1457; border-radius: 5px;">
+                    <strong>📝 Observações Gerais:</strong><br>
+                    <span style="font-style: italic; color: #555;">{{ pedido.obs }}</span>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="secao">
+            <h3>💰 Financeiro</h3>
+            <p><strong>Total:</strong> R$ {{ "%.2f"|format(pedido.total) }}</p>
+            <p><strong>Valor Pago (Sinal):</strong> <span class="status-pago">R$ {{ "%.2f"|format(pedido.pago) }}</span></p>
+            <p><strong>Restante a pagar:</strong> R$ {{ "%.2f"|format(pedido.restante) }}</p>
+            <p><strong>Método de Pagamento:</strong> {{ pedido.metodo }}</p>
+        </div>
+
+        <p class="alerta">⚠️ Caso precise alterar algo, entre em contato conosco. Esta página é apenas para conferência.</p>
+
+        <a href="https://wa.me/553496360443" class="btn-whats">Dúvidas? Fale Conosco</a>
+    </div>
+
+</body>
+</html>

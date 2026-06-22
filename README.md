@@ -5,9 +5,17 @@ Este projeto é um **Ecossistema de Automação de Negócios** e **Backend Engin
 
 ---
 
+## Arquitetura do Sistema
+![Diagrama de Arquitetura do Ecossistema](https://github.com/Dayanebiaerafa/confeitaria-ecommerce-mercadopago/blob/main/static/assets/diagrama.png)
+
+---
+
 ## Demonstração Técnica em Vídeo
 * [**Assista ao Site em Funcionamento (Checkout e Fluxo)**](https://github.com/Dayanebiaerafa/confeitaria-ecommerce-mercadopago/raw/main/static/assets/assistente/site.mp4)
 * [**Assista à Assistente Inteligente (Gemini AI) em Ação**](https://github.com/Dayanebiaerafa/confeitaria-ecommerce-mercadopago/raw/main/static/assets/assistente/assistente.mp4)
+
+### Fluxo de Automação em Tempo Real
+![Automação do Pedido e WhatsApp](caminho/para/seu/video_convertido.gif)
 
 ---
 
@@ -20,7 +28,7 @@ O sistema foi arquitetado sob os princípios de **Clean Code, SOLID** e **Event-
 * **Resiliência de Dados:** Sistema de **verificação de duplicidade** em tempo real antes da persistência de pedidos, evitando conflitos de transação.
 
 ### Front-end: Performance e UX (JavaScript, HTML, CSS)
-* **Engine de Sacola:** Lógica em JavaScript Vanilla para validação de regras de negócio complexas (pesos mínimos por categoria, regra de permissão de datas para 1 e 2 dias dependendo da categoria e limites de recheio e complemeto) sem necessidade de requisições constantes ao servidor.
+* **Engine de Sacola:** Lógica em JavaScript Vanilla para validação de regras de negócio complexas (pesos mínimos por categoria, regra de permissão de datas para 1 e 2 dias dependendo da categoria e limites de recheio e complemento) sem necessidade de requisições constantes ao servidor.
 * **Upload de Assets:** Integração com a **API ImgBB** para processamento de imagens de referência enviadas pelo cliente, otimizando o armazenamento do servidor principal.
 * **Interface Responsiva:** Design focado em conversão mobile, onde ocorre a maior parte das interações do setor.
 
@@ -59,7 +67,8 @@ O diferencial deste projeto é o meu **back-office automatizado**:
 | **Banco de Dados** | PostgreSQL (Relacional) |
 | **Cloud & Deploy:** | Render (PaaS, Hospedagem e DB), Google Cloud Platform, Git, GitHub, ImgBB API.
 | **IA & Automação** | Google Gemini API, WhatsApp Cloud API, Google Apps Script |
-|  |  |
+
+
 * **Integrações de Terceiros:**
     * **Mercado Pago SDK:** Processamento de Pix e Cartão de Crédito.
     * **Meta Graph API (WhatsApp):** Notificações oficiais via templates e mensagens de texto.
