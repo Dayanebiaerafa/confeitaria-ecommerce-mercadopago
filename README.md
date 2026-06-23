@@ -11,7 +11,7 @@ Este projeto é um **Ecossistema de Automação de Negócios** e **Backend Engin
 ---
 
 ## Demonstração Técnica em Vídeo
-* [**Assista ao Site em Funcionamento (Checkout e Fluxo)**](https://github.com/Dayanebiaerafa/confeitaria-ecommerce-mercadopago/raw/main/static/assets/assistente/site.mp4)
+* [**Assista ao Site em Funcionamento (Checkout e Fluxo)**](https://github.com/Dayanebiaerafa/confeitaria-ecommerce-mercadopago/raw/main/static/assets/assistente/sistema ecommerce.mp4)
 * [**Assista à Assistente Inteligente (Gemini AI) em Ação**](https://github.com/Dayanebiaerafa/confeitaria-ecommerce-mercadopago/raw/main/static/assets/assistente/assistente.mp4)
 
 ### Fluxo de Automação em Tempo Real
@@ -48,13 +48,18 @@ O sistema foi arquitetado sob os princípios de **Clean Code, SOLID** e **Event-
 
 ---
 
-## Automação de Processos (Business Intelligence)
-O diferencial deste projeto é o meu **back-office automatizado**:
+## Automação de Processos (Hiperautomação & Back-office)
+O diferencial deste projeto é a inteligência do back-office automatizado para garantir a resiliência da operação:
 
-1.  **Webhooks de Pagamento:** O Flask processa notificações instantâneas do Mercado Pago.
-2.  **ERP Integration:** Dados são enviados via **Google Apps Script** para uma planilha que atua como dashboard de produção.
-3.  **CRM & Notificação:** Disparo automático de **WhatsApp Cloud API** (Templates Oficiais) para o cliente no momento da aprovação, reduzindo drasticamente o tempo de atendimento manual.
-4.  **Agendamento Inteligente:** Criação automática de eventos no **Google Calendar** para controle de prazos de entrega.
+1. **Webhooks de Pagamento:** O Flask processa notificações instantâneas do Mercado Pago.
+2. **ERP Integration:** Dados são enviados via **Google Apps Script** para uma planilha que atua como dashboard de produção.
+3. **CRM & Notificação:** Disparo automático de **WhatsApp Cloud API** (Templates Oficiais) para o cliente no momento da aprovação, reduzindo drasticamente o tempo de atendimento manual.
+4. **Agendamento Inteligente:** Criação automática de eventos no **Google Calendar** para controle de prazos de entrega.
+
+### Orquestração de Fluxos e Idempotência com n8n (Docker)
+Para blindar o sistema contra falhas operacionais, implementei um workflow no **n8n** rodando via **Docker** focado em checagem de concorrência e idempotência. O fluxo varre os registros, executa uma validação via script **JavaScript** customizado para identificar duplicidade de pedidos e dispara requisições via **HTTP Request** para alertar a gerência imediatamente em canais oficiais caso um conflito seja detectado.
+
+![Fluxo de Automação n8n - Verificação de Duplicidade](https://github.com/Dayanebiaerafa/confeitaria-ecommerce-mercadopago/blob/main/static/assets/assistente/n8nautomacaodeduplicidadadepedido.png)
 
 ---
 
